@@ -7,24 +7,26 @@ import {
   FooterData,
 } from "@lib/config/footer.config";
 import { saveFooter } from "@lib/db/db-actions";
-import { Puck } from "@measured/puck";
-import "@measured/puck/puck.css";
+import { Puck } from "@puckeditor/core";
+import "@puckeditor/core/puck.css";
 
 export function FooterEditor({ data }: { data: FooterData }) {
   return (
-    <Puck
-      config={footerConfig}
-      data={data}
-      overrides={{
-        header: () => (
-          <PuckHeader
-            headerTitle="Editing Footer"
-            headerActions={
-              <OtherHeaderActions<FooterConfig> saveData={saveFooter} />
-            }
-          />
-        ),
-      }}
-    />
+    <div className="puck-editor-wrapper">
+      <Puck
+        config={footerConfig}
+        data={data}
+        overrides={{
+          header: () => (
+            <PuckHeader
+              headerTitle="Editing Footer"
+              headerActions={
+                <OtherHeaderActions<FooterConfig> saveData={saveFooter} />
+              }
+            />
+          ),
+        }}
+      />
+    </div>
   );
 }

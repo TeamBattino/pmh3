@@ -1,4 +1,4 @@
-import { uploadFileField } from "@components/puck-fields/upload-file";
+import { filePickerField } from "@components/puck-fields/file-picker";
 import {
   navbarDropdownConfig,
   NavbarDropdownProps,
@@ -7,7 +7,7 @@ import {
   navbarItemConfig,
   NavbarItemProps,
 } from "@components/puck/navbar/NavbarItem";
-import type { Config, Data } from "@measured/puck";
+import type { Config, Data } from "@puckeditor/core";
 
 // @keep-sorted
 export type NavbarProps = {
@@ -16,6 +16,7 @@ export type NavbarProps = {
 };
 export type NavbarRootProps = {
   logo?: string;
+  enableSearch?: string;
 };
 export type NavbarConfig = Config<NavbarProps, NavbarRootProps>;
 export type NavbarData = Data<NavbarProps, NavbarRootProps>;
@@ -23,7 +24,15 @@ export type NavbarData = Data<NavbarProps, NavbarRootProps>;
 export const navbarConfig: NavbarConfig = {
   root: {
     fields: {
-      logo: uploadFileField,
+      logo: filePickerField,
+      enableSearch: {
+        type: "radio",
+        label: "Enable Search",
+        options: [
+          { label: "Enabled", value: "true" },
+          { label: "Disabled", value: "false" },
+        ],
+      },
     },
   },
   // @keep-sorted
@@ -33,9 +42,7 @@ export const navbarConfig: NavbarConfig = {
   },
 };
 
-export const defaultNavbarData: NavbarData = {
-  content: [],
-  root: {
-    props: {},
-  },
-};
+// Re-exported from navbar.defaults.ts for backward compat.
+// DB implementations import from navbar.defaults.ts directly to avoid
+// pulling in the component dependency tree.
+export { defaultNavbarData } from "./navbar.defaults";

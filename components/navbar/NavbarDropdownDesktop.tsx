@@ -13,22 +13,28 @@ export function NavbarDropdownDesktop({
     setOpen((prevOpen) => !prevOpen);
   };
   return (
-    <>
+    <div className="relative">
       <button
         onClick={toggleOpen}
-        className="text-black flex items-center gap-1 text-2xl font-rockingsoda"
+        className="cursor-pointer text-black flex items-center gap-1 text-2xl font-rockingsoda"
       >
         {label}
         <NavbarDropdownArrowSvg open={open} className="fill-black" />
       </button>
       {open && (
         <ClickAwayListener onClickAway={() => setOpen(false)}>
-          <div className="z-30 min-w-36 translate-y-4 drop-shadow-[0px_0px_1px_#000000] absolute items-center bg-white flex flex-col text-black font-rockingsoda text-2xl rounded-xl p-4 border-black b-2">
-            <NavbarDropdownArrowSvg
-              invertRotationDirection={true}
-              open={open}
-              className="fill-black"
-            />
+          <div className="z-30 min-w-36 top-full right-0 mt-2 drop-shadow-[0px_0px_1px_#000000] absolute items-center bg-white flex flex-col text-black font-rockingsoda text-2xl rounded-xl p-4 border-black b-2">
+            <button
+              onClick={() => setOpen(false)}
+              className="cursor-pointer mb-2"
+              aria-label="Close dropdown"
+            >
+              <NavbarDropdownArrowSvg
+                invertRotationDirection={true}
+                open={open}
+                className="fill-black"
+              />
+            </button>
             {groupedItems.map((items, index) => (
               <Fragment key={index}>
                 <div className="flex w-full gap-2 items-center">
@@ -45,7 +51,7 @@ export function NavbarDropdownDesktop({
 
                 {items.map((item, index) => (
                   <a
-                    className="text-center"
+                    className="text-center cursor-pointer hover:underline"
                     href={item.url || undefined}
                     key={index}
                   >
@@ -57,6 +63,6 @@ export function NavbarDropdownDesktop({
           </div>
         </ClickAwayListener>
       )}
-    </>
+    </div>
   );
 }

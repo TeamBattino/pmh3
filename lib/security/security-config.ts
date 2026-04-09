@@ -4,6 +4,11 @@ export const assignablePermissions = [
   "asset:create",
   "asset:delete",
   "asset:update",
+  "calendar:read",
+  "calendar:update",
+  "files:create",
+  "files:delete",
+  "files:read",
   "footer:update",
   "global-admin",
   "navbar:update",
@@ -12,6 +17,8 @@ export const assignablePermissions = [
   "page:update",
   "role-permissions:read",
   "role-permissions:update",
+  "shop:read",
+  "shop:update",
 ] as const;
 
 /**
@@ -46,6 +53,13 @@ export const defaultSecurityConfig: SecurityConfig = {
         "admin-ui:read",
         "navbar:update",
         "footer:update",
+        "files:read",
+        "files:create",
+        "files:delete",
+        "shop:read",
+        "shop:update",
+        "calendar:read",
+        "calendar:update",
       ],
     },
     {

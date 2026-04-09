@@ -1,6 +1,11 @@
-import { UploadFileSvg } from "@components/graphics/UploadFileSvg";
+/**
+ * @deprecated This component uses base64 encoding which bloats the database.
+ * Use `filePickerField` from `@components/puck-fields/file-picker` instead,
+ * which uses S3 storage for better performance and scalability.
+ */
 import { CustomFieldRenderProps } from "@lib/custom-field-types";
-import { CustomField } from "@measured/puck";
+import { Upload, X } from "lucide-react";
+import { CustomField } from "@puckeditor/core";
 
 type UploadFileProps = string | undefined;
 
@@ -31,18 +36,39 @@ function UploadFile({
         htmlFor={id}
         className="flex flex-col items-center justify-center w-full h-full"
       >
-        <UploadFileSvg />
+        <Upload className="w-12 h-12 text-gray-400" />
         <span className="mt-2 text-sm text-gray-600">
           Drag & drop or click to upload
         </span>
       </label>
       {value && (
-        <div className="mt-4">
+        <div style={{ marginTop: "16px", position: "relative" }}>
           <img
             src={value}
             alt="Uploaded file"
             className="max-w-full h-auto rounded-lg"
           />
+          <button
+            type="button"
+            onClick={() => onChange(undefined)}
+            style={{
+              position: "absolute",
+              top: "4px",
+              right: "4px",
+              backgroundColor: "#6b7280",
+              color: "white",
+              borderRadius: "50%",
+              padding: "4px",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            aria-label="Remove image"
+          >
+            <X style={{ width: "16px", height: "16px" }} />
+          </button>
         </div>
       )}
     </div>

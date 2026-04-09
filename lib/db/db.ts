@@ -1,15 +1,41 @@
+import type {
+  CalendarEvent,
+  CalendarEventInput,
+  CalendarGroup,
+  CalendarGroupInput,
+} from "@lib/calendar/types";
 import type { FooterData } from "@lib/config/footer.config";
+import type { AppAlbum, AppAlbumInput } from "@lib/gallery/types";
 import type { NavbarData } from "@lib/config/navbar.config";
 import type { PageData } from "@lib/config/page.config";
 import { env } from "@lib/env";
+import type { OrganigrammCache } from "@lib/hitobito/types";
+import type { Rsvp, RsvpCount, RsvpInput } from "@lib/rsvp/types";
 import type { SecurityConfig } from "@lib/security/security-config";
-import type { Data } from "@measured/puck";
+import type { Product, ProductInput, ShopSettings } from "@lib/shop/types";
+import type { FileRecord, FileRecordInput } from "@lib/storage/file-record";
+import type { Data } from "@puckeditor/core";
 import { MockDatabaseService } from "./db-mock-impl";
 import { MongoService } from "./db-mongo-impl";
+
+export interface FileQueryOptions {
+  folder?: string;
+  search?: string;
+  tags?: string[];
+  limit?: number;
+  cursor?: string; // _id of last item for cursor pagination
+}
+
+export interface FileQueryResult {
+  files: FileRecord[];
+  nextCursor: string | null;
+  total: number;
+}
 
 export interface DatabaseService {
   savePage(path: string, data: Data): Promise<void>;
   deletePage(path: string): Promise<void>;
+  renamePage(oldPath: string, newPath: string): Promise<void>;
   getPage(path: string): Promise<PageData | undefined>;
   saveNavbar(data: NavbarData): Promise<void>;
   getNavbar(): Promise<NavbarData>;
@@ -18,6 +44,88 @@ export interface DatabaseService {
   getAllPaths(): Promise<string[]>;
   getSecurityConfig(): Promise<SecurityConfig>;
   saveSecurityConfig(RoleConfig: SecurityConfig): Promise<void>;
+  // File management
+  saveFile(file: FileRecordInput): Promise<FileRecord>;
+  getFile(id: string): Promise<FileRecord | null>;
+  getAllFiles(): Promise<FileRecord[]>;
+  queryFiles(options: FileQueryOptions): Promise<FileQueryResult>;
+  countFiles(options: Omit<FileQueryOptions, "limit" | "cursor">): Promise<number>;
+  deleteFile(id: string): Promise<void>;
+  updateFile(
+    id: string,
+    updates: { folder?: string; tags?: string[] }
+  ): Promise<FileRecord | null>;
+  getAllFolders(): Promise<string[]>;
+  // Shop
+  getProducts(): Promise<Product[]>;
+  getActiveProducts(): Promise<Product[]>;
+  getProduct(id: string): Promise<Product | null>;
+  saveProduct(product: ProductInput): Promise<Product>;
+  updateProduct(id: string, product: ProductInput): Promise<Product | null>;
+  deleteProduct(id: string): Promise<void>;
+  reorderProducts(orderedIds: string[]): Promise<void>;
+  getShopSettings(): Promise<ShopSettings>;
+  saveShopSettings(settings: ShopSettings): Promise<void>;
+  decrementStock(
+    productId: string,
+    variantIndex: number,
+    quantity: number
+  ): Promise<boolean>;
+  // Webhook idempotency
+  isSessionProcessed(sessionId: string): Promise<boolean>;
+  markSessionProcessed(sessionId: string): Promise<void>;
+  // Hitobito Organigramm cache
+  getOrganigrammCache(
+    rootGroupId: number
+  ): Promise<OrganigrammCache | null>;
+  saveOrganigrammCache(cache: OrganigrammCache): Promise<void>;
+  // Calendar
+  getCalendarGroups(): Promise<CalendarGroup[]>;
+  getCalendarGroup(id: string): Promise<CalendarGroup | null>;
+  saveCalendarGroup(group: CalendarGroupInput): Promise<CalendarGroup>;
+  updateCalendarGroup(
+    id: string,
+    group: CalendarGroupInput
+  ): Promise<CalendarGroup | null>;
+  deleteCalendarGroup(id: string): Promise<void>;
+  getCalendarEvents(): Promise<CalendarEvent[]>;
+  getCalendarEvent(id: string): Promise<CalendarEvent | null>;
+  getEventsByGroup(groupSlug: string): Promise<CalendarEvent[]>;
+  getNextUpcomingEvent(groupSlug: string): Promise<CalendarEvent | null>;
+  getAllUpcomingEvents(): Promise<CalendarEvent[]>;
+  getAllPublicEvents(): Promise<CalendarEvent[]>;
+  getAllEventsForLeiter(): Promise<CalendarEvent[]>;
+  getEventsForLeiterByGroup(groupSlug: string): Promise<CalendarEvent[]>;
+  /** Unified query: events matching any of the given groups, optionally including leitersitzung. */
+  getEventsByMultipleGroups(
+    slugs: string[],
+    includeLeiterEvents: boolean
+  ): Promise<CalendarEvent[]>;
+  saveCalendarEvent(event: CalendarEventInput): Promise<CalendarEvent>;
+  updateCalendarEvent(
+    id: string,
+    event: CalendarEventInput
+  ): Promise<CalendarEvent | null>;
+  deleteCalendarEvent(id: string): Promise<void>;
+  // RSVP
+  getRsvpCount(eventId: string): Promise<RsvpCount>;
+  getDeviceRsvps(eventId: string, deviceId: string): Promise<Rsvp[]>;
+  upsertRsvp(input: RsvpInput): Promise<Rsvp>;
+  deleteRsvp(
+    eventId: string,
+    deviceId: string,
+    profileId: string
+  ): Promise<void>;
+  // App Gallery
+  getAppAlbums(): Promise<AppAlbum[]>;
+  getVisibleAppAlbums(): Promise<AppAlbum[]>;
+  getAppAlbum(id: string): Promise<AppAlbum | null>;
+  saveAppAlbum(input: AppAlbumInput): Promise<AppAlbum>;
+  updateAppAlbum(
+    id: string,
+    input: Partial<AppAlbumInput>
+  ): Promise<AppAlbum | null>;
+  deleteAppAlbum(id: string): Promise<void>;
 }
 
 function getDatabaseService(): DatabaseService {

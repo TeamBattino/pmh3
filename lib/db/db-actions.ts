@@ -1,9 +1,15 @@
 "use server";
 
-import { FooterData } from "@lib/config/footer.config";
-import { NavbarData } from "@lib/config/navbar.config";
-import { PageData } from "@lib/config/page.config";
-import { SecurityConfig } from "@lib/security/security-config";
+import type { NavbarDropdownProps } from "@components/puck/navbar/NavbarDropdown";
+import type { NavbarItemProps } from "@components/puck/navbar/NavbarItem";
+import type { FooterData } from "@lib/config/footer.config";
+import type { NavbarData } from "@lib/config/navbar.config";
+import type { PageData } from "@lib/config/page.config";
+import {
+  extractSearchableSegments,
+  SearchIndexEntry,
+} from "@lib/search/extract-text";
+import type { SecurityConfig } from "@lib/security/security-config";
 import { requireServerPermission } from "@lib/security/server-guard";
 import { dbService } from "./db";
 
@@ -21,6 +27,99 @@ export async function savePage(path: string, data: PageData) {
 export async function deletePage(path: string) {
   await requireServerPermission({ all: ["page:delete"] });
   return dbService.deletePage(path);
+}
+
+const RESERVED_ROUTE_PREFIXES = ["/admin", "/auth", "/api", "/cal"];
+
+function validatePagePath(path: string): string | null {
+  if (!path || typeof path !== "string") {
+    return "Pfad darf nicht leer sein.";
+  }
+  if (!path.startsWith("/")) {
+    return "Pfad muss mit / beginnen.";
+  }
+  if (path === "/") {
+    return "Pfad darf nicht nur / sein.";
+  }
+  if (/\/\//.test(path)) {
+    return "Pfad darf keine doppelten Schrägstriche enthalten.";
+  }
+  if (path.length > 1 && path.endsWith("/")) {
+    return "Pfad darf nicht mit / enden.";
+  }
+  if (!/^[a-zA-Z0-9\-/]+$/.test(path)) {
+    return "Pfad darf nur Buchstaben, Zahlen, Bindestriche und Schrägstriche enthalten.";
+  }
+  for (const prefix of RESERVED_ROUTE_PREFIXES) {
+    if (path === prefix || path.startsWith(prefix + "/")) {
+      return `Pfad "${prefix}" ist reserviert und kann nicht verwendet werden.`;
+    }
+  }
+  return null;
+}
+
+export async function renamePage(
+  oldPath: string,
+  newPath: string
+): Promise<{ success: boolean; error?: string; navbarWarning?: boolean }> {
+  await requireServerPermission({ all: ["page:update"] });
+
+  const validationError = validatePagePath(newPath);
+  if (validationError) {
+    return { success: false, error: validationError };
+  }
+
+  if (oldPath === newPath) {
+    return { success: false, error: "Neuer Pfad ist identisch mit dem alten." };
+  }
+
+  // Check no page already exists at the new path
+  const existing = await dbService.getPage(newPath);
+  if (existing) {
+    return {
+      success: false,
+      error: `Eine Seite mit dem Pfad "${newPath}" existiert bereits.`,
+    };
+  }
+
+  try {
+    await dbService.renamePage(oldPath, newPath);
+  } catch {
+    return {
+      success: false,
+      error: `Seite mit Pfad "${oldPath}" nicht gefunden.`,
+    };
+  }
+
+  // Check if navbar references the old path
+  let navbarWarning = false;
+  try {
+    const navbar = await dbService.getNavbar();
+    for (const component of navbar.content) {
+      if (!component?.props) continue;
+      if (component.type === "NavbarItem") {
+        const { url } = component.props as NavbarItemProps;
+        if (url === oldPath) {
+          navbarWarning = true;
+          break;
+        }
+      }
+      if (component.type === "NavbarDropdown") {
+        const { items = [] } = component.props as NavbarDropdownProps;
+        for (const item of items) {
+          if (item.url === oldPath) {
+            navbarWarning = true;
+            break;
+          }
+        }
+        if (navbarWarning) break;
+      }
+    }
+  } catch {
+    // Navbar check is best-effort
+  }
+
+  return { success: true, navbarWarning };
 }
 
 export async function getPage(path: string): Promise<PageData | undefined> {
@@ -57,4 +156,52 @@ export async function getSecurityConfig() {
 export async function saveSecurityConfig(permissions: SecurityConfig) {
   await requireServerPermission({ all: ["role-permissions:update"] });
   return dbService.saveSecurityConfig(permissions);
+}
+
+export async function getSearchIndex(): Promise<SearchIndexEntry[]> {
+  try {
+    const navbar = await dbService.getNavbar();
+    const urls = new Set<string>();
+
+    for (const component of navbar.content) {
+      if (!component?.props) continue;
+      if (component.type === "NavbarItem") {
+        const { url } = component.props as NavbarItemProps;
+        if (url) urls.add(url);
+      }
+      if (component.type === "NavbarDropdown") {
+        const { items = [] } = component.props as NavbarDropdownProps;
+        for (const item of items) {
+          if (item.url) urls.add(item.url);
+        }
+      }
+    }
+
+    const settled = await Promise.allSettled(
+      [...urls].map(async (url) => ({
+        url,
+        page: await dbService.getPage(url),
+      })),
+    );
+    const pages = settled
+      .filter(
+        (r): r is PromiseFulfilledResult<{ url: string; page: PageData | undefined }> =>
+          r.status === "fulfilled",
+      )
+      .map((r) => r.value);
+
+    return pages.flatMap(({ url, page }) => {
+      if (!page) return [];
+      const title = page.root.props?.title || url;
+      return extractSearchableSegments(page).map((segment) => ({
+        path: url,
+        title,
+        text: segment.text,
+        componentId: segment.componentId,
+        weight: segment.weight,
+      }));
+    });
+  } catch {
+    return [];
+  }
 }

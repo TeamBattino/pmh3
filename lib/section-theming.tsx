@@ -1,7 +1,7 @@
 import { PuckSectionThemeUpdater } from "@components/misc/PuckSectionThemeUpdater";
 import { SectionThemedComponent } from "@components/page/SectionThemedComponent";
 import { PageConfig, PageData } from "@lib/config/page.config";
-import { WithId, WithPuckProps } from "@measured/puck";
+import { WithId, WithPuckProps } from "@puckeditor/core";
 import { ComponentProps, JSX, PropsWithChildren } from "react";
 import { mapObjectEntries } from "./typed-object-entries";
 
@@ -37,6 +37,28 @@ export function applySectionTheming(data: PageData): {
   return { data: { ...data, content: newContent }, didChange };
 }
 
+/**
+ * Calculates the theme of the last section on the page by counting
+ * SectionDivider components. Trailing SectionDividers (with no content
+ * after them) are ignored since they don't create a visible section.
+ */
+export function getLastSectionTheme(data: PageData): Theme {
+  let theme: Theme = "mud";
+  let pendingToggle = false;
+
+  for (const item of data.content) {
+    if (item.type === "SectionDivider") {
+      pendingToggle = !pendingToggle;
+    } else {
+      if (pendingToggle) {
+        theme = theme === "sun" ? "mud" : "sun";
+        pendingToggle = false;
+      }
+    }
+  }
+  return theme;
+}
+
 function RootRender<Props extends PropsWithChildren>({
   children,
   puck: { isEditing },
@@ -59,10 +81,11 @@ function sectionThemedComponentConfig<K extends keyof PageConfig["components"]>(
     ...props
   }: ComponentProps<typeof config.render> &
     JSX.IntrinsicAttributes & {
+      id?: string;
       theme?: Theme;
     }) => {
     return (
-      <SectionThemedComponent theme={props.theme ?? "mud"}>
+      <SectionThemedComponent theme={props.theme ?? "mud"} id={props.id}>
         <config.render {...props} />
       </SectionThemedComponent>
     );

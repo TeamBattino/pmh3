@@ -80,6 +80,23 @@
   h3,
   h4 {
     font-family: var(--rockingsoda);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .font-rockingsoda,
+  [class*="font-rockingsoda"] {
+    font-weight: 400 !important;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
   }
 
   h1 {
@@ -98,6 +115,15 @@
     @apply text-2xl;
   }
 }
+/* Reset Puck editor UI colors (prevent theme color inheritance) */
+body .puck-editor-wrapper {
+  color: #5a5a5a;
+}
+
+body .puck-editor-wrapper *:not(button):not(a) {
+  color: inherit;
+}
+
 @layer components {
   .content-main {
     --gap: clamp(2rem, 6vw, 3rem);

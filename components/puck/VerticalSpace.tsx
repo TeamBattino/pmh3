@@ -1,4 +1,4 @@
-import { ComponentConfig } from "@measured/puck";
+import { ComponentConfig } from "@puckeditor/core";
 
 export type VerticalSpaceProps = {
   size: string;
@@ -36,6 +36,7 @@ export const verticalSpaceConfig: ComponentConfig<VerticalSpaceProps> = {
   fields: {
     size: {
       type: "select",
+      label: "Size",
       options: spacingOptions.map((size) => ({ label: size, value: size })),
     },
   },
