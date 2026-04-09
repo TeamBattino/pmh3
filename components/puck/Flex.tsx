@@ -1,57 +1,53 @@
-import { ComponentConfig, WithPuckProps } from "@puckeditor/core";
+import { ComponentConfig, WithPuckProps } from "@measured/puck";
 
 export type FlexProps = {
-  items: object[];
+  items: { minItemWidth?: number }[];
   minItemWidth: number;
-  gap: number;
 };
 
 function Flex({
   items,
   minItemWidth,
-  gap,
   puck: { renderDropZone },
 }: WithPuckProps<FlexProps>) {
   const DropZone = renderDropZone;
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(auto-fill, minmax(${minItemWidth}px, 1fr))`,
-        gap: `${gap}px`,
-      }}
-    >
-      {items.map((_, idx) => (
-        <DropZone key={idx} zone={`item-${idx}`} />
+    <div>
+      {items.map((item, idx) => (
+        <div
+          key={idx}
+          className="flex-item"
+          style={{ minWidth: item.minItemWidth || minItemWidth }}
+        >
+          <DropZone zone={`item-${idx}`} />
+        </div>
       ))}
     </div>
   );
 }
 
-/** @deprecated Use MultiColumn instead */
 export const flexConfig: ComponentConfig<FlexProps> = {
-  label: "Grid (deprecated)",
   render: Flex,
   fields: {
     items: {
       type: "array",
-      arrayFields: {},
+      arrayFields: {
+        minItemWidth: {
+          label: "Minimum Item Width",
+          type: "number",
+          min: 0,
+        },
+      },
       getItemSummary: (_, id = -1) => `Item ${id + 1}`,
     },
     minItemWidth: {
-      label: "Min Item Width (px)",
-      type: "number",
-      min: 100,
-    },
-    gap: {
-      label: "Gap (px)",
+      label: "Minimum Item Width",
       type: "number",
       min: 0,
     },
   },
   defaultProps: {
-    items: [{}, {}, {}],
-    minItemWidth: 200,
-    gap: 20,
+    items: [{}, {}],
+    minItemWidth: 356,
   },
 };

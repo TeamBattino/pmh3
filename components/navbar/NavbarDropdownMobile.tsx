@@ -16,7 +16,7 @@ export function NavbarDropdownMobile({
     <>
       <button
         onClick={toggleOpen}
-        className="cursor-pointer text-brand-yellow items-center gap-2 text-2xl font-rockingsoda bg-elevated w-full p-3 flex justify-center"
+        className="text-brand-yellow items-center gap-2 text-2xl font-rockingsoda bg-elevated w-full p-3 flex justify-center"
       >
         {label}
         <NavbarDropdownArrowSvg

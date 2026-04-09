@@ -1,10 +1,10 @@
-import type { RichTextProps } from "@components/puck/RichText";
-import { richTextConfig } from "@components/puck/RichText";
-import type { Config, Data } from "@puckeditor/core";
+import type { TextProps } from "@components/puck/Text";
+import { textConfig } from "@components/puck/Text";
+import type { Config, Data } from "@measured/puck";
 
 // @keep-sorted
 export type FooterProps = {
-  RichText: RichTextProps;
+  Text: TextProps;
 };
 export type FooterRootProps = {};
 export type FooterConfig = Config<FooterProps, FooterRootProps>;
@@ -13,11 +13,13 @@ export type FooterData = Data<FooterProps, FooterRootProps>;
 export const footerConfig: FooterConfig = {
   // @keep-sorted
   components: {
-    RichText: richTextConfig,
+    Text: textConfig,
   },
 };
 
-// Re-exported from footer.defaults.ts for backward compat.
-// DB implementations import from footer.defaults.ts directly to avoid
-// pulling in the component dependency tree.
-export { defaultFooterData } from "./footer.defaults";
+export const defaultFooterData: FooterData = {
+  content: [],
+  root: {
+    props: {},
+  },
+};

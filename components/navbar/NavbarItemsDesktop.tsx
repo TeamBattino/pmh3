@@ -1,8 +1,6 @@
-import { NavbarCartIcon } from "@components/navbar/NavbarCartIcon";
 import { NavbarLogo } from "@components/navbar/NavbarLogo";
-import { NavbarSearch } from "@components/navbar/NavbarSearch";
 import { navbarConfig, NavbarData } from "@lib/config/navbar.config";
-import { Render } from "@puckeditor/core";
+import { Render } from "@measured/puck";
 
 export type NavbarComponentsProps = {
   data: NavbarData;
@@ -39,8 +37,8 @@ export function NavbarItemsDesktop({ data }: NavbarComponentsProps) {
   const { leftItems, rightItems } = splitData(data);
   const logo = data.root.props?.logo;
   return (
-    <div className="hidden md:grid grid-cols-[1fr_min-content_1fr] gap-4 items-center border-b-[#edc600] border-b-8">
-      <div className="flex justify-end gap-4 flex-wrap">
+    <div className="hidden md:grid grid-cols-[1fr_min-content_1fr] gap-4 items-end border-b-[#edc600] border-b-8">
+      <div className="flex justify-end gap-4 flex-wrap mb-1">
         <Render config={navbarConfig} data={leftItems} />
       </div>
 
@@ -48,18 +46,8 @@ export function NavbarItemsDesktop({ data }: NavbarComponentsProps) {
         {logo && <NavbarLogo logo={logo} />}
       </div>
 
-      <div className="flex items-center pr-4">
-        <div className="flex gap-4 flex-wrap min-w-0 flex-1">
-          <Render config={navbarConfig} data={rightItems} />
-        </div>
-        {data.root.props?.enableSearch === "true" && (
-          <div className="flex-1 flex justify-center min-w-0">
-            <NavbarSearch />
-          </div>
-        )}
-        <div className="ml-4 flex-shrink-0">
-          <NavbarCartIcon />
-        </div>
+      <div className="flex justify-start gap-4 flex-wrap mb-1">
+        <Render config={navbarConfig} data={rightItems} />
       </div>
     </div>
   );

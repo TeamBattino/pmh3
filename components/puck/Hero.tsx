@@ -1,6 +1,6 @@
 import { PostHeroSvg } from "@components/graphics/PostHeroSvg";
-import { filePickerField } from "@components/puck-fields/file-picker";
-import { ComponentConfig } from "@puckeditor/core";
+import { uploadFileField } from "@components/puck-fields/upload-file";
+import { ComponentConfig } from "@measured/puck";
 import Image from "next/image";
 
 export type HeroProps = {
@@ -34,6 +34,6 @@ export const heroConfig: ComponentConfig<HeroProps> = {
       type: "text",
       label: "Title (Optional)",
     },
-    backgroundImage: filePickerField,
+    backgroundImage: uploadFileField,
   },
 };

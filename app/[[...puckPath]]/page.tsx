@@ -11,6 +11,8 @@
  */
 
 import PageRender from "@components/page/PageRender";
+import { footerConfig } from "@lib/config/footer.config";
+import { pageConfig } from "@lib/config/page.config";
 import { getFooter, getNavbar, getPage } from "@lib/db/db-actions";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -53,6 +55,8 @@ export default async function Page({ params }: { params: Params }) {
         navbarData,
         pageData,
         footerData,
+        pageConfig,
+        footerConfig,
       }}
     />
   );

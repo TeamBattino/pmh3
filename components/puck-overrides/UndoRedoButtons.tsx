@@ -1,6 +1,7 @@
+import BackSvg from "@components/graphics/BackSvg";
+import ForwardSvg from "@components/graphics/ForwardSvg";
 import cn from "@lib/cn";
-import { usePuck } from "@puckeditor/core";
-import { Undo2, Redo2 } from "lucide-react";
+import { usePuck } from "@measured/puck";
 
 function UndoRedoButtons() {
   const {
@@ -19,7 +20,7 @@ function UndoRedoButtons() {
         aria-label="Back"
         title="Back"
       >
-        <Undo2 size={21} />
+        <BackSvg />
       </button>
       <button
         className={cn(
@@ -31,7 +32,7 @@ function UndoRedoButtons() {
         aria-label="Forward"
         title="Forward"
       >
-        <Redo2 size={21} />
+        <ForwardSvg />
       </button>
     </div>
   );

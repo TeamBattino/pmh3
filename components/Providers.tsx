@@ -6,8 +6,6 @@ import { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { PropsWithChildren } from "react";
 import { ParallaxProvider } from "react-scroll-parallax";
-import { CartDrawer } from "./shop/CartDrawer";
-import { CartProvider } from "./shop/CartProvider";
 import Toaster from "./ui/Toast";
 
 export function Providers({
@@ -17,11 +15,8 @@ export function Providers({
   return (
     <SessionProvider basePath="/auth" session={session}>
       <QueryClientProvider client={queryClient}>
-        <CartProvider>
-          <ParallaxProvider>{children}</ParallaxProvider>
-          <CartDrawer />
-          <Toaster />
-        </CartProvider>
+        <ParallaxProvider>{children}</ParallaxProvider>
+        <Toaster />
       </QueryClientProvider>
     </SessionProvider>
   );

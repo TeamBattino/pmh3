@@ -7,26 +7,24 @@ import {
   NavbarData,
 } from "@lib/config/navbar.config";
 import { saveNavbar } from "@lib/db/db-actions";
-import { Puck } from "@puckeditor/core";
-import "@puckeditor/core/puck.css";
+import { Puck } from "@measured/puck";
+import "@measured/puck/puck.css";
 
 export function NavbarEditor({ data }: { data: NavbarData }) {
   return (
-    <div className="puck-editor-wrapper">
-      <Puck
-        config={navbarConfig}
-        data={data}
-        overrides={{
-          header: () => (
-            <PuckHeader
-              headerTitle="Editing Navbar"
-              headerActions={
-                <OtherHeaderActions<NavbarConfig> saveData={saveNavbar} />
-              }
-            />
-          ),
-        }}
-      />
-    </div>
+    <Puck
+      config={navbarConfig}
+      data={data}
+      overrides={{
+        header: () => (
+          <PuckHeader
+            headerTitle="Editing Navbar"
+            headerActions={
+              <OtherHeaderActions<NavbarConfig> saveData={saveNavbar} />
+            }
+          />
+        ),
+      }}
+    />
   );
 }

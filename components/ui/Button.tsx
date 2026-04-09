@@ -1,54 +1,45 @@
 import cn from "@lib/cn";
 import { ButtonHTMLAttributes, PropsWithChildren } from "react";
-import { Slot } from "radix-ui";
-import { cva, type VariantProps } from "class-variance-authority";
 import styles from "./Button.module.css";
 
-const buttonVariants = cva(
-  cn("cursor-pointer inline-flex items-center justify-center", styles.clip),
-  {
-    variants: {
-      size: {
-        small: "text-sm px-5 py-1 font-medium",
-        medium: "text-base px-5 py-2 font-semibold",
-        large: "text-lg px-7 py-3 font-bold",
-      },
-      color: {
-        primary:
-          "bg-primary text-contrast-primary hover:bg-primary/90 active:bg-primary/80 disabled:bg-primary/50",
-        secondary:
-          "bg-secondary text-contrast-secondary hover:bg-secondary/90 active:bg-secondary/80 disabled:bg-secondary/50",
-      },
-    },
-    defaultVariants: {
-      size: "medium",
-      color: "secondary",
-    },
-  }
-);
-
-type ButtonProps = VariantProps<typeof buttonVariants> & {
-  asChild?: boolean;
+type ButtonProps = {
+  size?: "small" | "medium" | "large";
+  color?: "primary" | "secondary";
 };
 
 function Button({
   children,
-  size,
-  color,
-  asChild = false,
-  className,
+  size = "medium",
+  color = "secondary",
   ...props
-}: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>> & ButtonProps) {
-  const Comp = asChild ? Slot.Root : "button";
+}: Omit<
+  PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>,
+  keyof ButtonProps
+> &
+  ButtonProps) {
   return (
-    <Comp
+    <button
       {...props}
-      className={cn(buttonVariants({ size, color }), className)}
+      className={cn(
+        "cursor-pointer",
+        {
+          "bg-primary text-contrast-primary hover:bg-primary/90 active:bg-primary/80 disabled:bg-primary/50":
+            color === "primary",
+          "bg-secondary text-contrast-secondary hover:bg-secondary/90 active:bg-secondary/80 disabled:bg-secondary/50":
+            color === "secondary",
+        },
+        {
+          "text-sm px-5 py-1 font-medium": size === "small",
+          "text-base px-5 py-2 font-semibold": size === "medium",
+          "text-lg px-7 py-3 font-bold": size === "large",
+        },
+        styles.clip,
+        props.className
+      )}
     >
       {children}
-    </Comp>
+    </button>
   );
 }
 
-export { buttonVariants };
 export default Button;

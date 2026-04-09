@@ -1,14 +1,13 @@
 "use client";
+import SpinnerSvg from "@components/graphics/SpinnerSvg";
 import Button from "@components/ui/Button";
 import { DialogRoot, DialogTrigger } from "@components/ui/Dialog";
 import { toast } from "@components/ui/Toast";
 import { PageConfig } from "@lib/config/page.config";
-import { useIsDirty, useMarkClean } from "@lib/contexts/dirty-state-context";
 import { deletePage, savePage } from "@lib/db/db-actions";
 import { queryClient } from "@lib/query-client";
-import { usePuck } from "@puckeditor/core";
+import { usePuck } from "@measured/puck";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ConfirmModal from "../page/admin/ConfirmModal";
 import UndoRedoButtons from "./UndoRedoButtons";
@@ -19,8 +18,6 @@ type PageHeaderActionsProps = {
 
 function PageHeaderActions({ path }: PageHeaderActionsProps) {
   const router = useRouter();
-  const isDirty = useIsDirty();
-  const markClean = useMarkClean();
   const {
     appState: { data },
   } = usePuck<PageConfig>();
@@ -30,41 +27,22 @@ function PageHeaderActions({ path }: PageHeaderActionsProps) {
     queryClient.invalidateQueries({ queryKey: ["pages"] });
   };
 
-  const confirmNavigation = (href: string) => {
-    if (
-      isDirty &&
-      !window.confirm(
-        "Ungespeicherte Änderungen gehen verloren. Trotzdem verlassen?",
-      )
-    ) {
-      return;
-    }
-    router.push(href);
-  };
-
   const { mutate: savePageMutation, isPending } = useMutation({
     mutationFn: async () => {
       await savePage(path, data);
       queryClient.invalidateQueries({ queryKey: ["pages"] });
     },
-    onSuccess: () => {
-      markClean();
-      toast("Page saved successfully");
-    },
+    onSuccess: () => toast("Page saved successfully"),
   });
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:items-center sm:justify-between">
-      {/* Undo/Redo - Hidden on mobile in collapsed menu, shown on desktop */}
-      <div className="hidden sm:block">
-        <UndoRedoButtons />
-      </div>
+    <div className="flex gap-4 items-center justify-between">
+      <UndoRedoButtons />
 
-      {/* Action buttons - Stack on mobile, row on desktop */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+      <div className="flex flex-wrap gap-2">
         <DialogRoot>
           <DialogTrigger>
-            <Button color="secondary" size="small" className="w-full sm:w-auto">
+            <Button color="secondary" size="small">
               Delete
             </Button>
           </DialogTrigger>
@@ -77,33 +55,29 @@ function PageHeaderActions({ path }: PageHeaderActionsProps) {
         </DialogRoot>
 
         <Button
-          onClick={() => confirmNavigation("/admin")}
+          onClick={() => router.push("/admin")}
           color="secondary"
           size="small"
-          className="w-full sm:w-auto"
         >
           To Admin
         </Button>
 
         <Button
-          onClick={() => confirmNavigation(path)}
+          onClick={() => router.push(path)}
           color="secondary"
           size="small"
-          className="w-full sm:w-auto"
         >
           View Page
         </Button>
       </div>
-
-      {/* Save button - Full width on mobile, auto on desktop */}
       <Button
         onClick={() => savePageMutation()}
         color="primary"
-        className="flex gap-2 items-center justify-center w-full sm:w-auto"
+        className="flex gap-2 items-center"
         disabled={isPending}
       >
         Save Changes
-        {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+        {isPending && <SpinnerSvg className="w-4 h-4" />}
       </Button>
     </div>
   );

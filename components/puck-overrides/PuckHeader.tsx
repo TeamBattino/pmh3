@@ -1,11 +1,11 @@
 "use client";
-
+import { CollapseSvg } from "@components/graphics/CollapseSvg";
+import LeftSideBarSvg from "@components/graphics/LeftSideBarSvg";
+import RightSideBarSvg from "@components/graphics/RightSideBarSvg";
 import cn from "@lib/cn";
 import { PageConfig } from "@lib/config/page.config";
-import { usePuck } from "@puckeditor/core";
-import { PanelLeft, PanelRight } from "lucide-react";
-import { ReactNode } from "react";
-import { CollapsibleMenu } from "./CollapsibleMenu";
+import { usePuck } from "@measured/puck";
+import { ReactNode, useState } from "react";
 import styles from "./PuckHeader.module.css";
 
 type PuckHeaderProps = {
@@ -14,6 +14,8 @@ type PuckHeaderProps = {
 };
 
 function PuckHeader({ headerTitle, headerActions }: PuckHeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const { dispatch } = usePuck<PageConfig>();
 
   const toggleLeftSideBar = () => {
@@ -38,18 +40,17 @@ function PuckHeader({ headerTitle, headerActions }: PuckHeaderProps) {
     <header
       className={cn(
         styles.header,
-        "relative flex justify-between items-center px-2 sm:px-4 py-2 gap-2 sm:gap-4 border-b-2 border-primary"
+        "relative flex justify-between items-center px-4 py-2 gap-4 border-b-2 border-primary"
       )}
     >
-      {/* Sidebar toggles */}
-      <div className="flex gap-1 sm:gap-2 shrink-0">
+      <div className="flex gap-2">
         <button
           className="w-6 h-6 cursor-pointer"
           onClick={toggleLeftSideBar}
           aria-label="Toggle Left Sidebar"
           title="Toggle Left Sidebar"
         >
-          <PanelLeft size={24} />
+          <LeftSideBarSvg />
         </button>
         <button
           className="w-6 h-6 cursor-pointer"
@@ -57,19 +58,33 @@ function PuckHeader({ headerTitle, headerActions }: PuckHeaderProps) {
           aria-label="Toggle Right Sidebar"
           title="Toggle Right Sidebar"
         >
-          <PanelRight size={24} />
+          <RightSideBarSvg />
         </button>
       </div>
 
-      {/* Title - Truncate on small screens */}
-      <div className="min-w-0 flex-1 sm:flex-none text-center sm:text-left">
-        <h1 className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-none">
-          {headerTitle}
-        </h1>
+      <div>
+        <h1 className="text-lg font-bold">{headerTitle}</h1>
       </div>
 
-{/* Collapsible menu for actions */}
-      <CollapsibleMenu>{headerActions}</CollapsibleMenu>
+      <div className="sm:hidden">
+        <button
+          className="w-6 h-6 cursor-pointer"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          aria-label="Toggle Menu"
+          title="Toggle Menu"
+        >
+          <CollapseSvg open={menuOpen} />
+        </button>
+      </div>
+      <div
+        className={cn(
+          "hidden absolute top-full left-0 right-0 bg-ground z-10 p-4 mt-[2px] border-b-2 border-primary",
+          menuOpen ? "block" : "sm:block",
+          "sm:static sm:border-0 sm:mt-0 sm:p-0 sm:bg-transparent"
+        )}
+      >
+        {headerActions}
+      </div>
     </header>
   );
 }
