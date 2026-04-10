@@ -5,7 +5,7 @@ import { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import { PageData } from "@pfadipuck/puck-web/config/page.config";
 import { SecurityConfig } from "@/lib/security/security-config";
 import { requireServerPermission } from "@/lib/security/server-guard";
-import { dbService } from "./db";
+import { getDbService } from "./db";
 
 /**
  * Public Database Actions.
@@ -15,46 +15,46 @@ import { dbService } from "./db";
 
 export async function savePage(path: string, data: PageData) {
   await requireServerPermission({ any: ["page:create", "page:update"] });
-  return dbService.savePage(path, data);
+  return getDbService().savePage(path, data);
 }
 
 export async function deletePage(path: string) {
   await requireServerPermission({ all: ["page:delete"] });
-  return dbService.deletePage(path);
+  return getDbService().deletePage(path);
 }
 
 export async function getPage(path: string): Promise<PageData | undefined> {
-  return dbService.getPage(path);
+  return getDbService().getPage(path);
 }
 
 export async function saveNavbar(data: NavbarData) {
   await requireServerPermission({ all: ["navbar:update"] });
-  return dbService.saveNavbar(data);
+  return getDbService().saveNavbar(data);
 }
 
 export async function getNavbar(): Promise<NavbarData> {
-  return dbService.getNavbar();
+  return getDbService().getNavbar();
 }
 
 export async function saveFooter(data: FooterData) {
   await requireServerPermission({ all: ["footer:update"] });
-  return dbService.saveFooter(data);
+  return getDbService().saveFooter(data);
 }
 
 export async function getFooter(): Promise<FooterData> {
-  return dbService.getFooter();
+  return getDbService().getFooter();
 }
 
 export async function getAllPaths() {
-  return dbService.getAllPaths();
+  return getDbService().getAllPaths();
 }
 
 export async function getSecurityConfig() {
   await requireServerPermission({ all: ["role-permissions:read"] });
-  return dbService.getSecurityConfig();
+  return getDbService().getSecurityConfig();
 }
 
 export async function saveSecurityConfig(permissions: SecurityConfig) {
   await requireServerPermission({ all: ["role-permissions:update"] });
-  return dbService.saveSecurityConfig(permissions);
+  return getDbService().saveSecurityConfig(permissions);
 }

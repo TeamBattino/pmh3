@@ -17,6 +17,13 @@ import { getFooter, getNavbar, getPage } from "@/lib/db";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+/**
+ * ISR: render on-demand on first request, cache, revalidate periodically.
+ * This means `next build` does not need to access MongoDB. The cache is
+ * invalidated on publish by /api/puck/route.ts.
+ */
+export const revalidate = 60;
+
 type Params = Promise<{ puckPath: string[] }>;
 
 export async function generateMetadata({

@@ -4,7 +4,6 @@ import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import { env } from "@/lib/env";
 import type { SecurityConfig } from "@/lib/security/security-config";
 import type { Data } from "@measured/puck";
-import { MockDatabaseService } from "./db-mock-impl";
 import { MongoService } from "./db-mongo-impl";
 
 export interface DatabaseService {
@@ -20,32 +19,24 @@ export interface DatabaseService {
   saveSecurityConfig(RoleConfig: SecurityConfig): Promise<void>;
 }
 
-function getDatabaseService(): DatabaseService {
-  const connectionString = env.MONGODB_CONNECTION_STRING;
-  const dbName = env.MONGODB_DB_NAME;
-
-  if (!connectionString) {
-    if (process.env.SKIP_ENV_VALIDATION) {
-      console.warn(
-        "Missing MONGODB_CONNECTION_STRING, using MockDatabaseService (SKIP_ENV_VALIDATION is true)"
-      );
-      return new MockDatabaseService();
-    }
-  }
-
-  if (!connectionString || !dbName) {
-    console.warn("Missing MongoDB credentials, using MockDatabaseService");
-    return new MockDatabaseService();
-  }
-
-  console.log("Using MongoDB storage");
-  return new MongoService(connectionString, dbName);
-}
+let _dbService: DatabaseService | undefined;
 
 /**
- * Internal Database Service.
+ * Internal Database Service (lazy singleton).
  * DIRECT ACCESS - BYPASSES PERMISSION CHECKS.
  * Use only in trusted server contexts (e.g. API routes with their own auth).
  * For UI/Client access, use @lib/db/db-actions.ts instead.
+ *
+ * Lazy construction is important: this function must not run at module load
+ * time, otherwise `next build` would try to connect to MongoDB during static
+ * analysis of server modules. Callers should invoke it per-request.
  */
-export const dbService = getDatabaseService();
+export function getDbService(): DatabaseService {
+  if (!_dbService) {
+    _dbService = new MongoService(
+      env.MONGODB_CONNECTION_STRING,
+      env.MONGODB_DB_NAME
+    );
+  }
+  return _dbService;
+}

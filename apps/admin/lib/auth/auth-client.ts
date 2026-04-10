@@ -1,23 +1,29 @@
-import { dbService } from "@/lib/db/db";
+import { getDbService } from "@/lib/db/db";
 import { env } from "@/lib/env";
 import type { Permission } from "@/lib/security/security-config";
 import NextAuth from "next-auth";
-import Keycloak from "next-auth/providers/keycloak";
-import { getMockAuthProvider } from "./mock-auth-config";
-
-const USE_MOCK_AUTH = env.MOCK_AUTH === "true" && env.NODE_ENV !== "production";
 
 const { handlers, signIn, signOut, auth } = NextAuth({
   basePath: "/auth",
   providers: [
-    ...(USE_MOCK_AUTH ? [getMockAuthProvider()] : []),
-    Keycloak({
-      authorization: {
-        params: {
-          scope: "openid profile email with_roles",
-        },
+    {
+      id: "oidc",
+      name: "OIDC",
+      type: "oidc",
+      issuer: env.AUTH_OIDC_ISSUER,
+      clientId: env.AUTH_OIDC_CLIENT_ID,
+      clientSecret: env.AUTH_OIDC_CLIENT_SECRET,
+      // Preserve the `roles` claim from the id_token onto the NextAuth user
+      // object, so the `jwt` callback below can pick it up.
+      profile(profile) {
+        return {
+          id: profile.sub as string,
+          name: (profile.name as string) ?? null,
+          email: (profile.email as string) ?? null,
+          roles: (profile.roles as string[]) ?? [],
+        };
       },
-    }),
+    },
   ],
   callbacks: {
     async jwt({ token, profile, user, trigger, session }) {
@@ -26,7 +32,7 @@ const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       if (user) {
-        token.roles = (user as any).roles || profile?.roles;
+        token.roles = (user as any).roles || (profile as any)?.roles;
       }
 
       if (token.roles && !token.permissions) {
@@ -46,7 +52,7 @@ const { handlers, signIn, signOut, auth } = NextAuth({
 });
 
 async function fetchPermissions(roles: string[]): Promise<Permission[]> {
-  const config = await dbService.getSecurityConfig();
+  const config = await getDbService().getSecurityConfig();
 
   const permissionSet = new Set<string>(
     config?.roles

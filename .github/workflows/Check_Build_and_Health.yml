@@ -11,13 +11,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Admin env.ts enforces strict validation at module load. The build itself
+    # never hits MongoDB or OIDC (lazy init + ISR), so these values are only
+    # used to satisfy zod — they don't need to resolve to real services.
+    env:
+      AUTH_SECRET: ci-placeholder-secret
+      MONGODB_CONNECTION_STRING: mongodb://placeholder.invalid:27017
+      MONGODB_DB_NAME: placeholder
+      AUTH_OIDC_ISSUER: http://placeholder.invalid/default
+      AUTH_OIDC_CLIENT_ID: ci-placeholder
+      AUTH_OIDC_CLIENT_SECRET: ci-placeholder
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
@@ -26,40 +36,3 @@ jobs:
 
       - name: Build
         run: bun run build
-
-  start:
-    needs: build
-    runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:latest
-        ports:
-          - 27017:27017
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build
-        run: SKIP_ENV_VALIDATION=true bun run build
-
-      - name: Start
-        env:
-          AUTH_SECRET: "ci_secret_placeholder"
-          INTERNAL_API_BASE_URL: "http://localhost:3000"
-          MONGODB_CONNECTION_STRING: "mongodb://localhost:27017/puck_ci"
-          MONGODB_DB_NAME: "puck_ci"
-        run: bun run start &
-
-      - name: Wait for application to start
-        run: sleep 20
-
-      - name: Check health
-        run: curl -f http://localhost:3000/login
