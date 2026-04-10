@@ -1,0 +1,34 @@
+{
+  "name": "@pfadipuck/site",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@measured/puck": "^0.18.3",
+    "@pfadipuck/graphics": "workspace:*",
+    "@pfadipuck/puck-web": "workspace:*",
+    "@tanstack/react-query": "^5.74.4",
+    "mongodb": "^6.15.0",
+    "next": "^16.2.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-scroll-parallax": "^3.4.5"
+  },
+  "devDependencies": {
+    "@pfadipuck/eslint-config": "workspace:*",
+    "@pfadipuck/typescript-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.1.4",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "eslint": "^9.24.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3"
+  }
+}

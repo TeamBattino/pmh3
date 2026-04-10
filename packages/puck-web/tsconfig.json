@@ -1,0 +1,10 @@
+{
+  "extends": "@pfadipuck/typescript-config/base.json",
+  "compilerOptions": {
+    "paths": {
+      "@pfadipuck/graphics/*": ["../graphics/src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

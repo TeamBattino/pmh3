@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@source "../../../packages/puck-web";
+@source "../../../packages/graphics/src";
+@import "@pfadipuck/puck-web/styles/theme.css";

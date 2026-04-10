@@ -1,6 +1,6 @@
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Decorator, Preview } from "@storybook/react";
-import "../app/globals.css";
+import "../packages/puck-web/styles/theme.css";
 import "./fonts.css";
 
 const preview: Preview = {
