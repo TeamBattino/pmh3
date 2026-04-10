@@ -73,26 +73,35 @@
     --font-poppins: var(--poppins);
   }
 
-  h1,
-  h2,
-  h3,
-  h4 {
+  /*
+    Typography rules are scoped to :is(.mud-theme, .sun-theme) so they
+    only apply inside puck-web-themed content. This keeps the rules
+    scoped to their natural owner (the themed puck-web content) and
+    prevents them from leaking into consumers that import this stylesheet
+    for its color tokens / @theme block but render their own chrome
+    outside a themed wrapper (e.g. the admin app).
+
+    Both the site body and every rendered Puck section/preview wrapper
+    have one of these theme classes, so existing behavior is preserved.
+  */
+  :is(.mud-theme, .sun-theme) :is(h1, h2, h3, h4) {
     font-family: var(--rockingsoda);
+    letter-spacing: 0.025em;
   }
 
-  h1 {
+  :is(.mud-theme, .sun-theme) h1 {
     @apply text-5xl;
   }
 
-  h2 {
+  :is(.mud-theme, .sun-theme) h2 {
     @apply text-4xl;
   }
 
-  h3 {
+  :is(.mud-theme, .sun-theme) h3 {
     @apply text-3xl;
   }
 
-  h4 {
+  :is(.mud-theme, .sun-theme) h4 {
     @apply text-2xl;
   }
 }

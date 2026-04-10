@@ -55,7 +55,7 @@ function PageHeaderActions({ path }: PageHeaderActionsProps) {
         </Dialog>
 
         <Button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/web")}
           variant="outline"
           size="sm"
         >

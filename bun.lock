@@ -37,6 +37,7 @@
         "mongodb": "^6.15.0",
         "next": "^16.2.3",
         "next-auth": "^5.0.0-beta.30",
+        "radix-ui": "^1.4.3",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "sonner": "^2.0.3",

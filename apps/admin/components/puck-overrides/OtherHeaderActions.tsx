@@ -30,7 +30,7 @@ function OtherHeaderActions<UserConfig extends Config>({
 
       <div className="flex flex-wrap gap-2">
         <Button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/web")}
           variant="outline"
           size="sm"
         >

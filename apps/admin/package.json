@@ -13,6 +13,7 @@
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@measured/puck": "^0.18.3",
+    "radix-ui": "^1.4.3",
     "@pfadipuck/graphics": "workspace:*",
     "@pfadipuck/puck-web": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.10",

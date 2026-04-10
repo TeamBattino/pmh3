@@ -19,7 +19,7 @@ function AddPageModal() {
   const handleCreate = async (path: string) => {
     if (path.trim() === "") throw new Error("Page path cannot be empty");
 
-    router.push(`/editor/${path.trim()}`);
+    router.push(`/web/editor/${path.trim()}`);
   };
 
   const { mutate: createPage, error } = useMutation({

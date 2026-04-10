@@ -20,7 +20,7 @@ function AdminPage() {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="max-w-7xl mx-auto flex flex-col gap-6">
       <Header />
 
       <Card>

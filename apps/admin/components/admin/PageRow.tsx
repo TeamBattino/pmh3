@@ -15,7 +15,7 @@ function PageRow({ page }: PageRowProps) {
   const router = useRouter();
 
   const handleEdit = () => {
-    router.push(`/editor${page}`);
+    router.push(`/web/editor${page}`);
   };
 
   const handleView = () => {
