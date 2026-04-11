@@ -43,6 +43,7 @@ export const fileSystemKeys = {
   file: (fileId: string) => ["fs", "file", fileId] as const,
   fileReferences: (fileId: string) => ["fs", "fileReferences", fileId] as const,
   fileSearch: (query: SearchQuery) => ["fs", "fileSearch", query] as const,
+  albumFileCounts: () => ["fs", "albumFileCounts"] as const,
 };
 
 // ── Reads ──────────────────────────────────────────────────────────────
@@ -71,6 +72,13 @@ export function useCollectionTree() {
   return useQuery({
     queryKey: fileSystemKeys.collectionTree(),
     queryFn: () => actions.getCollectionTree(),
+  });
+}
+
+export function useAlbumFileCounts() {
+  return useQuery({
+    queryKey: fileSystemKeys.albumFileCounts(),
+    queryFn: () => actions.getAlbumFileCounts(),
   });
 }
 
@@ -150,7 +158,13 @@ export function useUpdateFile() {
   return useInvalidating(
     (args: { fileId: string; patch: UpdateFilePatch }) =>
       actions.updateFile(args.fileId, args.patch),
-    (args) => [fileSystemKeys.file(args.fileId)]
+    (args) => [
+      fileSystemKeys.file(args.fileId),
+      // Parent lists render the filename too, so they must refetch or the
+      // user has to navigate away and back to see the new name.
+      ["fs", "folderFiles"],
+      ["fs", "collectionFiles"],
+    ]
   );
 }
 
@@ -162,6 +176,7 @@ export function useDeleteFile() {
       fileSystemKeys.tree(),
       fileSystemKeys.folderTree(),
       fileSystemKeys.collectionTree(),
+      fileSystemKeys.albumFileCounts(),
       ["fs", "folderFiles"],
       ["fs", "collectionFiles"],
     ]
@@ -173,6 +188,7 @@ export function useBulkDeleteFiles() {
     (args: { fileIds: string[] }) => actions.bulkDeleteFiles(args.fileIds),
     () => [
       fileSystemKeys.tree(),
+      fileSystemKeys.albumFileCounts(),
       ["fs", "folderFiles"],
       ["fs", "collectionFiles"],
     ]
@@ -243,6 +259,7 @@ export function useAddFilesToAlbum() {
       }),
       ["fs", "collectionFiles"],
       fileSystemKeys.tree(),
+      fileSystemKeys.albumFileCounts(),
     ]
   );
 }
@@ -258,6 +275,7 @@ export function useRemoveFilesFromAlbum() {
       }),
       ["fs", "collectionFiles"],
       fileSystemKeys.tree(),
+      fileSystemKeys.albumFileCounts(),
     ]
   );
 }

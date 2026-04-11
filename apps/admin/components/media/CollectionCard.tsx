@@ -4,10 +4,12 @@ import { FolderHeart } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import type { CollectionRecord } from "@/lib/db/file-system-types";
+import { useFile } from "@/lib/files/file-system-hooks";
+import { bestThumbnailKey, publicUrlFor } from "@/components/file-system/thumb-url";
 
 /**
- * Landing tile for an album collection. Cover is a placeholder for v1 — the
- * plan keeps the `coverFileId` field but defers the UI for setting it.
+ * Landing tile for an album collection. Renders the collection's cover
+ * image if one is set; otherwise shows a placeholder icon.
  */
 export function CollectionCard({
   collection,
@@ -28,9 +30,7 @@ export function CollectionCard({
         className
       )}
     >
-      <div className="flex aspect-[4/3] items-center justify-center bg-muted text-muted-foreground">
-        <FolderHeart className="size-12" aria-hidden />
-      </div>
+      <CollectionCover coverFileId={collection.coverFileId} />
       <div className="flex flex-col gap-0.5 border-t border-border px-3 py-2">
         <div className="truncate font-medium">{collection.title}</div>
         <div className="text-xs text-muted-foreground">
@@ -38,5 +38,27 @@ export function CollectionCard({
         </div>
       </div>
     </Link>
+  );
+}
+
+function CollectionCover({ coverFileId }: { coverFileId: string | null }) {
+  const { data: file } = useFile(coverFileId);
+  if (file && file.kind === "image") {
+    return (
+      <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={publicUrlFor(bestThumbnailKey(file))}
+          alt={file.altText ?? file.originalFilename}
+          className="size-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="flex aspect-[4/3] items-center justify-center bg-muted text-muted-foreground">
+      <FolderHeart className="size-12" aria-hidden />
+    </div>
   );
 }

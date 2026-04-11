@@ -2,16 +2,23 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useCollectionTree } from "@/lib/files/file-system-hooks";
+import {
+  useAlbumFileCounts,
+  useCollectionTree,
+} from "@/lib/files/file-system-hooks";
 import { AlbumCard } from "./AlbumCard";
+import { CollectionManageMenu } from "./CollectionManageMenu";
 import { NewCollectionButton } from "./NewCollectionButton";
 
 /**
  * `/media/[collectionId]` — list albums inside a single album collection.
  */
 export function CollectionView({ collectionId }: { collectionId: string }) {
+  const router = useRouter();
   const { data: collections = [], isLoading } = useCollectionTree();
+  const { data: fileCounts = {} } = useAlbumFileCounts();
   const collection = collections.find((c) => c.id === collectionId);
   const albums = collections.filter(
     (c) => c.type === "album" && c.parentId === collectionId
@@ -39,18 +46,24 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
         <span className="font-medium">{collection.title}</span>
       </nav>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-semibold">{collection.title}</h1>
           <div className="text-xs text-muted-foreground">
             {albums.length} album{albums.length === 1 ? "" : "s"}
           </div>
         </div>
-        <NewCollectionButton
-          type="album"
-          parentId={collectionId}
-          label="New album"
-        />
+        <div className="flex items-center gap-2">
+          <NewCollectionButton
+            type="album"
+            parentId={collectionId}
+            label="New album"
+          />
+          <CollectionManageMenu
+            collection={collection}
+            onDeleted={() => router.replace("/media")}
+          />
+        </div>
       </div>
 
       {albums.length === 0 ? (
@@ -63,7 +76,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
             <AlbumCard
               key={album.id}
               album={album}
-              fileCount={0}
+              fileCount={fileCounts[album.id] ?? 0}
               href={`/media/${collectionId}/${album.id}`}
             />
           ))}

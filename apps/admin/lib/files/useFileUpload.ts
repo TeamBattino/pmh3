@@ -2,11 +2,13 @@
 
 import { useCallback } from "react";
 import { useQueryClient, type QueryKey } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   processFileForUpload,
   uploadProcessedFile,
   type UploadPool,
 } from "./client-upload";
+import { isMediaAllowed } from "./classify";
 import { useBackgroundOps } from "@/components/file-system/BackgroundOpsProvider";
 import { fileSystemKeys } from "./file-system-hooks";
 import type { FileRecord } from "@/lib/db/file-system-types";
@@ -22,6 +24,25 @@ export function useFileUpload() {
 
   const uploadFiles = useCallback(
     async (files: File[], pool: UploadPool): Promise<FileRecord[]> => {
+      // Media pool only accepts formats the browser can render natively.
+      // Documents pool is permissive — PDFs, zips, office files all go in.
+      if (pool.kind === "media") {
+        const rejected = files.filter((f) => !isMediaAllowed(f.type));
+        if (rejected.length > 0) {
+          const names = rejected
+            .slice(0, 3)
+            .map((f) => f.name)
+            .join(", ");
+          const more =
+            rejected.length > 3 ? ` and ${rejected.length - 3} more` : "";
+          toast.error(
+            `Only images and videos can be uploaded to Media. Skipped ${names}${more}.`
+          );
+          files = files.filter((f) => isMediaAllowed(f.type));
+        }
+        if (files.length === 0) return [];
+      }
+
       const results: FileRecord[] = [];
       for (const file of files) {
         const subtitle =
@@ -64,10 +85,12 @@ export function useFileUpload() {
         qc.invalidateQueries({
           queryKey: ["fs", "folderFiles", pool.folderId],
         });
-      else
+      else {
         qc.invalidateQueries({
           queryKey: ["fs", "collectionFiles", pool.albumId],
         });
+        qc.invalidateQueries({ queryKey: fileSystemKeys.albumFileCounts() });
+      }
       return results;
     },
     [ops, qc]

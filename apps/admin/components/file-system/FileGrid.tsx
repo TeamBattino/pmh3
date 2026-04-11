@@ -16,15 +16,24 @@ export type FileGridProps = {
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
   onOpen?: (file: FileRecord) => void;
+  /**
+   * When true, clicking the tile body toggles selection instead of opening
+   * the detail sheet. Parents usually pass `selection.size > 0` here.
+   */
+  selectionMode?: boolean;
   /** Approximate tile size in px for height calculations. */
   tileSize?: number;
 };
+
+const ROW_GAP = 16;
+const CONTAINER_PADDING = 16;
 
 export function FileGrid({
   files,
   selectedIds,
   onToggleSelect,
   onOpen,
+  selectionMode,
   tileSize = 180,
 }: FileGridProps) {
   const parentRef = useRef<HTMLDivElement | null>(null);
@@ -44,14 +53,16 @@ export function FileGrid({
   const rowVirtualizer = useVirtualizer({
     count: rows,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => tileSize + 8,
+    estimateSize: () => tileSize + ROW_GAP,
     overscan: 3,
   });
 
   return (
     <div ref={parentRef} className="h-full w-full overflow-auto">
       <div
-        style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+        style={{
+          height: `${rowVirtualizer.getTotalSize() + CONTAINER_PADDING * 2}px`,
+        }}
         className="relative w-full"
       >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -61,9 +72,11 @@ export function FileGrid({
           return (
             <div
               key={virtualRow.key}
-              className="absolute left-0 top-0 grid w-full gap-2 px-2"
+              className="absolute left-0 top-0 grid w-full gap-4 px-4"
               style={{
-                transform: `translateY(${virtualRow.start}px)`,
+                transform: `translateY(${
+                  virtualRow.start + CONTAINER_PADDING
+                }px)`,
                 gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
                 height: `${tileSize}px`,
               }}
@@ -74,6 +87,7 @@ export function FileGrid({
                   file={file}
                   selected={selectedIds?.has(file.id)}
                   anySelected={anySelected}
+                  selectionMode={selectionMode}
                   onSelectChange={
                     onToggleSelect
                       ? () => onToggleSelect(file.id)

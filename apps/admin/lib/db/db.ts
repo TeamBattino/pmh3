@@ -70,6 +70,13 @@ export interface DatabaseService {
     sourceAlbumId: string
   ): Promise<RemoveFromAlbumResult>;
 
+  /**
+   * Returns the number of files in each album, keyed by album id. Albums
+   * with zero files are omitted. Cheap single aggregation — scales with the
+   * number of memberships, not the number of albums.
+   */
+  getAlbumFileCounts(): Promise<Record<string, number>>;
+
   /** Returns the ordered list of file ids that currently belong to an album. */
   resolveCollectionRef(collectionId: string): Promise<string[]>;
 

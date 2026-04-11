@@ -711,6 +711,18 @@ export class MongoService implements DatabaseService {
     return { removed, blocked };
   }
 
+  async getAlbumFileCounts(): Promise<Record<string, number>> {
+    const rows = await this.db
+      .collection<CollectionFileDoc>(this.collectionFilesCollectionName)
+      .aggregate<{ _id: ObjectId; count: number }>([
+        { $group: { _id: "$collectionId", count: { $sum: 1 } } },
+      ])
+      .toArray();
+    const out: Record<string, number> = {};
+    for (const r of rows) out[r._id.toString()] = r.count;
+    return out;
+  }
+
   async findOrphanFiles(): Promise<FileRecord[]> {
     const files = await this.db
       .collection<FileDoc>(this.filesCollectionName)

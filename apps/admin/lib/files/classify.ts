@@ -104,3 +104,28 @@ export function filenameExtension(filename: string): string | null {
   if (ix < 0 || ix === filename.length - 1) return null;
   return filename.slice(ix + 1).toLowerCase();
 }
+
+/**
+ * Whitelist of MIME types accepted by the Media pool. Restricted to formats
+ * every modern browser can decode/play natively, so there are no "broken
+ * preview" surprises in the gallery or on the public site. Documents pool
+ * is deliberately unrestricted and uses none of this.
+ */
+const MEDIA_ALLOWED_MIME_TYPES = new Set<string>([
+  // Raster + vector images
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+  "image/svg+xml",
+  // Video — formats with broad native browser support
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+]);
+
+export function isMediaAllowed(mimeType: string | undefined | null): boolean {
+  if (!mimeType) return false;
+  return MEDIA_ALLOWED_MIME_TYPES.has(mimeType.toLowerCase());
+}

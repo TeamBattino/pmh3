@@ -8,6 +8,7 @@ import {
   presignPut,
   publicUrl,
 } from "@/lib/storage/s3";
+import { isMediaAllowed } from "@/lib/files/classify";
 import { getDbService } from "./db";
 import type {
   BulkDeleteResult,
@@ -103,6 +104,15 @@ export async function confirmUpload(
   input: ConfirmUploadInput
 ): Promise<FileRecord> {
   await requireServerPermission({ all: ["asset:create"] });
+
+  // Defense in depth: the Media pool only accepts renderable images/videos.
+  // The browser uploader enforces the same rule but a handcrafted client
+  // must not be able to sneak a PDF into an album.
+  if (input.pool.kind === "media" && !isMediaAllowed(input.mimeType)) {
+    throw new Error(
+      `Media pool does not accept mime type "${input.mimeType}". Only images and videos are allowed.`
+    );
+  }
 
   // Verify the client actually PUT every declared variant — otherwise a
   // malicious client could fabricate DB records pointing at nothing.
@@ -383,6 +393,12 @@ export async function removeFilesFromAlbum(
   await requireServerPermission({ all: ["asset:update"] });
   const db = await getDbService();
   return db.removeFilesFromAlbum(fileIds, sourceAlbumId);
+}
+
+export async function getAlbumFileCounts(): Promise<Record<string, number>> {
+  await requireServerPermission({ all: ["asset:read"] });
+  const db = await getDbService();
+  return db.getAlbumFileCounts();
 }
 
 // ── Combined tree ──────────────────────────────────────────────────────

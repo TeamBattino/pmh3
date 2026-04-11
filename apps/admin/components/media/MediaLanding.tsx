@@ -3,17 +3,19 @@
 import { Inbox } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useCollectionTree } from "@/lib/files/file-system-hooks";
+import {
+  useAlbumFileCounts,
+  useCollectionTree,
+} from "@/lib/files/file-system-hooks";
 import { CollectionCard } from "./CollectionCard";
 import { NewCollectionButton } from "./NewCollectionButton";
-import { OrphanGcCard } from "./OrphanGcCard";
-import { PermissionGuard } from "@/components/security/PermissionGuard";
 
 /**
  * `/media` landing. CMS Uploads pinned at top, album collections below.
  */
 export function MediaLanding() {
   const { data: collections = [], isLoading } = useCollectionTree();
+  const { data: fileCounts = {} } = useAlbumFileCounts();
   const systemAlbum = collections.find((c) => c.isSystemAlbum) ?? null;
   const albumCollections = collections.filter(
     (c) => c.type === "album_collection"
@@ -49,7 +51,8 @@ export function MediaLanding() {
               <div>
                 <div className="font-medium">CMS Uploads</div>
                 <div className="text-xs text-muted-foreground">
-                  Quick uploads land here.
+                  Quick uploads land here ({fileCounts[systemAlbum.id] ?? 0}{" "}
+                  files).
                 </div>
               </div>
             </Link>
@@ -77,9 +80,6 @@ export function MediaLanding() {
             )}
           </section>
 
-          <PermissionGuard policy={{ all: ["asset:delete"] }}>
-            <OrphanGcCard />
-          </PermissionGuard>
         </>
       )}
     </div>

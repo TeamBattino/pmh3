@@ -22,6 +22,12 @@ export type FileCardProps = {
   className?: string;
   /** True when any tile in the parent view is selected — forces checkbox visible. */
   anySelected?: boolean;
+  /**
+   * When true, a plain tile click toggles selection instead of opening the
+   * detail sheet. Parents set this once the user has entered selection
+   * mode (usually `selection.size > 0`).
+   */
+  selectionMode?: boolean;
 };
 
 export function FileCard({
@@ -30,22 +36,32 @@ export function FileCard({
   onSelectChange,
   onOpen,
   anySelected,
+  selectionMode,
   className,
 }: FileCardProps) {
   const showCheckbox = anySelected || !!selected;
   const isImage = file.kind === "image";
   const thumbUrl = isImage ? publicUrlFor(bestThumbnailKey(file)) : "";
 
+  const handleActivate = () => {
+    if (selectionMode && onSelectChange) {
+      onSelectChange(!selected);
+      return;
+    }
+    onOpen?.(file);
+  };
+
   return (
     <div
       role="button"
       tabIndex={0}
       aria-label={file.originalFilename}
-      onClick={() => onOpen?.(file)}
+      aria-pressed={selectionMode ? !!selected : undefined}
+      onClick={handleActivate}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onOpen?.(file);
+          handleActivate();
         }
       }}
       className={cn(
