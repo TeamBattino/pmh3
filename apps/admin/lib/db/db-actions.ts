@@ -15,46 +15,56 @@ import { getDbService } from "./db";
 
 export async function savePage(path: string, data: PageData) {
   await requireServerPermission({ any: ["page:create", "page:update"] });
-  return getDbService().savePage(path, data);
+  const db = await getDbService();
+  return db.savePage(path, data);
 }
 
 export async function deletePage(path: string) {
   await requireServerPermission({ all: ["page:delete"] });
-  return getDbService().deletePage(path);
+  const db = await getDbService();
+  return db.deletePage(path);
 }
 
 export async function getPage(path: string): Promise<PageData | undefined> {
-  return getDbService().getPage(path);
+  const db = await getDbService();
+  return db.getPage(path);
 }
 
 export async function saveNavbar(data: NavbarData) {
   await requireServerPermission({ all: ["navbar:update"] });
-  return getDbService().saveNavbar(data);
+  const db = await getDbService();
+  return db.saveNavbar(data);
 }
 
 export async function getNavbar(): Promise<NavbarData> {
-  return getDbService().getNavbar();
+  const db = await getDbService();
+  return db.getNavbar();
 }
 
 export async function saveFooter(data: FooterData) {
   await requireServerPermission({ all: ["footer:update"] });
-  return getDbService().saveFooter(data);
+  const db = await getDbService();
+  return db.saveFooter(data);
 }
 
 export async function getFooter(): Promise<FooterData> {
-  return getDbService().getFooter();
+  const db = await getDbService();
+  return db.getFooter();
 }
 
 export async function getAllPaths() {
-  return getDbService().getAllPaths();
+  const db = await getDbService();
+  return db.getAllPaths();
 }
 
 export async function getSecurityConfig() {
   await requireServerPermission({ all: ["role-permissions:read"] });
-  return getDbService().getSecurityConfig();
+  const db = await getDbService();
+  return db.getSecurityConfig();
 }
 
 export async function saveSecurityConfig(permissions: SecurityConfig) {
   await requireServerPermission({ all: ["role-permissions:update"] });
-  return getDbService().saveSecurityConfig(permissions);
+  const db = await getDbService();
+  return db.saveSecurityConfig(permissions);
 }

@@ -52,7 +52,8 @@ const { handlers, signIn, signOut, auth } = NextAuth({
 });
 
 async function fetchPermissions(roles: string[]): Promise<Permission[]> {
-  const config = await getDbService().getSecurityConfig();
+  const db = await getDbService();
+  const config = await db.getSecurityConfig();
 
   const permissionSet = new Set<string>(
     config?.roles
