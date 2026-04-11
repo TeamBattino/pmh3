@@ -1,6 +1,14 @@
 .git
 .github
 .vscode
-node_modules
+**/node_modules
 *Dockerfile*
 .env
+# Mongo's on-disk state from docker-compose.yml — owned by root inside
+# the mongo container and unreadable by the build-context sender.
+data
+# Playwright's output from prior e2e runs.
+test-results
+# Turbo + Next.js build artifacts.
+**/.turbo
+**/.next

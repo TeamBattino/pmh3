@@ -3,14 +3,34 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "passThroughEnv": [
+        "AUTH_SECRET",
+        "MONGODB_CONNECTION_STRING",
+        "MONGODB_DB_NAME",
+        "AUTH_OIDC_ISSUER",
+        "AUTH_OIDC_CLIENT_ID",
+        "AUTH_OIDC_CLIENT_SECRET"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "lint": {},
-    "test": {},
+    "test:unit": {
+      "outputs": []
+    },
+    "test:integration": {
+      "outputs": [],
+      "cache": false,
+      "passThroughEnv": ["DOCKER_HOST", "TESTCONTAINERS_RYUK_DISABLED"]
+    },
+    "test:e2e": {
+      "outputs": [],
+      "cache": false,
+      "passThroughEnv": ["DOCKER_HOST"]
+    },
     "storybook": {
       "cache": false,
       "persistent": true

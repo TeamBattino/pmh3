@@ -1,0 +1,126 @@
+# Self-contained e2e stack. Boots mongo, mock-oidc, admin, site, and a
+# playwright test runner on a shared compose network. Service names
+# resolve via DNS, so the runner reaches the app as `http://admin:3001`
+# and the admin's OIDC redirect to `http://mock-oidc:9000/default` is
+# resolvable inside the headless browser as well.
+#
+# Run from repo root (or via `turbo run test:e2e`, which invokes this
+# through `e2e/package.json`):
+#
+#   docker compose -f docker-compose.e2e.yml up --build \
+#     --abort-on-container-exit --exit-code-from e2e-runner
+#
+# Mongo uses a tmpfs volume so every run starts from a clean database.
+# The admin seeds default navbar/footer/security-config on first query
+# (apps/admin/lib/db/db-bootstrap.ts), so no seed step is needed.
+
+services:
+  pfadimh-mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    tmpfs:
+      - /data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1}).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mock-oidc:
+    # The mock-oauth2-server image is distroless — no shell, no curl,
+    # nothing to run a healthcheck with. Dependents wait for
+    # `service_started` and the e2e-runner explicitly polls the
+    # well-known endpoint before invoking playwright.
+    image: ghcr.io/navikt/mock-oauth2-server:2.1.10
+    environment:
+      SERVER_PORT: "9000"
+      JSON_CONFIG_PATH: /app/config/config.json
+    volumes:
+      - ./infra/mock-oidc:/app/config:ro
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    environment:
+      AUTH_SECRET: e2e-test-secret
+      # AUTH_URL pins the canonical origin that next-auth uses when
+      # generating its own URLs (signin form actions, callback URLs,
+      # etc.). Without it, next-auth falls back to HOSTNAME=0.0.0.0
+      # which it inherits from the runner stage's Dockerfile, and the
+      # browser tries to POST sign-in forms to http://0.0.0.0:3001/ —
+      # which is a server-bind address, not a client-routable host.
+      AUTH_URL: http://admin:3001
+      AUTH_TRUST_HOST: "true"
+      MONGODB_CONNECTION_STRING: mongodb://root:example@pfadimh-mongo:27017
+      MONGODB_DB_NAME: pfadimh_e2e
+      AUTH_OIDC_ISSUER: http://mock-oidc:9000/default
+      AUTH_OIDC_CLIENT_ID: pfadimh-admin
+      AUTH_OIDC_CLIENT_SECRET: dev-secret
+    depends_on:
+      pfadimh-mongo:
+        condition: service_healthy
+      mock-oidc:
+        condition: service_started
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "curl -fsS http://localhost:3001/auth/signin > /dev/null || exit 1"
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  site:
+    build:
+      context: .
+      dockerfile: apps/site/Dockerfile
+    environment:
+      MONGODB_CONNECTION_STRING: mongodb://root:example@pfadimh-mongo:27017
+      MONGODB_DB_NAME: pfadimh_e2e
+    depends_on:
+      pfadimh-mongo:
+        condition: service_healthy
+    healthcheck:
+      # bash's /dev/tcp is a TCP probe that doesn't care about HTTP
+      # status — site may legitimately 404 at `/` with a fresh Mongo.
+      test: ["CMD", "bash", "-c", "</dev/tcp/localhost/3000"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  e2e-runner:
+    build:
+      context: .
+      dockerfile: infra/e2e-runner.Dockerfile
+    environment:
+      # Pass through from host env so playwright.config.ts's
+      # `forbidOnly: !!process.env.CI` and `retries: CI ? 1 : 0` take
+      # effect in GitHub Actions (no-op locally).
+      - CI
+    depends_on:
+      admin:
+        condition: service_healthy
+      site:
+        condition: service_healthy
+      mock-oidc:
+        condition: service_started
+    # admin/site have real healthchecks, but mock-oidc is distroless
+    # (no shell) so compose can't probe it. Wait for the OIDC discovery
+    # endpoint before handing off to playwright — the image has curl.
+    # Mount test-results so Playwright's traces (retain-on-failure) and
+    # artifacts land on the host for inspection. The runner runs as
+    # UID 1000 so the files are owned by the host user.
+    volumes:
+      - ./apps/e2e/test-results:/work/e2e/test-results
+    # mock-oidc is distroless and has no healthcheck — wait for its
+    # OIDC discovery endpoint before invoking playwright.
+    command:
+      - sh
+      - -c
+      - |
+        until curl -fsS http://mock-oidc:9000/default/.well-known/openid-configuration > /dev/null 2>&1; do
+          sleep 1
+        done
+        exec npx playwright test

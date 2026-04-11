@@ -1,6 +1,9 @@
 {
   "name": "@pfadipuck/puck-web",
   "private": true,
+  "scripts": {
+    "test:unit": "vitest run"
+  },
   "exports": {
     "./config/*": "./config/*.ts",
     "./components/*": "./components/*.tsx",

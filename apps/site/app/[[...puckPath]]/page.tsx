@@ -14,6 +14,7 @@ import PageRender from "@/components/PageRender";
 import { footerConfig } from "@pfadipuck/puck-web/config/footer.config";
 import { pageConfig } from "@pfadipuck/puck-web/config/page.config";
 import { getFooter, getNavbar, getPage } from "@/lib/db";
+import { puckPathToKey } from "@/lib/puck-path";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -31,8 +32,8 @@ export async function generateMetadata({
 }: {
   params: Params;
 }): Promise<Metadata> {
-  const { puckPath = [] } = await params;
-  const path = `/${puckPath.join("/")}`;
+  const { puckPath } = await params;
+  const path = puckPathToKey(puckPath);
   const page = await getPage(path);
 
   if (!page) {
@@ -45,8 +46,8 @@ export async function generateMetadata({
 }
 
 export default async function Page({ params }: { params: Params }) {
-  const { puckPath = [] } = await params;
-  const path = `/${puckPath.join("/")}`;
+  const { puckPath } = await params;
+  const path = puckPathToKey(puckPath);
   const pageData = await getPage(path);
 
   if (!pageData) {

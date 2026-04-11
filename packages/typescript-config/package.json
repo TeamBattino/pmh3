@@ -1,4 +1,8 @@
 {
   "name": "@pfadipuck/typescript-config",
-  "private": true
+  "private": true,
+  "exports": {
+    "./base.json": "./base.json",
+    "./nextjs.json": "./nextjs.json"
+  }
 }
