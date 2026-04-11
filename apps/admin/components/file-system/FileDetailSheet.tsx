@@ -9,7 +9,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Sheet,
@@ -18,11 +18,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/Sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -329,7 +324,7 @@ function FileDetailBody({
 }
 
 function PreviewArea({ file }: { file: FileRecord }) {
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   if (file.kind === "image") {
     const thumbUrl = publicUrlFor(file.thumbMdKey ?? file.s3Key);
@@ -338,7 +333,7 @@ function PreviewArea({ file }: { file: FileRecord }) {
       <>
         <button
           type="button"
-          onClick={() => setLightboxOpen(true)}
+          onClick={() => setOpen(true)}
           className="block w-full overflow-hidden rounded-md border border-border bg-muted"
           aria-label="Open full-size preview"
         >
@@ -349,9 +344,10 @@ function PreviewArea({ file }: { file: FileRecord }) {
             className="mx-auto max-h-64 w-auto object-contain"
           />
         </button>
-        <Lightbox
-          open={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
+
+        <NativeLightbox
+          open={open}
+          onClose={() => setOpen(false)}
           src={originalUrl}
           alt={file.altText ?? file.originalFilename}
         />
@@ -384,47 +380,58 @@ function PreviewArea({ file }: { file: FileRecord }) {
   );
 }
 
-function Lightbox({
-  open,
-  onClose,
+function NativeLightbox({
   src,
   alt,
+  open,
+  onClose,
 }: {
-  open: boolean;
-  onClose: () => void;
   src: string;
   alt: string;
+  open: boolean;
+  onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (open && !dialog.open) {
+      dialog.showModal();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
+
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent
-        // Override the default dialog max-width so the image can breathe.
-        className="flex h-[90vh] max-w-[95vw] flex-col gap-0 border-0 bg-black/90 p-0 sm:max-w-[95vw]"
-        showCloseButton={false}
-      >
-        <DialogTitle className="sr-only">Full-size preview</DialogTitle>
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      onClick={(e) => {
+        if (e.target === dialogRef.current) {
+          onClose();
+        }
+      }}
+      className="m-auto max-h-full max-w-full overflow-hidden border-none bg-transparent p-0 backdrop:bg-black/90 focus:outline-none"
+    >
+      <div className="pointer-events-none relative flex h-[100dvh] w-[100dvw] items-center justify-center p-4 sm:p-8">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3 top-3 z-10 rounded-full bg-background/90 p-2 text-foreground hover:bg-background"
+          className="pointer-events-auto absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
           aria-label="Close preview"
         >
-          <X className="size-4" aria-hidden />
+          <X className="size-6" aria-hidden />
         </button>
-        <div
-          className="flex flex-1 items-center justify-center p-6"
-          onClick={onClose}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={src}
-            alt={alt}
-            className="max-h-full max-w-full object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={alt}
+          className="pointer-events-auto max-h-full max-w-full object-contain"
+        />
+      </div>
+    </dialog>
   );
 }
 
