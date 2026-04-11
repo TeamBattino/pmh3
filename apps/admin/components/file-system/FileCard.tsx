@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { FileRecord } from "@/lib/db/file-system-types";
 import { bestThumbnailKey, publicUrlFor } from "./thumb-url";
+import { useLongPress } from "@/lib/hooks/use-long-press";
 
 /**
  * Visual tile for a file. Shows a lazy `<img>` for raster/SVG images (with a
@@ -43,7 +44,18 @@ export function FileCard({
   const isImage = file.kind === "image";
   const thumbUrl = isImage ? publicUrlFor(bestThumbnailKey(file)) : "";
 
+  const { handlers: longPressHandlers, wasLongPress, resetLongPress } = useLongPress(() => {
+    if (onSelectChange) {
+      // Toggle selection state when long pressed
+      onSelectChange(!selected);
+    }
+  });
+
   const handleActivate = () => {
+    if (wasLongPress()) {
+      resetLongPress();
+      return;
+    }
     if (selectionMode && onSelectChange) {
       onSelectChange(!selected);
       return;
@@ -58,6 +70,7 @@ export function FileCard({
       aria-label={file.originalFilename}
       aria-pressed={selectionMode ? !!selected : undefined}
       onClick={handleActivate}
+      {...longPressHandlers}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();

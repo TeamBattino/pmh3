@@ -4,6 +4,7 @@ import { FileIcon, FileText, FileVideo, ImageIcon } from "lucide-react";
 import type { FileRecord } from "@/lib/db/file-system-types";
 import { cn } from "@/lib/cn";
 import { formatBytes } from "./format";
+import { useLongPress } from "@/lib/hooks/use-long-press";
 
 /**
  * Virtualization isn't strictly required here — for v1 the list view renders
@@ -15,6 +16,11 @@ export type FileListProps = {
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
   onOpen?: (file: FileRecord) => void;
+  /**
+   * When true, clicking the tile body toggles selection instead of opening
+   * the detail sheet. Parents usually pass `selection.size > 0` here.
+   */
+  selectionMode?: boolean;
 };
 
 export function FileList({
@@ -22,6 +28,7 @@ export function FileList({
   selectedIds,
   onToggleSelect,
   onOpen,
+  selectionMode,
 }: FileListProps) {
   const anySelected = !!selectedIds && selectedIds.size > 0;
   return (
@@ -35,17 +42,35 @@ export function FileList({
       <ul>
         {files.map((file) => {
           const selected = selectedIds?.has(file.id) ?? false;
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const { handlers: longPressHandlers, wasLongPress, resetLongPress } = useLongPress(() => {
+            if (onToggleSelect) onToggleSelect(file.id);
+          });
+
+          const handleActivate = () => {
+            if (wasLongPress()) {
+              resetLongPress();
+              return;
+            }
+            if (selectionMode && onToggleSelect) {
+              onToggleSelect(file.id);
+              return;
+            }
+            onOpen?.(file);
+          };
+
           return (
             <li
               key={file.id}
               role="button"
               tabIndex={0}
               aria-label={file.originalFilename}
-              onClick={() => onOpen?.(file)}
+              onClick={handleActivate}
+              {...longPressHandlers}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  onOpen?.(file);
+                  handleActivate();
                 }
               }}
               className={cn(

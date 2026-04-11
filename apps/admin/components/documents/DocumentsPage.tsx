@@ -144,6 +144,7 @@ export function DocumentsPage() {
                 files={files}
                 selectedIds={selection}
                 onToggleSelect={toggleSelect}
+                selectionMode={selection.size > 0}
                 onOpen={(f) => setDetailId(f.id)}
               />
             )}
