@@ -1,5 +1,5 @@
-# Self-contained e2e stack. Boots mongo, mock-oidc, admin, site, and a
-# playwright test runner on a shared compose network. Service names
+# Self-contained e2e stack. Boots mongo, mock-oidc, minio, admin, site, and
+# a playwright test runner on a shared compose network. Service names
 # resolve via DNS, so the runner reaches the app as `http://admin:3001`
 # and the admin's OIDC redirect to `http://mock-oidc:9000/default` is
 # resolvable inside the headless browser as well.
@@ -10,9 +10,10 @@
 #   docker compose -f docker-compose.e2e.yml up --build \
 #     --abort-on-container-exit --exit-code-from e2e-runner
 #
-# Mongo uses a tmpfs volume so every run starts from a clean database.
-# The admin seeds default navbar/footer/security-config on first query
-# (apps/admin/lib/db/db-bootstrap.ts), so no seed step is needed.
+# Mongo + MinIO use tmpfs/ephemeral volumes so every run starts from a
+# clean database and empty bucket. The admin seeds default navbar/footer/
+# security-config on first query (apps/admin/lib/db/db-bootstrap.ts), so no
+# seed step is needed. The minio-init container provisions the bucket.
 
 services:
   pfadimh-mongo:
@@ -40,6 +41,40 @@ services:
     volumes:
       - ./infra/mock-oidc:/app/config:ro
 
+  # S3-compatible bucket for e2e. No host port mapping — admin, site, and
+  # the playwright runner all reach it via the `minio` DNS name on the
+  # shared compose network. Data lives in a tmpfs so each run starts empty.
+  minio:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot bucket provisioner. Exits 0 once the bucket exists and is
+  # set to anonymous download. Admin + site wait on this via
+  # `service_completed_successfully`.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb --ignore-existing local/pfadimh-files;
+      /usr/bin/mc anonymous set download local/pfadimh-files;
+      echo 'MinIO bucket ready.';
+      exit 0;
+      "
+
   admin:
     build:
       context: .
@@ -59,11 +94,23 @@ services:
       AUTH_OIDC_ISSUER: http://mock-oidc:9000/default
       AUTH_OIDC_CLIENT_ID: pfadimh-admin
       AUTH_OIDC_CLIENT_SECRET: dev-secret
+      # S3 / MinIO. `S3_PUBLIC_URL_BASE` must be reachable by the headless
+      # browser inside the compose network, so it points at the `minio`
+      # DNS name (not localhost). Playwright resolves this via the shared
+      # docker network.
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: pfadimh-files
+      S3_REGION: auto
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_PUBLIC_URL_BASE: http://minio:9000/pfadimh-files
     depends_on:
       pfadimh-mongo:
         condition: service_healthy
       mock-oidc:
         condition: service_started
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test:
         - CMD-SHELL
@@ -79,9 +126,13 @@ services:
     environment:
       MONGODB_CONNECTION_STRING: mongodb://root:example@pfadimh-mongo:27017
       MONGODB_DB_NAME: pfadimh_e2e
+      # Site only needs the read URL prefix — it never writes to S3.
+      S3_PUBLIC_URL_BASE: http://minio:9000/pfadimh-files
     depends_on:
       pfadimh-mongo:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       # bash's /dev/tcp is a TCP probe that doesn't care about HTTP
       # status — site may legitimately 404 at `/` with a fresh Mongo.

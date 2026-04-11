@@ -2,7 +2,9 @@
 
 import {
   FileText,
+  FolderArchive,
   Home,
+  ImageIcon,
   LayoutPanelTop,
   PanelBottom,
   ShieldCheck,
@@ -64,6 +66,25 @@ const groups: NavGroup[] = [
         icon: PanelBottom,
         policy: { all: ["footer:update"] },
         isActive: (p) => p === "/web/footer",
+      },
+    ],
+  },
+  {
+    label: "Files",
+    items: [
+      {
+        href: "/media",
+        label: "Media",
+        icon: ImageIcon,
+        policy: { all: ["asset:read"] },
+        isActive: (p) => p.startsWith("/media"),
+      },
+      {
+        href: "/documents",
+        label: "Documents",
+        icon: FolderArchive,
+        policy: { all: ["asset:read"] },
+        isActive: (p) => p.startsWith("/documents"),
       },
     ],
   },

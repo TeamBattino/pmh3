@@ -20,3 +20,50 @@ services:
       JSON_CONFIG_PATH: /app/config/config.json
     volumes:
       - ./infra/mock-oidc:/app/config:ro
+
+  # S3-compatible object store for the CMS file system. Published on
+  # localhost:9100 because mock-oidc already owns 9000. The admin and site
+  # read `S3_ENDPOINT=http://localhost:9100` from the root `.env`; see
+  # `apps/admin/lib/storage/s3.ts`.
+  #
+  # Credentials are intentionally the MinIO defaults (`minioadmin`) — this
+  # stack is dev-only and never touches real data. The console is exposed on
+  # 9101 for debugging.
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - 9100:9000
+      - 9101:9001
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./data-minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot bootstrapper. Creates the `pfadimh-files` bucket and flips it
+  # to anonymous download so the public site can load images via plain
+  # `<img src>` without signing every GET. PUTs still require presigned
+  # URLs minted by the admin, which is what `presignUpload` returns.
+  #
+  # This container exits after the setup completes; that's intentional.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin) do
+        echo 'Waiting for minio...' && sleep 1;
+      done;
+      /usr/bin/mc mb --ignore-existing local/pfadimh-files;
+      /usr/bin/mc anonymous set download local/pfadimh-files;
+      echo 'MinIO bucket ready.';
+      exit 0;
+      "

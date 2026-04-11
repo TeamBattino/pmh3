@@ -18,7 +18,13 @@ ENV AUTH_SECRET=build-placeholder \
     MONGODB_DB_NAME=build \
     AUTH_OIDC_ISSUER=http://build.invalid/default \
     AUTH_OIDC_CLIENT_ID=build-placeholder \
-    AUTH_OIDC_CLIENT_SECRET=build-placeholder
+    AUTH_OIDC_CLIENT_SECRET=build-placeholder \
+    S3_ENDPOINT=http://build.invalid \
+    S3_BUCKET=build-placeholder \
+    S3_REGION=auto \
+    S3_ACCESS_KEY_ID=build-placeholder \
+    S3_SECRET_ACCESS_KEY=build-placeholder \
+    S3_PUBLIC_URL_BASE=http://build.invalid
 RUN bun run build --filter=@pfadipuck/admin
 
 FROM base AS runner

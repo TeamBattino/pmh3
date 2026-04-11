@@ -10,6 +10,13 @@ export const env = createEnv({
     AUTH_OIDC_CLIENT_ID: z.string().min(1),
     AUTH_OIDC_CLIENT_SECRET: z.string().min(1),
     NODE_ENV: z.enum(["development", "production", "test"]).optional(),
+    // S3-compatible storage (Railway bucket in prod, MinIO in dev)
+    S3_ENDPOINT: z.string().url(),
+    S3_BUCKET: z.string().min(1),
+    S3_REGION: z.string().min(1).default("auto"),
+    S3_ACCESS_KEY_ID: z.string().min(1),
+    S3_SECRET_ACCESS_KEY: z.string().min(1),
+    S3_PUBLIC_URL_BASE: z.string().url(),
   },
   client: {
     // Add NEXT_PUBLIC_ variables here
@@ -22,6 +29,12 @@ export const env = createEnv({
     AUTH_OIDC_CLIENT_ID: process.env.AUTH_OIDC_CLIENT_ID,
     AUTH_OIDC_CLIENT_SECRET: process.env.AUTH_OIDC_CLIENT_SECRET,
     NODE_ENV: process.env.NODE_ENV,
+    S3_ENDPOINT: process.env.S3_ENDPOINT,
+    S3_BUCKET: process.env.S3_BUCKET,
+    S3_REGION: process.env.S3_REGION,
+    S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+    S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+    S3_PUBLIC_URL_BASE: process.env.S3_PUBLIC_URL_BASE,
   },
   emptyStringAsUndefined: true,
 });

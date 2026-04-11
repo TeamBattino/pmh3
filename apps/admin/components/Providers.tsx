@@ -6,6 +6,8 @@ import { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { PropsWithChildren } from "react";
 import { Toaster } from "@/components/ui/Sonner";
+import { BackgroundOpsProvider } from "@/components/file-system/BackgroundOpsProvider";
+import { BackgroundOpsDock } from "@/components/file-system/BackgroundOpsDock";
 
 export function Providers({
   children,
@@ -14,7 +16,10 @@ export function Providers({
   return (
     <SessionProvider basePath="/auth" session={session}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <BackgroundOpsProvider>
+          {children}
+          <BackgroundOpsDock />
+        </BackgroundOpsProvider>
         <Toaster />
       </QueryClientProvider>
     </SessionProvider>

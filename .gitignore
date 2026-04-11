@@ -39,6 +39,9 @@ next-env.d.ts
 # mongodb data
 /data
 
+# minio data (local dev bucket)
+/data-minio
+
 *storybook.log
 
 storybook-static
