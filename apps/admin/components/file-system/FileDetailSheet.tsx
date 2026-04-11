@@ -1,8 +1,32 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/Sheet";
+import { Skeleton } from "@/components/ui/Skeleton";
+import type { FileRecord, Reference } from "@/lib/db/file-system-types";
+import {
+  useCollectionTree,
+  useDeleteFile,
+  useFile,
+  useFileAlbumCount,
+  useFileReferences,
+  useRemoveFilesFromAlbum,
+  useUpdateCollection,
+  useUpdateFile,
+} from "@/lib/files/file-system-hooks";
+import { useFileReplace } from "@/lib/files/useFileReplace";
 import {
   Download,
   ExternalLink,
+  FolderMinus,
+  FolderPlus,
   Image as ImageIcon,
   Pencil,
   Replace,
@@ -11,25 +35,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/Sheet";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Skeleton } from "@/components/ui/Skeleton";
-import {
-  useDeleteFile,
-  useFile,
-  useFileReferences,
-  useUpdateCollection,
-  useUpdateFile,
-} from "@/lib/files/file-system-hooks";
-import { useFileReplace } from "@/lib/files/useFileReplace";
-import type { FileRecord, Reference } from "@/lib/db/file-system-types";
+import { AddToAlbumDialog } from "../media/AddToAlbumDialog";
 import { DeleteBlockedDialog } from "./DeleteBlockedDialog";
 import { formatBytes } from "./format";
 import { publicUrlFor } from "./thumb-url";
@@ -52,12 +58,14 @@ export type FileDetailSheetProps = {
   onClose: () => void;
   /** Optional contextual actions. Passed by callers like AlbumView. */
   coverTargets?: CoverTarget[];
+  albumId?: string;
 };
 
 export function FileDetailSheet({
   fileId,
   onClose,
   coverTargets,
+  albumId,
 }: FileDetailSheetProps) {
   const open = !!fileId;
   const fileQuery = useFile(fileId);
@@ -92,6 +100,7 @@ export function FileDetailSheet({
             file={file}
             onClose={onClose}
             coverTargets={coverTargets}
+            albumId={albumId}
           />
         )}
       </SheetContent>
@@ -103,16 +112,24 @@ function FileDetailBody({
   file,
   onClose,
   coverTargets,
+  albumId,
 }: {
   file: FileRecord;
   onClose: () => void;
   coverTargets?: CoverTarget[];
+  albumId?: string;
 }) {
   const refsQuery = useFileReferences(file.id);
   const updateFile = useUpdateFile();
   const updateCollection = useUpdateCollection();
   const deleteFile = useDeleteFile();
   const { replaceFile: runReplace } = useFileReplace();
+
+  const { data: collections = [] } = useCollectionTree();
+  const { data: albumCount = 0, isLoading: isLoadingAlbumCount } = useFileAlbumCount(file.id);
+  const currentAlbum = collections.find((c) => c.id === albumId);
+  const removeFromAlbum = useRemoveFilesFromAlbum();
+  const [addOpen, setAddOpen] = useState(false);
 
   const [blockers, setBlockers] = useState<Reference[] | null>(null);
   const [editingName, setEditingName] = useState(false);
@@ -241,23 +258,29 @@ function FileDetailBody({
 
         {file.kind === "image" && coverTargets && coverTargets.length > 0 && (
           <div className="space-y-2">
-            <div className="text-xs font-medium">Cover art</div>
-            <div className="flex flex-wrap gap-2">
-              {coverTargets.map((target) => (
-                <Button
+            <div className="text-xs font-medium text-muted-foreground">Cover image</div>
+            <div className="overflow-hidden rounded-md border border-border">
+              {coverTargets.map((target, idx) => (
+                <button
                   key={target.collectionId}
-                  variant="outline"
-                  size="sm"
+                  className={`flex w-full items-center justify-between bg-card px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 ${
+                    idx > 0 ? "border-t border-border" : ""
+                  }`}
                   onClick={() => setAsCover(target)}
                   disabled={updateCollection.isPending}
                 >
-                  <ImageIcon className="mr-1 size-4" aria-hidden />
-                  Set as {target.label} cover
-                </Button>
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="size-4 text-muted-foreground" aria-hidden />
+                    <span className="text-left font-medium">Use for &quot;{target.name}&quot;</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{target.label}</span>
+                </button>
               ))}
             </div>
           </div>
         )}
+
+
 
         <UsedInSection
           isLoading={refsQuery.isLoading}
@@ -265,21 +288,22 @@ function FileDetailBody({
         />
       </div>
 
-      <div className="flex gap-2 border-t border-border px-6 py-4">
-        <Button asChild variant="outline">
+      <div className="flex flex-wrap gap-2 border-t border-border px-6 py-4">
+        <Button asChild variant="outline" className="flex-1 basis-[120px]">
           <a
             href={publicUrlFor(file.s3Key)}
             download={file.originalFilename}
           >
-            <Download className="mr-1 size-4" aria-hidden />
+            <Download className="mr-2 size-4" aria-hidden />
             Download
           </a>
         </Button>
         <Button
           variant="outline"
+          className="flex-1 basis-[120px]"
           onClick={() => replaceInputRef.current?.click()}
         >
-          <Replace className="mr-1 size-4" aria-hidden />
+          <Replace className="mr-2 size-4" aria-hidden />
           Replace
         </Button>
         <input
@@ -301,12 +325,45 @@ function FileDetailBody({
           }}
         />
         <Button
+          variant="outline"
+          className="flex-1 basis-[140px]"
+          onClick={() => setAddOpen(true)}
+        >
+          <FolderPlus className="mr-2 size-4" aria-hidden />
+          Add to album...
+        </Button>
+        {currentAlbum && !currentAlbum.isSystemAlbum && (
+          <Button
+            variant="outline"
+            className="flex-1 basis-[170px]"
+            onClick={async () => {
+              const result = await removeFromAlbum.mutateAsync({
+                fileIds: [file.id],
+                sourceAlbumId: currentAlbum.id,
+              });
+              if (result.blocked.length > 0) {
+                toast.error(
+                  "File would have no albums left. Use Delete instead."
+                );
+              } else {
+                toast.success(`Removed from ${currentAlbum.title}`);
+                onClose();
+              }
+            }}
+            disabled={removeFromAlbum.isPending || isLoadingAlbumCount || albumCount <= 1}
+          >
+            <FolderMinus className="mr-2 size-4" aria-hidden />
+            Remove from &quot;{currentAlbum.title}&quot;
+          </Button>
+        )}
+        <Button
           variant="destructive"
+          className="flex-1 basis-[100px]"
           onClick={onDelete}
           disabled={deleteFile.isPending}
         >
-          <Trash2 className="mr-1 size-4" aria-hidden />
-          Delete
+          <Trash2 className="mr-2 size-4" aria-hidden />
+          Delete file
         </Button>
       </div>
 
@@ -318,6 +375,13 @@ function FileDetailBody({
             ? [{ label: file.originalFilename, references: blockers }]
             : []
         }
+      />
+      <AddToAlbumDialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        collections={collections}
+        fileIds={[file.id]}
+        currentAlbumId={albumId ?? null}
       />
     </>
   );

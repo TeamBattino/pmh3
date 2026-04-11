@@ -245,6 +245,7 @@ export function AlbumView({
         fileId={detailId}
         onClose={() => setDetailId(null)}
         coverTargets={coverTargets}
+        albumId={albumId}
       />
       <AddToAlbumDialog
         open={addOpen}

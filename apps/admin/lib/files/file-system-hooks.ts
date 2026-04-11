@@ -44,6 +44,7 @@ export const fileSystemKeys = {
   fileReferences: (fileId: string) => ["fs", "fileReferences", fileId] as const,
   fileSearch: (query: SearchQuery) => ["fs", "fileSearch", query] as const,
   albumFileCounts: () => ["fs", "albumFileCounts"] as const,
+  fileAlbumCount: (fileId: string) => ["fs", "fileAlbumCount", fileId] as const,
 };
 
 // ── Reads ──────────────────────────────────────────────────────────────
@@ -79,6 +80,14 @@ export function useAlbumFileCounts() {
   return useQuery({
     queryKey: fileSystemKeys.albumFileCounts(),
     queryFn: () => actions.getAlbumFileCounts(),
+  });
+}
+
+export function useFileAlbumCount(fileId: string | null) {
+  return useQuery({
+    queryKey: fileId ? fileSystemKeys.fileAlbumCount(fileId) : ["fs", "fileAlbumCount", "none"],
+    queryFn: () => (fileId ? actions.getFileAlbumCount(fileId) : Promise.resolve(0)),
+    enabled: !!fileId,
   });
 }
 
@@ -177,6 +186,7 @@ export function useDeleteFile() {
       fileSystemKeys.folderTree(),
       fileSystemKeys.collectionTree(),
       fileSystemKeys.albumFileCounts(),
+      fileSystemKeys.fileAlbumCount(args.fileId),
       ["fs", "folderFiles"],
       ["fs", "collectionFiles"],
     ]
@@ -260,7 +270,8 @@ export function useAddFilesToAlbum() {
       ["fs", "collectionFiles"],
       fileSystemKeys.tree(),
       fileSystemKeys.albumFileCounts(),
-    ]
+      ...args.fileIds.map((id) => fileSystemKeys.fileAlbumCount(id)),
+    ] as QueryKey[]
   );
 }
 
@@ -276,7 +287,8 @@ export function useRemoveFilesFromAlbum() {
       ["fs", "collectionFiles"],
       fileSystemKeys.tree(),
       fileSystemKeys.albumFileCounts(),
-    ]
+      ...args.fileIds.map((id) => fileSystemKeys.fileAlbumCount(id)),
+    ] as QueryKey[]
   );
 }
 

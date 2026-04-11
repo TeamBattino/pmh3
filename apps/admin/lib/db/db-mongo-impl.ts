@@ -723,6 +723,13 @@ export class MongoService implements DatabaseService {
     return out;
   }
 
+  async getFileAlbumCount(fileId: string): Promise<number> {
+    if (!ObjectId.isValid(fileId)) return 0;
+    return this.db
+      .collection<CollectionFileDoc>(this.collectionFilesCollectionName)
+      .countDocuments({ fileId: new ObjectId(fileId) });
+  }
+
   async findOrphanFiles(): Promise<FileRecord[]> {
     const files = await this.db
       .collection<FileDoc>(this.filesCollectionName)

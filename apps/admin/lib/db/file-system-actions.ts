@@ -401,6 +401,12 @@ export async function getAlbumFileCounts(): Promise<Record<string, number>> {
   return db.getAlbumFileCounts();
 }
 
+export async function getFileAlbumCount(fileId: string): Promise<number> {
+  await requireServerPermission({ all: ["asset:read"] });
+  const db = await getDbService();
+  return db.getFileAlbumCount(fileId);
+}
+
 // ── Combined tree ──────────────────────────────────────────────────────
 
 export async function getTree(): Promise<{

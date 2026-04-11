@@ -77,6 +77,9 @@ export interface DatabaseService {
    */
   getAlbumFileCounts(): Promise<Record<string, number>>;
 
+  /** Returns the number of albums a specific file currently belongs to. */
+  getFileAlbumCount(fileId: string): Promise<number>;
+
   /** Returns the ordered list of file ids that currently belong to an album. */
   resolveCollectionRef(collectionId: string): Promise<string[]>;
 
