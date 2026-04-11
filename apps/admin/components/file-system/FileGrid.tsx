@@ -1,7 +1,7 @@
 "use client";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FileRecord } from "@/lib/db/file-system-types";
 import { FileCard } from "./FileCard";
 
@@ -37,23 +37,34 @@ export function FileGrid({
   tileSize = 180,
 }: FileGridProps) {
   const parentRef = useRef<HTMLDivElement | null>(null);
+  const [containerWidth, setContainerWidth] = useState(1024);
   const anySelected = !!selectedIds && selectedIds.size > 0;
 
-  // Compute columns from parent width at render time — cheap and handles
-  // resize without a ResizeObserver dance. Falls back to 4 on SSR.
-  const cols =
-    typeof window === "undefined" || !parentRef.current
-      ? 4
-      : Math.max(
-          1,
-          Math.floor(parentRef.current.clientWidth / tileSize)
-        );
+  useEffect(() => {
+    if (!parentRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(parentRef.current);
+    setContainerWidth(parentRef.current.clientWidth);
+    return () => observer.disconnect();
+  }, []);
+
+  const cols = Math.max(1, Math.floor(containerWidth / tileSize));
   const rows = Math.ceil(files.length / cols);
+
+  const totalGap = (cols - 1) * ROW_GAP;
+  const paddingX = CONTAINER_PADDING * 2;
+  const availableWidth = Math.max(0, containerWidth - paddingX - totalGap);
+  const actualTileSize = cols > 0 ? availableWidth / cols : tileSize;
 
   const rowVirtualizer = useVirtualizer({
     count: rows,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => tileSize + ROW_GAP,
+    estimateSize: () => actualTileSize + ROW_GAP,
     overscan: 3,
   });
 
@@ -78,7 +89,7 @@ export function FileGrid({
                   virtualRow.start + CONTAINER_PADDING
                 }px)`,
                 gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-                height: `${tileSize}px`,
+                height: `${actualTileSize}px`,
               }}
             >
               {rowFiles.map((file) => (

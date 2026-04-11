@@ -96,7 +96,7 @@ export function FileCard({
             type="checkbox"
             checked={!!selected}
             onChange={(e) => onSelectChange(e.target.checked)}
-            className="size-3 accent-primary"
+            className="size-3 accent-admin-primary"
             aria-label={`Select ${file.originalFilename}`}
           />
         </label>

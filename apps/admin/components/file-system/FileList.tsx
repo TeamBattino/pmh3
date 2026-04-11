@@ -87,7 +87,7 @@ export function FileList({
                     type="checkbox"
                     checked={selected}
                     onChange={() => onToggleSelect(file.id)}
-                    className="accent-primary"
+                    className="accent-admin-primary"
                     aria-label={`Select ${file.originalFilename}`}
                   />
                 ) : (

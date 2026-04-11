@@ -183,7 +183,7 @@ function MediaPickerBody({
                               aria-label={`Select whole album ${album.title}`}
                               checked={selectedCollectionIds.has(album.id)}
                               onChange={() => toggleCollection(album.id)}
-                              className="accent-primary"
+                              className="accent-admin-primary"
                             />
                           )}
                           <button
