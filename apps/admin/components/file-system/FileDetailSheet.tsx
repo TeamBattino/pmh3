@@ -398,21 +398,21 @@ function PreviewArea({ file }: { file: FileRecord }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="block w-full overflow-hidden rounded-md border border-border bg-muted"
+          className="flex h-64 w-full shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-muted"
           aria-label="Open full-size preview"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={thumbUrl}
             alt={file.altText ?? file.originalFilename}
-            className="mx-auto max-h-64 w-auto object-contain"
+            className="max-h-full max-w-full object-contain"
           />
         </button>
 
         <NativeLightbox
           open={open}
           onClose={() => setOpen(false)}
-          src={originalUrl}
+          src={thumbUrl}
           alt={file.altText ?? file.originalFilename}
         />
       </>
@@ -479,22 +479,24 @@ function NativeLightbox({
       }}
       className="m-auto max-h-full max-w-full overflow-hidden border-none bg-transparent p-0 backdrop:bg-black/90 focus:outline-none"
     >
-      <div className="pointer-events-none relative flex h-[100dvh] w-[100dvw] items-center justify-center p-4 sm:p-8">
-        <button
-          type="button"
-          onClick={onClose}
-          className="pointer-events-auto absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-          aria-label="Close preview"
-        >
-          <X className="size-6" aria-hidden />
-        </button>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt={alt}
-          className="pointer-events-auto max-h-full max-w-full object-contain"
-        />
-      </div>
+      {open && (
+        <div className="pointer-events-none relative flex h-[100dvh] w-[100dvw] items-center justify-center p-4 sm:p-8">
+          <button
+            type="button"
+            onClick={onClose}
+            className="pointer-events-auto absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            aria-label="Close preview"
+          >
+            <X className="size-6" aria-hidden />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            className="pointer-events-auto max-h-full max-w-full object-contain"
+          />
+        </div>
+      )}
     </dialog>
   );
 }
