@@ -78,8 +78,8 @@ export function FileCard({
         }
       }}
       className={cn(
-        "group relative flex aspect-square w-full cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-muted transition-colors hover:border-primary",
-        selected && "ring-2 ring-primary",
+        "group relative flex aspect-square w-full cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-muted transition-colors hover:border-admin-primary",
+        selected && "ring-2 ring-admin-primary",
         className
       )}
     >

@@ -26,7 +26,7 @@ export function CollectionCard({
     <Link
       href={href}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-md border border-border bg-card transition-colors hover:border-primary",
+        "group flex flex-col overflow-hidden rounded-md border border-border bg-card transition-colors hover:border-admin-primary",
         className
       )}
     >

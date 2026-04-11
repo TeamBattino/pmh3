@@ -45,7 +45,7 @@ export function MediaLanding() {
           {systemAlbum && (
             <Link
               href={`/media/_uploads/${systemAlbum.id}`}
-              className="flex items-center gap-3 rounded-md border border-dashed border-border bg-card p-4 transition-colors hover:border-primary"
+              className="flex items-center gap-3 rounded-md border border-dashed border-border bg-card p-4 transition-colors hover:border-admin-primary"
             >
               <Inbox className="size-6 text-muted-foreground" aria-hidden />
               <div>

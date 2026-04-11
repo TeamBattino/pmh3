@@ -59,7 +59,7 @@ export function FileUploadZone({
           onClick={openPicker}
           disabled={disabled}
           className={cn(
-            "inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50",
+            "inline-flex items-center gap-2 rounded-md bg-admin-primary px-3 py-2 text-sm text-admin-primary-foreground hover:opacity-90 disabled:opacity-50",
             className
           )}
         >
@@ -98,7 +98,7 @@ export function FileUploadZone({
       aria-disabled={disabled}
       className={cn(
         "flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed border-border p-4 text-sm text-muted-foreground transition-colors",
-        dragging && "border-primary bg-primary/5 text-primary",
+        dragging && "border-admin-primary bg-admin-primary/5 text-admin-primary",
         disabled && "cursor-not-allowed opacity-50",
         className
       )}

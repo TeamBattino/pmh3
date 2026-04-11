@@ -159,7 +159,7 @@ function OperationRow({
         typeof op.progress === "number" && (
           <div className="h-1 overflow-hidden rounded bg-muted">
             <div
-              className="h-full bg-primary transition-all"
+              className="h-full bg-admin-primary transition-all"
               style={{ width: `${op.progress}%` }}
             />
           </div>

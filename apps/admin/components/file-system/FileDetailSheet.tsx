@@ -539,7 +539,7 @@ function UsedInSection({
                     href={ref.pageId}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary hover:underline"
+                    className="text-admin-primary hover:underline"
                   >
                     Open page →
                   </a>
@@ -547,7 +547,7 @@ function UsedInSection({
                     href={`/web/editor${ref.pageId}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary hover:underline"
+                    className="text-admin-primary hover:underline"
                   >
                     Open editor →
                   </a>

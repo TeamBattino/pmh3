@@ -25,9 +25,22 @@ Single `.env` at root. Both apps symlink to it (`apps/admin/.env` → `../../.en
 
 ## Critical: CSS Theme Coexistence
 
-The puck-web package defines a Tailwind v4 `@theme` block in `packages/puck-web/styles/theme.css` with color tokens like `--color-primary` (orange/brown site palette), `--color-ground`, `--color-elevated`, etc. The admin app uses shadcn which also wants `--color-primary`.
+The puck-web package defines a Tailwind v4 `@theme` block in `packages/puck-web/styles/theme.css` that claims the `--color-primary`, `--color-secondary`, `--color-ground`, `--color-elevated`, and `--color-contrast-*` names for the site's brand palette (orange/brown). Those tokens are declared as self-referential fallbacks (`--color-primary: var(--color-primary)`) that only resolve inside a `.mud-theme` or `.sun-theme` wrapper — this is intentional so Puck preview content themes correctly per section.
 
-**These collide.** The puck-web `@theme` must win because the Puck editor iframe preview depends on those tokens rendering with the site's colors. The admin's shadcn tokens must use a different namespace — currently `--sidebar-primary` instead of `--primary`. Any future shadcn additions must avoid `--color-primary`, `--color-secondary`, `--color-ground`, `--color-elevated`, `--color-contrast-*` names.
+**Consequence for the admin app.** The admin imports puck-web's `theme.css` (so the Puck editor iframe inherits the brand palette) but has NO theme class on `<body>`. That means in the admin chrome, `bg-primary`, `text-primary`, `border-primary`, `ring-primary`, `bg-secondary`, and `text-secondary-foreground` all resolve to an invalid circular reference and silently render as transparent/unset. **Never use these raw class names in admin components.**
+
+**Admin-side convention.** The admin registers its own namespaced tokens in `apps/admin/app/globals.css`:
+
+- `--admin-primary` / `--admin-primary-foreground` — the admin's "primary action" color (dark neutral in light mode, near-white in dark mode). Used via `bg-admin-primary`, `text-admin-primary-foreground`, `border-admin-primary`, `ring-admin-primary`, `bg-admin-primary/N`, etc. This is the shadcn equivalent of `bg-primary`.
+- For "secondary" styling, use `bg-muted` + `text-foreground` (both already registered via `@theme inline`). There is no `--admin-secondary` — the admin's muted/accent/secondary surfaces all share the same light-gray value, so one token covers it.
+- shadcn's standard neutral tokens that DO work in admin (registered in `@theme inline`): `bg-background`, `bg-card`, `bg-popover`, `bg-muted`, `bg-accent`, `bg-destructive`, `border-border`, `ring-ring`, `bg-input`, and all `*-foreground` variants. Sidebar-scoped tokens (`bg-sidebar`, `bg-sidebar-primary`, `bg-sidebar-accent`, etc.) also work and are reserved for the actual Sidebar component.
+
+**Rules for future additions.**
+
+1. Any shadcn component added via `shadcn add` that ships with `bg-primary`/`text-primary`/`bg-secondary`/`border-primary`/`ring-primary` must be rewritten to use `bg-admin-primary` etc. before it will render correctly.
+2. Do not register `--color-primary`, `--color-secondary`, `--color-ground`, `--color-elevated`, or `--color-contrast-*` in the admin's `@theme inline` block — they belong to puck-web.
+3. Never run `shadcn init` / `shadcn init --preset` against `apps/admin`. It will overwrite `globals.css`, destroying the `@source` directives, `@font-face` declarations, the puck-web theme import, and the `--admin-primary` namespace. Cherry-pick tokens manually instead.
+4. If you need an additional admin-scoped color, follow the same pattern: declare `--admin-<name>` in `:root` and `.dark`, then register `--color-admin-<name>: var(--admin-<name>)` in `@theme inline`. Never collide with puck-web's reserved names.
 
 ## Critical: Puck Editor Iframe
 

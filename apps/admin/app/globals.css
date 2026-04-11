@@ -37,6 +37,9 @@
   --rockingsoda: "RockingsodaPlus";
   --poppins: "Poppins";
 
+  --admin-primary: hsl(240 5.9% 10%);
+  --admin-primary-foreground: hsl(0 0% 98%);
+
   --background: hsl(0 0% 100%);
   --foreground: hsl(240 10% 3.9%);
   --card: hsl(0 0% 100%);
@@ -65,6 +68,9 @@
 }
 
 .dark {
+  --admin-primary: hsl(0 0% 98%);
+  --admin-primary-foreground: hsl(240 5.9% 10%);
+
   --background: hsl(240 10% 3.9%);
   --foreground: hsl(0 0% 98%);
   --card: hsl(240 10% 3.9%);
@@ -97,11 +103,17 @@
   These use @theme inline so they generate utilities (bg-background, text-foreground, etc.)
   without emitting CSS variables that would clash with puck-web's @theme block.
 
-  Note: --color-primary and --color-secondary are intentionally NOT overridden here —
-  those names belong to puck-web's theme (orange/brown). shadcn's "primary" action color
-  is mapped to --sidebar-primary instead.
+  Note: --color-primary and --color-secondary are intentionally NOT registered here —
+  those names belong to puck-web's theme (orange/brown) and would only resolve inside
+  a .mud-theme/.sun-theme wrapper, which admin chrome does not use. Instead, admin
+  components use the namespaced --color-admin-primary (see `bg-admin-primary`,
+  `text-admin-primary-foreground`, etc.) for primary actions, and `bg-muted` +
+  `text-foreground` for secondary surfaces. See CLAUDE.md "CSS Theme Coexistence".
 */
 @theme inline {
+  --color-admin-primary: var(--admin-primary);
+  --color-admin-primary-foreground: var(--admin-primary-foreground);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
