@@ -7,9 +7,9 @@ import {
   FooterData,
 } from "@pfadipuck/puck-web/config/footer.config";
 import { saveFooter } from "@/lib/db/db-actions";
-import { Puck } from "@measured/puck";
-import "@measured/puck/puck.css";
-import { type PropsWithChildren } from "react";
+import { Puck } from "@puckeditor/core";
+import "@puckeditor/core/puck.css";
+import { type PropsWithChildren, type ReactNode } from "react";
 
 function PreviewRoot({ children }: PropsWithChildren) {
   return <div className="mud-theme bg-ground font-poppins">{children}</div>;
@@ -22,7 +22,9 @@ export function FooterEditor({ data }: { data: FooterData }) {
         ...footerConfig,
         root: {
           ...footerConfig.root,
-          render: ({ children }) => <PreviewRoot>{children}</PreviewRoot>,
+          render: ({ children }: { children: ReactNode }) => (
+        <PreviewRoot>{children}</PreviewRoot>
+      ),
         },
       }}
       data={data}

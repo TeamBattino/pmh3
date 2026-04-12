@@ -1,6 +1,6 @@
 import { NavbarDropdownDesktop } from "./NavbarDropdownDesktop";
 import { NavbarDropdownMobile } from "./NavbarDropdownMobile";
-import { ComponentConfig, WithPuckProps } from "@measured/puck";
+import { ComponentConfig, WithPuckProps } from "@puckeditor/core";
 
 export interface NavbarDropdownItem {
   label: string;

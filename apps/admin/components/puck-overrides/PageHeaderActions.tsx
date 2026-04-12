@@ -1,15 +1,13 @@
 "use client";
 import SpinnerSvg from "@pfadipuck/graphics/SpinnerSvg";
 import { Button } from "@/components/ui/Button";
-import { Dialog, DialogTrigger } from "@/components/ui/Dialog";
 import { toast } from "@/components/ui/Sonner";
 import { PageConfig } from "@pfadipuck/puck-web/config/page.config";
-import { deletePage, savePage } from "@/lib/db/db-actions";
+import { savePage } from "@/lib/db/db-actions";
 import { queryClient } from "@/lib/query-client";
-import { usePuck } from "@measured/puck";
+import { usePuck } from "@puckeditor/core";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import ConfirmModal from "@/components/admin/ConfirmModal";
 import UndoRedoButtons from "./UndoRedoButtons";
 
 type PageHeaderActionsProps = {
@@ -22,11 +20,6 @@ function PageHeaderActions({ path }: PageHeaderActionsProps) {
     appState: { data },
   } = usePuck<PageConfig>();
 
-  const handleDelete = async () => {
-    await deletePage(path);
-    queryClient.invalidateQueries({ queryKey: ["pages"] });
-  };
-
   const { mutate: savePageMutation, isPending } = useMutation({
     mutationFn: async () => {
       await savePage(path, data);
@@ -36,28 +29,17 @@ function PageHeaderActions({ path }: PageHeaderActionsProps) {
   });
 
   return (
-    <div className="flex gap-4 items-center justify-between">
-      <UndoRedoButtons />
+    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:items-center sm:justify-between">
+      <div className="hidden sm:block">
+        <UndoRedoButtons />
+      </div>
 
       <div className="flex flex-wrap gap-2">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="destructive" size="sm">
-              Delete
-            </Button>
-          </DialogTrigger>
-
-          <ConfirmModal
-            title="Delete Page"
-            message="Are you sure you want to delete this page?"
-            onConfirm={handleDelete}
-          />
-        </Dialog>
-
         <Button
           onClick={() => router.push("/web")}
           variant="outline"
           size="sm"
+          className="flex-1 sm:flex-none"
         >
           To Admin
         </Button>
@@ -66,6 +48,7 @@ function PageHeaderActions({ path }: PageHeaderActionsProps) {
           onClick={() => router.push(path)}
           variant="outline"
           size="sm"
+          className="flex-1 sm:flex-none"
         >
           View Page
         </Button>
@@ -73,7 +56,7 @@ function PageHeaderActions({ path }: PageHeaderActionsProps) {
       <Button
         onClick={() => savePageMutation()}
         variant="default"
-        className="flex gap-2 items-center"
+        className="flex gap-2 items-center w-full sm:w-auto"
         disabled={isPending}
       >
         Save Changes

@@ -1,5 +1,5 @@
 import { SectionBreak } from "../ui/SectionBreak";
-import { ComponentConfig } from "@measured/puck";
+import { ComponentConfig } from "@puckeditor/core";
 
 export type SectionDividerProps = {};
 

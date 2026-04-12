@@ -2,7 +2,7 @@ import {
   MongoDBContainer,
   type StartedMongoDBContainer,
 } from "@testcontainers/mongodb";
-import type { Data } from "@measured/puck";
+import type { Data } from "@puckeditor/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ensureFileSystemIndexes } from "@/lib/db/db-bootstrap";
 import { MongoService } from "@/lib/db/db-mongo-impl";
@@ -219,7 +219,6 @@ describe("Documents section (integration)", () => {
               props: { id: "dl-1", doc: referenced.id },
             },
           ],
-          zones: {},
         })
       );
 

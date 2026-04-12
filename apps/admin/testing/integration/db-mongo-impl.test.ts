@@ -16,7 +16,6 @@ import { MongoService } from "@/lib/db/db-mongo-impl";
 const fixturePage = {
   content: [],
   root: { props: { title: "About" } },
-  zones: {},
 };
 
 const fixtureNavbar = {

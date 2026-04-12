@@ -3,7 +3,7 @@ import type { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import { env } from "@/lib/env";
 import type { SecurityConfig } from "@/lib/security/security-config";
-import type { Data } from "@measured/puck";
+import type { Data } from "@puckeditor/core";
 import { ensureSeeded } from "./db-bootstrap";
 import { MongoService } from "./db-mongo-impl";
 import type {

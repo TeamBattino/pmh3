@@ -2,7 +2,7 @@ import type { FooterData } from "@pfadipuck/puck-web/config/footer.config";
 import type { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import type { SecurityConfig } from "@/lib/security/security-config";
-import type { Data } from "@measured/puck";
+import type { Data } from "@puckeditor/core";
 import { Db, MongoClient, ObjectId, type Filter, type WithId } from "mongodb";
 import type { DatabaseService } from "./db";
 import type {
@@ -1072,8 +1072,11 @@ function slugify(s: string): string {
  * for every hit.
  *
  * Handles:
- *   - Page data: `{ content: [...], root: {...}, zones: {...} }`
+ *   - Page/navbar/footer data: `{ content: [...], root: {...} }`
  *   - Any other object with content-like arrays
+ *
+ * Slot contents (0.19+) live inline inside component props and are reached
+ * by the recursive `walkProp` below — no special-case needed.
  *
  * The walk is defensive — component shapes are loose.
  */
@@ -1123,14 +1126,8 @@ function walkPuckDataForFileId(
   if (!data || typeof data !== "object") return;
   const d = data as {
     content?: unknown[];
-    zones?: Record<string, unknown[]>;
     root?: unknown;
   };
   if (Array.isArray(d.content)) d.content.forEach(visitComponent);
-  if (d.zones && typeof d.zones === "object") {
-    for (const zone of Object.values(d.zones)) {
-      if (Array.isArray(zone)) zone.forEach(visitComponent);
-    }
-  }
   if (d.root) visitComponent(d.root);
 }

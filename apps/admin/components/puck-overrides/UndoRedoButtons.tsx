@@ -1,7 +1,7 @@
 import BackSvg from "@pfadipuck/graphics/BackSvg";
 import ForwardSvg from "@pfadipuck/graphics/ForwardSvg";
 import { cn } from "@/lib/cn";
-import { usePuck } from "@measured/puck";
+import { usePuck } from "@puckeditor/core";
 
 function UndoRedoButtons() {
   const {

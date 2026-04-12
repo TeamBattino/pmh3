@@ -1,4 +1,4 @@
-import { CustomField } from "@measured/puck";
+import { CustomField } from "@puckeditor/core";
 import type { CustomFieldRenderProps } from "../lib/custom-field-types";
 import {
   useFilePicker,
