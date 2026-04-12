@@ -64,6 +64,8 @@ export const queryClient: QueryClient = new Proxy({} as QueryClient, {
     // Use the singleton, not getQueryClient(), so we don't redundantly
     // re-enter the branch check on every property access.
     if (!browserQueryClient) browserQueryClient = makeQueryClient();
-    return Reflect.get(browserQueryClient, prop, receiver);
+    const value = Reflect.get(browserQueryClient, prop, browserQueryClient);
+    if (typeof value === "function") return value.bind(browserQueryClient);
+    return value;
   },
 });

@@ -113,6 +113,9 @@ export async function ensureSeeded(service: MongoService): Promise<void> {
     await db.createCollection(service.puckDataCollectionName);
     await db.collection(service.puckDataCollectionName).createIndex({ path: 1 });
   }
+  await db
+    .collection(service.puckDataCollectionName)
+    .createIndex({ type: 1, updatedAt: -1 });
 
   // Seed navbar if missing
   const navbar = await db

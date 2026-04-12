@@ -4,7 +4,7 @@ import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import type { SecurityConfig } from "@/lib/security/security-config";
 import type { Data } from "@puckeditor/core";
 import { Db, MongoClient, ObjectId, type Filter, type WithId } from "mongodb";
-import type { DatabaseService } from "./db";
+import type { DatabaseService, PageListItem } from "./db";
 import type {
   BulkDeleteResult,
   CascadeDeletePreview,
@@ -123,7 +123,7 @@ export class MongoService implements DatabaseService {
       .collection(this.puckDataCollectionName)
       .updateOne(
         { type: "page", path: path },
-        { $set: { data: data, type: "page", path: path } },
+        { $set: { data: data, type: "page", path: path, updatedAt: new Date() } },
         { upsert: true }
       );
   }
@@ -183,6 +183,21 @@ export class MongoService implements DatabaseService {
       .find({ type: "page" })
       .toArray();
     return pages.map((page) => page.path);
+  }
+
+  async getAllPages(): Promise<PageListItem[]> {
+    const pages = await this.db
+      .collection(this.puckDataCollectionName)
+      .find({ type: "page" })
+      .project({ path: 1, "data.root.props.title": 1, updatedAt: 1 })
+      .toArray();
+    return pages.map((doc) => ({
+      path: doc.path as string,
+      title: (doc.data?.root?.props?.title as string) ?? "Untitled",
+      updatedAt: doc.updatedAt
+        ? (doc.updatedAt as Date).toISOString()
+        : null,
+    }));
   }
 
   async getSecurityConfig(): Promise<SecurityConfig> {

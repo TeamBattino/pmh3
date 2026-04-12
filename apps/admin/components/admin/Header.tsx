@@ -2,24 +2,19 @@
 
 import { PermissionGuard } from "@/components/security/PermissionGuard";
 import { Button } from "@/components/ui/Button";
-import { Dialog, DialogTrigger } from "@/components/ui/Dialog";
 import { PageHeading } from "@/components/ui/Heading";
-import AddPageModal from "./AddPageModal";
 
-function Header() {
+type HeaderProps = {
+  onAddPage: () => void;
+};
+
+function Header({ onAddPage }: HeaderProps) {
   return (
-    <div className="flex flex-wrap gap-2 justify-between items-center">
+    <div className="flex flex-wrap items-center justify-between gap-2">
       <PageHeading>Pages</PageHeading>
-      <div className="flex flex-wrap gap-2">
-        <PermissionGuard policy={{ all: ["page:create"] }}>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>Add Page</Button>
-            </DialogTrigger>
-            <AddPageModal />
-          </Dialog>
-        </PermissionGuard>
-      </div>
+      <PermissionGuard policy={{ all: ["page:create"] }}>
+        <Button onClick={onAddPage}>Add Page</Button>
+      </PermissionGuard>
     </div>
   );
 }

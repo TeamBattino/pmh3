@@ -2,10 +2,13 @@
 
 import { FooterData } from "@pfadipuck/puck-web/config/footer.config";
 import { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
-import { PageData } from "@pfadipuck/puck-web/config/page.config";
+import {
+  defaultPageData,
+  PageData,
+} from "@pfadipuck/puck-web/config/page.config";
 import { SecurityConfig } from "@/lib/security/security-config";
 import { requireServerPermission } from "@/lib/security/server-guard";
-import { getDbService } from "./db";
+import { getDbService, type PageListItem } from "./db";
 
 /**
  * Public Database Actions.
@@ -55,6 +58,41 @@ export async function getFooter(): Promise<FooterData> {
 export async function getAllPaths() {
   const db = await getDbService();
   return db.getAllPaths();
+}
+
+export async function getAllPages(): Promise<PageListItem[]> {
+  const db = await getDbService();
+  return db.getAllPages();
+}
+
+export async function createPage(
+  path: string,
+  title: string
+): Promise<void> {
+  await requireServerPermission({ any: ["page:create"] });
+  const db = await getDbService();
+  const data: PageData = {
+    ...defaultPageData,
+    root: { props: { title } },
+  };
+  await db.savePage(path, data);
+}
+
+export async function duplicatePage(
+  sourcePath: string,
+  newPath: string,
+  newTitle: string
+): Promise<void> {
+  await requireServerPermission({ all: ["page:create"] });
+  const db = await getDbService();
+  const sourceData = await db.getPage(sourcePath);
+  if (!sourceData) throw new Error("Source page not found");
+  const cloned = structuredClone(sourceData);
+  cloned.root = {
+    ...cloned.root,
+    props: { ...cloned.root.props, title: newTitle },
+  };
+  await db.savePage(newPath, cloned);
 }
 
 export async function getSecurityConfig() {

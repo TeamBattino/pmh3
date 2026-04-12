@@ -27,6 +27,12 @@ import type {
   UpdateFolderPatch,
 } from "./file-system-types";
 
+export type PageListItem = {
+  path: string;
+  title: string;
+  updatedAt: string | null; // ISO string
+};
+
 export interface DatabaseService {
   savePage(path: string, data: Data): Promise<void>;
   deletePage(path: string): Promise<void>;
@@ -36,6 +42,7 @@ export interface DatabaseService {
   saveFooter(data: FooterData): Promise<void>;
   getFooter(): Promise<FooterData>;
   getAllPaths(): Promise<string[]>;
+  getAllPages(): Promise<PageListItem[]>;
   getSecurityConfig(): Promise<SecurityConfig>;
   saveSecurityConfig(RoleConfig: SecurityConfig): Promise<void>;
 
