@@ -30,6 +30,7 @@ export function discoveryRoutes(env: EnvConfig): Hono {
       ],
       code_challenge_methods_supported: ["S256", "plain"],
       grant_types_supported: ["authorization_code"],
+      authorization_response_iss_parameter_supported: true,
     });
   });
 

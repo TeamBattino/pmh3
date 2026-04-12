@@ -25,7 +25,7 @@ export function userinfoRoutes(): Hono {
     const { userInfo, roles } = stored;
 
     return c.json({
-      sub: userInfo.sub,
+      sub: String(userInfo.id),
       name: `${userInfo.first_name} ${userInfo.last_name}`,
       given_name: userInfo.first_name,
       family_name: userInfo.last_name,

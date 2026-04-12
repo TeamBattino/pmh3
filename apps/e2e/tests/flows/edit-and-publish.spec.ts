@@ -22,7 +22,7 @@ test("admin saves a new page, site renders it", async ({ page, context }) => {
   // Log in as Admin and open the editor for a fresh path. The admin's
   // editor route falls back to `defaultPageData` when no page exists at
   // the requested path, so this creates a blank new page to save.
-  await loginAs(page, "Admin");
+  await loginAs(page, "Dev Admin");
   await page.goto(`/web/editor${pagePath}`);
 
   // Wait for the Puck editor shell to load. The header contains the

@@ -60,10 +60,6 @@ export const defaultSecurityConfig: SecurityConfig = {
           groupId: 1172,
           roleClasses: ["Group::Abteilung::Abteilungsleitung", "Group::Abteilung::Webmaster"],
         },
-        {
-          groupId: 12460,
-          roleClasses: ["Group::AbteilungsGremium::Leitung"],
-        },
       ],
       allowedClients: ["pfadimh-admin"],
     },
@@ -84,8 +80,8 @@ export const defaultSecurityConfig: SecurityConfig = {
       ],
       midataGroupMappings: [
         {
-          groupId: 5678,
-          roleClasses: ["Group::Pfadi::Mitleitung"],
+          groupId: 1643,
+          roleClasses: ["Group::Pfadi::Einheitsleitung", "Group::Pfadi::Mitleitung"],
         },
       ],
       allowedClients: ["pfadimh-admin"],
@@ -96,8 +92,8 @@ export const defaultSecurityConfig: SecurityConfig = {
       permissions: ["page:update", "admin-ui:read", "asset:read"],
       midataGroupMappings: [
         {
-          groupId: 9999,
-          roleClasses: [],
+          groupId: 1642,
+          roleClasses: ["Group::Woelfe::Mitleitung"],
         },
       ],
       allowedClients: ["pfadimh-admin"],

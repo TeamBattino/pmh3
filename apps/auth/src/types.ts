@@ -12,7 +12,8 @@ export interface MiDataRole {
 }
 
 export interface MiDataUserInfo {
-  sub: string;
+  /** MiData returns `id` (number) from the profile endpoint. */
+  id: number;
   first_name: string;
   last_name: string;
   nickname: string;
@@ -117,7 +118,6 @@ export interface EnvConfig {
   midataUserinfoUrl: string;
   midataClientId: string;
   midataClientSecret: string;
-  midataScopes: string;
 
   // MongoDB
   mongoConnectionString: string;

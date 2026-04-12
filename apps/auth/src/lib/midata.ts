@@ -1,4 +1,10 @@
-import type { MiDataUserInfo, EnvConfig } from "../types";
+import type { EnvConfig, MiDataUserInfo } from "../types";
+
+/** Scopes for the authorize redirect (space-delimited per OAuth spec). */
+const AUTHORIZE_SCOPES = "openid email with_roles name";
+
+/** Scope for the profile endpoint X-Scope header (single value). */
+const PROFILE_SCOPE = "with_roles";
 
 /**
  * Build the MiData authorize URL that we redirect the user to.
@@ -16,7 +22,7 @@ export function buildAuthorizeUrl(
   url.searchParams.set("client_id", env.midataClientId);
   url.searchParams.set("redirect_uri", params.callbackUrl);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", env.midataScopes);
+  url.searchParams.set("scope", AUTHORIZE_SCOPES);
   url.searchParams.set("state", params.state);
   return url.toString();
 }
@@ -61,7 +67,10 @@ export async function fetchUserInfo(
   accessToken: string
 ): Promise<MiDataUserInfo> {
   const res = await fetch(env.midataUserinfoUrl, {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "X-Scope": PROFILE_SCOPE,
+    },
   });
 
   if (!res.ok) {

@@ -28,7 +28,8 @@ export async function mapRoles(userInfo: MiDataUserInfo): Promise<string[]> {
   return matched;
 }
 
-function userMatchesMapping(
+/** Exported for unit testing — pure function, no DB dependency. */
+export function userMatchesMapping(
   userRoles: MiDataRole[],
   groupId: number,
   roleClasses: string[]

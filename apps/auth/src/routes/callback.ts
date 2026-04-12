@@ -23,7 +23,10 @@ export function callbackRoutes(env: EnvConfig): Hono {
           const url = new URL(pending.redirectUri);
           url.searchParams.set("error", error);
           url.searchParams.set("error_description", desc);
-          url.searchParams.set("state", pending.clientState);
+          url.searchParams.set("iss", env.issuerUrl);
+          if (pending.clientState) {
+            url.searchParams.set("state", pending.clientState);
+          }
           return c.redirect(url.toString());
         }
       }
@@ -60,6 +63,13 @@ export function callbackRoutes(env: EnvConfig): Hono {
       // Map MiData groups → internal roles
       const roles = await mapRoles(userInfo);
 
+      // Map MiData groups → internal roles (log for debugging)
+      console.log(
+        `[callback] user=${userInfo.id} groups=${JSON.stringify(
+          userInfo.roles?.map((r) => ({ group_id: r.group_id, role_class: r.role_class }))
+        )} → matched roles: ${JSON.stringify(roles)}`
+      );
+
       // Check if any role grants access to the requesting client
       const allowed = await rolesAllowClient(roles, pending.clientId);
       if (!allowed) {
@@ -69,7 +79,10 @@ export function callbackRoutes(env: EnvConfig): Hono {
           "error_description",
           "You do not have access to this application"
         );
-        url.searchParams.set("state", pending.clientState);
+        url.searchParams.set("iss", env.issuerUrl);
+        if (pending.clientState) {
+          url.searchParams.set("state", pending.clientState);
+        }
         return c.redirect(url.toString());
       }
 
@@ -79,7 +92,7 @@ export function callbackRoutes(env: EnvConfig): Hono {
       const storedCode: StoredAuthCode = {
         code,
         clientId: pending.clientId,
-        userId: userInfo.sub,
+        userId: String(userInfo.id),
         userInfo,
         roles,
         redirectUri: pending.redirectUri,
@@ -95,7 +108,12 @@ export function callbackRoutes(env: EnvConfig): Hono {
       // Redirect back to the downstream client
       const url = new URL(pending.redirectUri);
       url.searchParams.set("code", code);
-      url.searchParams.set("state", pending.clientState);
+      // RFC 9207: oauth4webapi v3+ requires iss in the authorization response
+      url.searchParams.set("iss", env.issuerUrl);
+      // Only include state if the client originally sent one
+      if (pending.clientState) {
+        url.searchParams.set("state", pending.clientState);
+      }
       return c.redirect(url.toString());
     } catch (err) {
       console.error("Callback error:", err);
@@ -105,7 +123,10 @@ export function callbackRoutes(env: EnvConfig): Hono {
         "error_description",
         "Failed to authenticate with upstream provider"
       );
-      url.searchParams.set("state", pending.clientState);
+      url.searchParams.set("iss", env.issuerUrl);
+      if (pending.clientState) {
+        url.searchParams.set("state", pending.clientState);
+      }
       return c.redirect(url.toString());
     }
   });

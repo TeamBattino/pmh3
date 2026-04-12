@@ -1,10 +1,10 @@
-import { MongoClient, type Db, type Collection } from "mongodb";
+import { MongoClient, type Collection, type Db } from "mongodb";
 import type {
   AuthClient,
   PendingAuthorization,
-  StoredAuthCode,
-  StoredAccessToken,
   SecurityConfig,
+  StoredAccessToken,
+  StoredAuthCode,
 } from "../types";
 
 let client: MongoClient;
@@ -40,6 +40,9 @@ export async function initDb(
 
   // Seed default admin app client if it doesn't exist
   await seedDefaultClient();
+
+  // Seed default security config if neither admin nor auth has created one yet
+  await seedDefaultSecurityConfig();
 }
 
 async function seedDefaultClient(): Promise<void> {
@@ -56,7 +59,78 @@ async function seedDefaultClient(): Promise<void> {
     description: "CMS admin panel",
     redirectUris: [
       "http://localhost:3001/auth/callback/oidc",
+      // Docker compose network (e2e + containerized deployments)
+      "http://admin:3001/auth/callback/oidc",
     ],
+  });
+}
+
+async function seedDefaultSecurityConfig(): Promise<void> {
+  const existing = await db
+    .collection("security")
+    .findOne({ type: "securityConfig" });
+  if (existing) return;
+
+  console.log("Seeding default security config");
+  await db.collection("security").insertOne({
+    type: "securityConfig",
+    data: {
+      roles: [
+        {
+          name: "Admin",
+          description: "Admin role with all permissions",
+          permissions: ["global-admin"],
+          midataGroupMappings: [
+            {
+              groupId: 1172,
+              roleClasses: [
+                "Group::Abteilung::Abteilungsleitung",
+                "Group::Abteilung::Webmaster",
+              ],
+            },
+          ],
+          allowedClients: ["pfadimh-admin"],
+        },
+        {
+          name: "Leiter",
+          description: "Leiter role with limited permissions",
+          permissions: [
+            "page:create",
+            "page:update",
+            "page:delete",
+            "admin-ui:read",
+            "navbar:update",
+            "footer:update",
+            "asset:create",
+            "asset:read",
+            "asset:update",
+            "asset:delete",
+          ],
+          midataGroupMappings: [
+            {
+              groupId: 1643,
+              roleClasses: [
+                "Group::Pfadi::Einheitsleitung",
+                "Group::Pfadi::Mitleitung",
+              ],
+            },
+          ],
+          allowedClients: ["pfadimh-admin"],
+        },
+        {
+          name: "JungLeiter",
+          description: "JungLeiter role with limited permissions",
+          permissions: ["page:update", "admin-ui:read", "asset:read"],
+          midataGroupMappings: [
+            {
+              groupId: 1642,
+              roleClasses: ["Group::Woelfe::Mitleitung"],
+            },
+          ],
+          allowedClients: ["pfadimh-admin"],
+        },
+      ],
+    },
   });
 }
 

@@ -5,7 +5,9 @@
     "dev": "bun run --hot src/index.ts",
     "build": "bun build src/index.ts --outdir dist --target bun",
     "start": "bun run dist/index.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:unit": "vitest run --project auth/unit",
+    "test:integration": "vitest run --project auth/integration"
   },
   "dependencies": {
     "hono": "^4.7.11",

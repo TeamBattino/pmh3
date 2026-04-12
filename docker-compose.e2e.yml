@@ -7,8 +7,15 @@
 # Run from repo root (or via `turbo run test:e2e`, which invokes this
 # through `e2e/package.json`):
 #
-#   docker compose -f docker-compose.e2e.yml up --build \
-#     --abort-on-container-exit --exit-code-from e2e-runner
+#   docker compose -f docker-compose.e2e.yml run --rm --build e2e-runner
+#
+# IMPORTANT: Do NOT use `docker compose up --abort-on-container-exit`.
+# The minio-init container is a one-shot bootstrapper that exits with
+# code 0 after creating the S3 bucket. --abort-on-container-exit treats
+# ANY container exit as the signal to tear down the stack, which kills
+# the auth service (and everything else) before the tests can run.
+# Use `docker compose run` instead — it starts only the e2e-runner and
+# its dependency chain, waits for it to finish, and returns its exit code.
 #
 # Mongo + MinIO use tmpfs/ephemeral volumes so every run starts from a
 # clean database and empty bucket. The admin seeds default navbar/footer/
@@ -75,23 +82,42 @@ services:
       exit 0;
       "
 
+  auth:
+    build:
+      context: .
+      dockerfile: apps/auth/Dockerfile
+    environment:
+      AUTH_PORT: "3002"
+      AUTH_ISSUER_URL: http://auth:3002
+      MIDATA_AUTHORIZE_URL: http://mock-oidc:9000/default/authorize
+      MIDATA_TOKEN_URL: http://mock-oidc:9000/default/token
+      MIDATA_USERINFO_URL: http://mock-oidc:9000/default/userinfo
+      MIDATA_CLIENT_ID: pfadimh-sso
+      MIDATA_CLIENT_SECRET: dev-secret
+      MONGODB_CONNECTION_STRING: mongodb://root:example@pfadimh-mongo:27017
+      MONGODB_DB_NAME: pfadimh_e2e
+    depends_on:
+      pfadimh-mongo:
+        condition: service_healthy
+      mock-oidc:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3002/health').then(r=>{if(!r.ok)throw 1})"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
   admin:
     build:
       context: .
       dockerfile: apps/admin/Dockerfile
     environment:
       AUTH_SECRET: e2e-test-secret
-      # AUTH_URL pins the canonical origin that next-auth uses when
-      # generating its own URLs (signin form actions, callback URLs,
-      # etc.). Without it, next-auth falls back to HOSTNAME=0.0.0.0
-      # which it inherits from the runner stage's Dockerfile, and the
-      # browser tries to POST sign-in forms to http://0.0.0.0:3001/ —
-      # which is a server-bind address, not a client-routable host.
       AUTH_URL: http://admin:3001
       AUTH_TRUST_HOST: "true"
       MONGODB_CONNECTION_STRING: mongodb://root:example@pfadimh-mongo:27017
       MONGODB_DB_NAME: pfadimh_e2e
-      AUTH_OIDC_ISSUER: http://mock-oidc:9000/default
+      AUTH_OIDC_ISSUER: http://auth:3002
       AUTH_OIDC_CLIENT_ID: pfadimh-admin
       AUTH_OIDC_CLIENT_SECRET: dev-secret
       # S3 / MinIO. `S3_PUBLIC_URL_BASE` must be reachable by the headless
@@ -107,8 +133,8 @@ services:
     depends_on:
       pfadimh-mongo:
         condition: service_healthy
-      mock-oidc:
-        condition: service_started
+      auth:
+        condition: service_healthy
       minio-init:
         condition: service_completed_successfully
     healthcheck:
@@ -155,8 +181,8 @@ services:
         condition: service_healthy
       site:
         condition: service_healthy
-      mock-oidc:
-        condition: service_started
+      auth:
+        condition: service_healthy
     # admin/site have real healthchecks, but mock-oidc is distroless
     # (no shell) so compose can't probe it. Wait for the OIDC discovery
     # endpoint before handing off to playwright — the image has curl.
@@ -171,7 +197,7 @@ services:
       - sh
       - -c
       - |
-        until curl -fsS http://mock-oidc:9000/default/.well-known/openid-configuration > /dev/null 2>&1; do
+        until curl -fsS http://auth:3002/.well-known/openid-configuration > /dev/null 2>&1; do
           sleep 1
         done
         exec npx playwright test

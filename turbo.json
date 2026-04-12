@@ -24,8 +24,7 @@
         "MIDATA_TOKEN_URL",
         "MIDATA_USERINFO_URL",
         "MIDATA_CLIENT_ID",
-        "MIDATA_CLIENT_SECRET",
-        "MIDATA_SCOPES"
+        "MIDATA_CLIENT_SECRET"
       ]
     },
     "dev": {

@@ -39,11 +39,9 @@ export function authorizeRoutes(env: EnvConfig): Hono {
       codeChallengeMethod = c.req.query("code_challenge_method");
     }
 
-    // If the client didn't send a state, generate one. NextAuth manages
-    // state internally via cookies and doesn't always send it as a param.
-    if (!state) {
-      state = crypto.randomUUID();
-    }
+    // Track whether the client sent a state — if not, we won't send one
+    // back in the callback. NextAuth manages state via cookies, not params.
+    const clientSentState = !!state;
 
     console.log(
       `[authorize] ${c.req.method} client_id=${clientId} redirect_uri=${redirectUri}`
@@ -102,7 +100,7 @@ export function authorizeRoutes(env: EnvConfig): Hono {
       state: internalState,
       clientId,
       redirectUri,
-      clientState: state,
+      clientState: clientSentState ? state! : "",
       scope: scope ?? "openid",
       nonce: nonce ?? undefined,
       codeChallenge: codeChallenge ?? undefined,

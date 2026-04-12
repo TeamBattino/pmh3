@@ -101,39 +101,39 @@
         <input
           type="hidden"
           name="claims"
-          value='{"sub":"11001","first_name":"Dev","last_name":"Admin","nickname":"Akela","email":"admin@dev.local","company_name":null,"company":false,"address_care_of":null,"street":"Seestrasse 1","housenumber":"1","postbox":null,"zip_code":"8706","town":"Meilen","country":"CH","gender":"m","birthday":"1990-01-15","language":"de","primary_group_id":1172,"kantonalverband_id":2,"roles":[{"group_id":1172,"group_name":"Abteilung Meilen-Herrliberg","role":"Group::Abteilung::Abteilungsleitung","role_class":"Group::Abteilung::Abteilungsleitung","role_name":"Abteilungsleitung","permissions":["layer_and_below_full","layer_and_below_read"]},{"group_id":12460,"group_name":"Webteam","role":"Group::AbteilungsGremium::Leitung","role_class":"Group::AbteilungsGremium::Leitung","role_name":"Leitung","permissions":["group_full"]}]}'
+          value='{"id":11001,"first_name":"Dev","last_name":"Admin","nickname":"Akela","email":"admin@dev.local","company_name":null,"company":false,"address_care_of":null,"street":"Seestrasse 1","housenumber":"1","postbox":null,"zip_code":"8706","town":"Meilen","country":"CH","gender":"m","birthday":"1990-01-15","language":"de","primary_group_id":1172,"kantonalverband_id":2,"roles":[{"group_id":1172,"group_name":"Abteilung Meilen-Herrliberg","role":"Group::Abteilung::Abteilungsleitung","role_class":"Group::Abteilung::Abteilungsleitung","role_name":"Abteilungsleitung","permissions":["layer_and_below_full","layer_and_below_read"]},{"group_id":1645,"group_name":"Webteam","role":"Group::AbteilungsGremium::Leitung","role_class":"Group::AbteilungsGremium::Leitung","role_name":"Leitung","permissions":["group_full"]}]}'
         />
         <button type="submit">
           <strong>Dev Admin</strong>
-          <span>Groups: 1172 (Abteilungsleitung), 12460 (Webteam Leitung)</span>
+          <span>Groups: 1172 (Abteilungsleitung)</span>
         </button>
       </form>
 
-      <!-- Leiter: member of Pfadi unit (5678) -->
+      <!-- Leiter: member of Pfadi unit (1643) -->
       <form method="post" class="role">
         <input type="hidden" name="username" value="11002" />
         <input
           type="hidden"
           name="claims"
-          value='{"sub":"11002","first_name":"Dev","last_name":"Leiter","nickname":"Baloo","email":"leiter@dev.local","company_name":null,"company":false,"address_care_of":null,"street":"Bergweg 5","housenumber":"5","postbox":null,"zip_code":"8704","town":"Herrliberg","country":"CH","gender":"w","birthday":"1995-06-20","language":"de","primary_group_id":5678,"kantonalverband_id":2,"roles":[{"group_id":5678,"group_name":"Pfadi Meilen","role":"Group::Pfadi::Mitleitung","role_class":"Group::Pfadi::Mitleitung","role_name":"Mitleitung","permissions":["group_full"]}]}'
+          value='{"id":11002,"first_name":"Dev","last_name":"Leiter","nickname":"Baloo","email":"leiter@dev.local","company_name":null,"company":false,"address_care_of":null,"street":"Bergweg 5","housenumber":"5","postbox":null,"zip_code":"8704","town":"Herrliberg","country":"CH","gender":"w","birthday":"1995-06-20","language":"de","primary_group_id":1643,"kantonalverband_id":2,"roles":[{"group_id":1643,"group_name":"Pfadi Meilen","role":"Group::Pfadi::Mitleitung","role_class":"Group::Pfadi::Mitleitung","role_name":"Mitleitung","permissions":["group_full"]}]}'
         />
         <button type="submit">
           <strong>Dev Leiter</strong>
-          <span>Groups: 5678 (Pfadi Mitleitung)</span>
+          <span>Groups: 1643 (Pfadi Mitleitung)</span>
         </button>
       </form>
 
-      <!-- JungLeiter: member of a basic group (9999) -->
+      <!-- JungLeiter: member of Wölfe unit (1642) -->
       <form method="post" class="role">
         <input type="hidden" name="username" value="11003" />
         <input
           type="hidden"
           name="claims"
-          value='{"sub":"11003","first_name":"Dev","last_name":"JungLeiter","nickname":"Mogli","email":"jungleiter@dev.local","company_name":null,"company":false,"address_care_of":null,"street":"Dorfstrasse 10","housenumber":"10","postbox":null,"zip_code":"8706","town":"Meilen","country":"CH","gender":"m","birthday":"2002-03-10","language":"de","primary_group_id":9999,"kantonalverband_id":2,"roles":[{"group_id":9999,"group_name":"Leitpfadi","role":"Group::Pfadi::Leitpfadi","role_class":"Group::Pfadi::Leitpfadi","role_name":"Leitpfadi","permissions":[]}]}'
+          value='{"id":11003,"first_name":"Dev","last_name":"JungLeiter","nickname":"Mogli","email":"jungleiter@dev.local","company_name":null,"company":false,"address_care_of":null,"street":"Dorfstrasse 10","housenumber":"10","postbox":null,"zip_code":"8706","town":"Meilen","country":"CH","gender":"m","birthday":"2002-03-10","language":"de","primary_group_id":1642,"kantonalverband_id":2,"roles":[{"group_id":1642,"group_name":"Wölfe","role":"Group::Woelfe::Mitleitung","role_class":"Group::Woelfe::Mitleitung","role_name":"Mitleitung","permissions":[]}]}'
         />
         <button type="submit">
           <strong>Dev JungLeiter</strong>
-          <span>Groups: 9999 (Leitpfadi)</span>
+          <span>Groups: 1642 (Wölfe Mitleitung)</span>
         </button>
       </form>
 
@@ -143,7 +143,7 @@
         <input
           type="hidden"
           name="claims"
-          value='{"sub":"11004","first_name":"Dev","last_name":"Member","nickname":"Shere Khan","email":"member@dev.local","company_name":null,"company":false,"address_care_of":null,"street":"Kirchgasse 3","housenumber":"3","postbox":null,"zip_code":"8706","town":"Meilen","country":"CH","gender":"w","birthday":"2005-11-25","language":"de","primary_group_id":7777,"kantonalverband_id":2,"roles":[{"group_id":7777,"group_name":"Biber","role":"Group::Biber::Biber","role_class":"Group::Biber::Biber","role_name":"Biber","permissions":[]}]}'
+          value='{"id":11004,"first_name":"Dev","last_name":"Member","nickname":"Shere Khan","email":"member@dev.local","company_name":null,"company":false,"address_care_of":null,"street":"Kirchgasse 3","housenumber":"3","postbox":null,"zip_code":"8706","town":"Meilen","country":"CH","gender":"w","birthday":"2005-11-25","language":"de","primary_group_id":7777,"kantonalverband_id":2,"roles":[{"group_id":7777,"group_name":"Biber","role":"Group::Biber::Biber","role_class":"Group::Biber::Biber","role_name":"Biber","permissions":[]}]}'
         />
         <button type="submit">
           <strong>Dev Member (no admin access)</strong>

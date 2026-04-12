@@ -46,7 +46,7 @@ export function OAuthClientModal({
     initialClient?.description ?? ""
   );
   const [clientId, setClientId] = useState(
-    initialClient?.clientId ?? generateClientId()
+    initialClient?.clientId ?? ""
   );
   const [redirectUris, setRedirectUris] = useState<string[]>(
     initialClient?.redirectUris ?? [""]

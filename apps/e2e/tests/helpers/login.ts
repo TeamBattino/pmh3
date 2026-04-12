@@ -3,25 +3,27 @@ import type { Page } from "@playwright/test";
 const ADMIN_URL = process.env.E2E_ADMIN_URL ?? "http://admin:3001";
 
 /**
- * Drives the full OIDC login flow on behalf of a test, from the admin's
- * landing page through next-auth's sign-in UI and the mock OIDC's custom
- * role-picker login page. Leaves the browser sitting on the admin home.
+ * Drives the full OIDC login flow through the auth service and mock MiData.
  *
- * URLs come from `E2E_ADMIN_URL` so the same test can run inside docker
- * compose (service-name networking) or against a local stack.
+ * Flow: admin → auth service /authorize → mock-oidc (MiData sim) login page
+ *       → auth service /callback → admin callback → session established.
  *
- * mock-oauth2-server 2.1.10 serves the interactive login form directly
- * at `/default/authorize` rather than redirecting to `/login`, so we
- * can't gate on the URL path — we rely on playwright's auto-waiting
- * for the role button instead.
+ * The mock-oidc login page shows MiData-shaped test users with group
+ * memberships. The `user` param selects which button to click.
  */
+export type TestUser = "Dev Admin" | "Dev Leiter" | "Dev JungLeiter" | "Dev Member";
+
 export async function loginAs(
   page: Page,
-  role: "Admin" | "Leiter" | "JungLeiter"
+  user: TestUser
 ): Promise<void> {
   await page.goto("/");
   await page.waitForURL(/\/auth\/signin/);
+  // Click the OIDC sign-in button on NextAuth's signin page
   await page.getByRole("button", { name: /oidc/i }).click();
-  await page.getByRole("button", { name: new RegExp(`^${role}`) }).click();
+  // Now on mock-oidc's login page — click the test user button.
+  // The button text starts with the user name.
+  await page.getByRole("button", { name: new RegExp(`^${user}`) }).click();
+  // Wait to land back on the admin dashboard
   await page.waitForURL(`${ADMIN_URL}/`);
 }

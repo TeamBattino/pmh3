@@ -20,7 +20,6 @@ export function loadEnv(): EnvConfig {
     midataUserinfoUrl: required("MIDATA_USERINFO_URL"),
     midataClientId: required("MIDATA_CLIENT_ID"),
     midataClientSecret: required("MIDATA_CLIENT_SECRET"),
-    midataScopes: optional("MIDATA_SCOPES", "email with_roles openid name"),
 
     mongoConnectionString: required("MONGODB_CONNECTION_STRING"),
     mongoDbName: required("MONGODB_DB_NAME"),

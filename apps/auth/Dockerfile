@@ -7,7 +7,7 @@ COPY package.json bun.lock ./
 COPY apps/auth/package.json apps/auth/package.json
 COPY packages/typescript-config/ packages/typescript-config/
 
-RUN cd apps/auth && bun install --frozen-lockfile --production
+RUN cd apps/auth && bun install
 
 COPY apps/auth/src/ apps/auth/src/
 COPY apps/auth/tsconfig.json apps/auth/tsconfig.json
