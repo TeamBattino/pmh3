@@ -27,6 +27,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/Sidebar";
+import { cn } from "@/lib/cn";
 import type { Policy } from "@/lib/security/permission-evaluator";
 
 type NavItem = {
@@ -134,7 +135,25 @@ export function AppSidebar() {
                     : pathname === item.href;
                   const content = (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
+                      {/*
+                        Left accent bar. The shadcn active state on the
+                        button itself (`data-active:bg-sidebar-accent`)
+                        is visually identical to hover — this bar is what
+                        actually tells the user which section they're in.
+                      */}
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "pointer-events-none absolute top-1/2 left-0 h-5 w-1 -translate-y-1/2 rounded-r-full bg-sidebar-primary transition-opacity",
+                          active ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        tooltip={item.label}
+                        className="data-[active=true]:bg-sidebar-primary/10 data-[active=true]:font-semibold data-[active=true]:text-sidebar-primary"
+                      >
                         <Link href={item.href}>
                           <Icon className="size-4" />
                           <span>{item.label}</span>
