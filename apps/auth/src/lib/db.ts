@@ -39,42 +39,52 @@ export async function initDb(
     .collection("auth-clients")
     .createIndex({ clientId: 1 }, { unique: true });
 
-  // Seed default admin app client if it doesn't exist
-  await seedDefaultClient();
+  // Sync admin app client from env vars on every boot (config-driven, not DB-driven)
+  await syncAdminClient();
 
   // Seed default security config if neither admin nor auth has created one yet
   await seedDefaultSecurityConfig();
 }
 
-async function seedDefaultClient(): Promise<void> {
-  const existing = await authClientsCol().findOne({ clientId: "pfadimh-admin" });
-  if (existing) return;
-
+/**
+ * Sync the admin OAuth client from env vars on every boot.
+ *
+ * Unlike other clients (managed via the admin UI), `pfadimh-admin` is
+ * config-driven — its redirect URIs and secret come from env vars. This avoids
+ * a chicken-and-egg problem: if the admin's callback URL changes, you'd
+ * otherwise be locked out of the UI that manages it.
+ *
+ * Required env vars in prod:
+ *   ADMIN_URL            — public URL of admin service (adds the prod callback)
+ *   ADMIN_CLIENT_SECRET  — raw client secret; must match AUTH_OIDC_CLIENT_SECRET on admin
+ */
+async function syncAdminClient(): Promise<void> {
   const redirectUris = [
     "http://localhost:3001/auth/callback/oidc",
     // Docker compose network (e2e + containerized deployments)
     "http://admin:3001/auth/callback/oidc",
   ];
 
-  // Production/staging: add callback for the real admin URL
   if (process.env.ADMIN_URL) {
     const base = process.env.ADMIN_URL.replace(/\/+$/, "");
     redirectUris.push(`${base}/auth/callback/oidc`);
   }
 
-  // Secret defaults to "dev-secret" for local dev. In prod, set
-  // ADMIN_CLIENT_SECRET on the auth service and the matching
-  // AUTH_OIDC_CLIENT_SECRET on the admin service to the same value.
   const clientSecret = process.env.ADMIN_CLIENT_SECRET ?? "dev-secret";
 
-  console.log("Seeding default OAuth client: pfadimh-admin");
-  await authClientsCol().insertOne({
-    clientId: "pfadimh-admin",
-    clientSecretHash: hashSecret(clientSecret),
-    name: "PMH Admin",
-    description: "CMS admin panel",
-    redirectUris,
-  });
+  await authClientsCol().updateOne(
+    { clientId: "pfadimh-admin" },
+    {
+      $set: {
+        clientSecretHash: hashSecret(clientSecret),
+        name: "PMH Admin",
+        description: "CMS admin panel",
+        redirectUris,
+      },
+    },
+    { upsert: true }
+  );
+  console.log("Synced admin OAuth client: pfadimh-admin");
 }
 
 async function seedDefaultSecurityConfig(): Promise<void> {

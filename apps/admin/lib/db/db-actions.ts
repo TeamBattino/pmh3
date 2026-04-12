@@ -8,6 +8,7 @@ import {
 } from "@pfadipuck/puck-web/config/page.config";
 import { SecurityConfig } from "@/lib/security/security-config";
 import { requireServerPermission } from "@/lib/security/server-guard";
+import { SYSTEM_ADMIN_CLIENT_ID } from "@/lib/db/system-clients";
 import { getDbService, type AuthClient, type PageListItem } from "./db";
 
 /**
@@ -127,6 +128,11 @@ export async function saveAuthClient(
   client: AuthClient & { plainSecret?: string }
 ): Promise<void> {
   await requireServerPermission({ all: ["oauth-clients:manage"] });
+  if (client.clientId === SYSTEM_ADMIN_CLIENT_ID) {
+    throw new Error(
+      "The admin OAuth client is managed via env vars on the auth service and cannot be edited here."
+    );
+  }
   const { plainSecret, ...rest } = client;
   if (plainSecret) {
     const { createHash } = await import("crypto");
@@ -140,6 +146,11 @@ export async function saveAuthClient(
 
 export async function deleteAuthClient(clientId: string): Promise<void> {
   await requireServerPermission({ all: ["oauth-clients:manage"] });
+  if (clientId === SYSTEM_ADMIN_CLIENT_ID) {
+    throw new Error(
+      "The admin OAuth client is managed via env vars on the auth service and cannot be deleted here."
+    );
+  }
   const db = await getDbService();
   return db.deleteAuthClient(clientId);
 }

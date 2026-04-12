@@ -10,9 +10,10 @@ import {
   Table,
 } from "@/components/ui/Table";
 import { getAuthClients, deleteAuthClient } from "@/lib/db/db-actions";
+import { SYSTEM_ADMIN_CLIENT_ID } from "@/lib/db/system-clients";
 import { queryClient } from "@/lib/query-client";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, Globe, Lock } from "lucide-react";
 import { toast } from "@/components/ui/Sonner";
 import { OAuthClientModal } from "./OAuthClientModal";
 
@@ -76,62 +77,82 @@ export function OAuthClientManager() {
                 </TableCell>
               </TableRow>
             ) : clients && clients.length > 0 ? (
-              clients.map((client) => (
-                <TableRow key={client.clientId}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div>
-                        <div className="font-medium">{client.name}</div>
-                        {client.description && (
-                          <div className="text-xs text-muted-foreground">
-                            {client.description}
+              clients.map((client) => {
+                const isSystem = client.clientId === SYSTEM_ADMIN_CLIENT_ID;
+                return (
+                  <TableRow key={client.clientId}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div>
+                          <div className="font-medium flex items-center gap-2">
+                            {client.name}
+                            {isSystem && (
+                              <span
+                                className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide bg-muted text-muted-foreground px-1.5 py-0.5 rounded"
+                                title="Managed via env vars on the auth service"
+                              >
+                                <Lock className="h-2.5 w-2.5" />
+                                System
+                              </span>
+                            )}
                           </div>
-                        )}
+                          {client.description && (
+                            <div className="text-xs text-muted-foreground">
+                              {client.description}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                      {client.clientId}
-                    </code>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      {client.redirectUris.map((uri, i) => (
-                        <code
-                          key={i}
-                          className="text-xs text-muted-foreground truncate max-w-xs block"
-                        >
-                          {uri}
-                        </code>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-1 justify-end">
-                      <OAuthClientModal
-                        client={client}
-                        mode="edit"
-                        trigger={
-                          <Button variant="ghost" size="icon">
-                            <Pencil className="h-4 w-4" />
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                        {client.clientId}
+                      </code>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-0.5">
+                        {client.redirectUris.map((uri, i) => (
+                          <code
+                            key={i}
+                            className="text-xs text-muted-foreground truncate max-w-xs block"
+                          >
+                            {uri}
+                          </code>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {isSystem ? (
+                        <span className="text-xs text-muted-foreground italic">
+                          Managed by auth service
+                        </span>
+                      ) : (
+                        <div className="flex gap-1 justify-end">
+                          <OAuthClientModal
+                            client={client}
+                            mode="edit"
+                            trigger={
+                              <Button variant="ghost" size="icon">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            }
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              handleDelete(client.clientId, client.name)
+                            }
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
-                        }
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          handleDelete(client.clientId, client.name)
-                        }
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell
@@ -153,50 +174,69 @@ export function OAuthClientManager() {
             Loading services...
           </div>
         ) : clients && clients.length > 0 ? (
-          clients.map((client) => (
-            <div
-              key={client.clientId}
-              className="rounded-lg border p-4 flex flex-col gap-2"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{client.name}</span>
-                </div>
-                <div className="flex gap-1">
-                  <OAuthClientModal
-                    client={client}
-                    mode="edit"
-                    trigger={
-                      <Button variant="ghost" size="icon">
-                        <Pencil className="h-4 w-4" />
+          clients.map((client) => {
+            const isSystem = client.clientId === SYSTEM_ADMIN_CLIENT_ID;
+            return (
+              <div
+                key={client.clientId}
+                className="rounded-lg border p-4 flex flex-col gap-2"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{client.name}</span>
+                    {isSystem && (
+                      <span
+                        className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide bg-muted text-muted-foreground px-1.5 py-0.5 rounded"
+                        title="Managed via env vars on the auth service"
+                      >
+                        <Lock className="h-2.5 w-2.5" />
+                        System
+                      </span>
+                    )}
+                  </div>
+                  {!isSystem && (
+                    <div className="flex gap-1">
+                      <OAuthClientModal
+                        client={client}
+                        mode="edit"
+                        trigger={
+                          <Button variant="ghost" size="icon">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleDelete(client.clientId, client.name)
+                        }
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
-                    }
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      handleDelete(client.clientId, client.name)
-                    }
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <code className="text-xs bg-muted px-1.5 py-0.5 rounded self-start">
-                {client.clientId}
-              </code>
-              {client.redirectUris.map((uri, i) => (
-                <code
-                  key={i}
-                  className="text-xs text-muted-foreground truncate block"
-                >
-                  {uri}
+                <code className="text-xs bg-muted px-1.5 py-0.5 rounded self-start">
+                  {client.clientId}
                 </code>
-              ))}
-            </div>
-          ))
+                {client.redirectUris.map((uri, i) => (
+                  <code
+                    key={i}
+                    className="text-xs text-muted-foreground truncate block"
+                  >
+                    {uri}
+                  </code>
+                ))}
+                {isSystem && (
+                  <span className="text-xs text-muted-foreground italic">
+                    Managed by auth service
+                  </span>
+                )}
+              </div>
+            );
+          })
         ) : (
           <div className="h-32 flex items-center justify-center rounded-lg border text-muted-foreground italic">
             No services registered yet
