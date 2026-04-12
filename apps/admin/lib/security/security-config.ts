@@ -8,6 +8,7 @@ export const assignablePermissions = [
   "footer:update",
   "global-admin",
   "navbar:update",
+  "oauth-clients:manage",
   "page:create",
   "page:delete",
   "page:update",
@@ -24,10 +25,28 @@ export interface SecurityConfig {
   roles: Role[];
 }
 
+/**
+ * A MiData group + role_class combination. A user is matched when they hold
+ * any of the listed role_classes within the given group. If `roleClasses` is
+ * empty, any role in that group matches.
+ */
+export type MidataGroupMapping = {
+  groupId: number;
+  roleClasses: string[];
+};
+
 export type Role = {
   name: string;
   description: string;
   permissions: Permission[];
+  /**
+   * MiData group + role mappings. A user gets this role if they match at
+   * least one entry: they must belong to the group AND hold one of the
+   * listed role_classes (or any role if roleClasses is empty).
+   */
+  midataGroupMappings: MidataGroupMapping[];
+  /** OAuth client IDs that users with this role are allowed to access. */
+  allowedClients: string[];
 };
 
 export const defaultSecurityConfig: SecurityConfig = {
@@ -36,6 +55,17 @@ export const defaultSecurityConfig: SecurityConfig = {
       name: "Admin",
       description: "Admin role with all permissions",
       permissions: ["global-admin"],
+      midataGroupMappings: [
+        {
+          groupId: 1172,
+          roleClasses: ["Group::Abteilung::Abteilungsleitung", "Group::Abteilung::Webmaster"],
+        },
+        {
+          groupId: 12460,
+          roleClasses: ["Group::AbteilungsGremium::Leitung"],
+        },
+      ],
+      allowedClients: ["pfadimh-admin"],
     },
     {
       name: "Leiter",
@@ -52,11 +82,25 @@ export const defaultSecurityConfig: SecurityConfig = {
         "asset:update",
         "asset:delete",
       ],
+      midataGroupMappings: [
+        {
+          groupId: 5678,
+          roleClasses: ["Group::Pfadi::Mitleitung"],
+        },
+      ],
+      allowedClients: ["pfadimh-admin"],
     },
     {
       name: "JungLeiter",
       description: "JungLeiter role with limited permissions",
       permissions: ["page:update", "admin-ui:read", "asset:read"],
+      midataGroupMappings: [
+        {
+          groupId: 9999,
+          roleClasses: [],
+        },
+      ],
+      allowedClients: ["pfadimh-admin"],
     },
   ],
 };

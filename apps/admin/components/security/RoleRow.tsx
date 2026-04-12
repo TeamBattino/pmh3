@@ -6,7 +6,7 @@ import { queryClient } from "@/lib/query-client";
 import { useHasPermission } from "@/lib/security/hooks/has-permission";
 import { Role } from "@/lib/security/security-config";
 import ConfirmModal from "@/components/admin/ConfirmModal";
-import { RoleModal } from "./RoleModal";
+import { RoleMappingModal } from "./RoleMappingModal";
 
 type RoleRowProps = {
   role: Role;
@@ -36,7 +36,7 @@ function RoleRow({ role, variant = "table" }: RoleRowProps) {
         </TableCell>
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-2">
-            <RoleModal
+            <RoleMappingModal
               mode={canEdit ? "edit" : "view"}
               role={role}
               trigger={
@@ -77,7 +77,7 @@ function RoleRow({ role, variant = "table" }: RoleRowProps) {
         </div>
       </div>
       <div className="flex items-center gap-2 mt-2">
-        <RoleModal
+        <RoleMappingModal
           mode={canEdit ? "edit" : "view"}
           role={role}
           trigger={

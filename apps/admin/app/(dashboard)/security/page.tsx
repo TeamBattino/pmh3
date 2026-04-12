@@ -1,8 +1,5 @@
-import SecurityManager from "@/components/security/SecurityManager";
-import { requireServerPermission } from "@/lib/security/server-guard";
+import { redirect } from "next/navigation";
 
-export default async function Page() {
-  await requireServerPermission({ all: ["role-permissions:read"] });
-
-  return <SecurityManager />;
+export default function SecurityPage() {
+  redirect("/security/roles");
 }

@@ -3,7 +3,7 @@
 import { PermissionGuard } from "@/components/security/PermissionGuard";
 import { Button } from "@/components/ui/Button";
 import { PageHeading } from "@/components/ui/Heading";
-import { RoleModal } from "./RoleModal";
+import { RoleMappingModal } from "./RoleMappingModal";
 
 function Header() {
   return (
@@ -11,7 +11,7 @@ function Header() {
       <PageHeading>Roles</PageHeading>
       <div className="flex flex-wrap gap-2">
         <PermissionGuard policy={{ all: ["role-permissions:update"] }}>
-          <RoleModal
+          <RoleMappingModal
             mode="add"
             trigger={<Button>Add Role</Button>}
           />

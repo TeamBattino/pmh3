@@ -93,11 +93,25 @@ const groups: NavGroup[] = [
     label: "Security",
     items: [
       {
-        href: "/security",
+        href: "/security/roles",
         label: "Roles",
         icon: ShieldCheck,
         policy: { all: ["role-permissions:read"] },
-        isActive: (p) => p.startsWith("/security"),
+        isActive: (p) => p === "/security/roles" || p === "/security",
+      },
+      {
+        href: "/security/permissions",
+        label: "Permissions",
+        icon: ShieldCheck,
+        policy: { all: ["role-permissions:read"] },
+        isActive: (p) => p.startsWith("/security/permissions"),
+      },
+      {
+        href: "/security/services",
+        label: "Services",
+        icon: ShieldCheck,
+        policy: { all: ["oauth-clients:manage"] },
+        isActive: (p) => p.startsWith("/security/services"),
       },
     ],
   },

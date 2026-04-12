@@ -6,6 +6,7 @@
     "dev": "turbo dev",
     "dev:admin": "turbo dev --filter=@pfadipuck/admin",
     "dev:site": "turbo dev --filter=@pfadipuck/site",
+    "dev:auth": "turbo dev --filter=@pfadipuck/auth",
     "build": "turbo build",
     "build:admin": "turbo build --filter=@pfadipuck/admin",
     "build:site": "turbo build --filter=@pfadipuck/site",

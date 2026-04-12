@@ -1,0 +1,20 @@
+{
+  "name": "@pfadipuck/auth",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "start": "bun run dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.7.11",
+    "jose": "^6.0.11",
+    "mongodb": "^6.15.0"
+  },
+  "devDependencies": {
+    "@pfadipuck/typescript-config": "workspace:*",
+    "@types/bun": "^1.2.14",
+    "typescript": "^5.8.3"
+  }
+}

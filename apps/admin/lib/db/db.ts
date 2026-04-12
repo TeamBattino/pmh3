@@ -4,6 +4,15 @@ import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import { env } from "@/lib/env";
 import type { SecurityConfig } from "@/lib/security/security-config";
 import type { Data } from "@puckeditor/core";
+
+/** OAuth client registered for downstream services. */
+export type AuthClient = {
+  clientId: string;
+  clientSecretHash: string;
+  name: string;
+  description: string;
+  redirectUris: string[];
+};
 import { ensureSeeded } from "./db-bootstrap";
 import { MongoService } from "./db-mongo-impl";
 import type {
@@ -45,6 +54,12 @@ export interface DatabaseService {
   getAllPages(): Promise<PageListItem[]>;
   getSecurityConfig(): Promise<SecurityConfig>;
   saveSecurityConfig(RoleConfig: SecurityConfig): Promise<void>;
+
+  // ── OAuth clients ──────────────────────────────────────────────────
+  getAuthClients(): Promise<AuthClient[]>;
+  getAuthClient(clientId: string): Promise<AuthClient | null>;
+  saveAuthClient(client: AuthClient): Promise<void>;
+  deleteAuthClient(clientId: string): Promise<void>;
 
   // ── File system: files ──────────────────────────────────────────────
   createFile(input: CreateFileInput): Promise<FileRecord>;

@@ -8,7 +8,7 @@ import {
 } from "@pfadipuck/puck-web/config/page.config";
 import { SecurityConfig } from "@/lib/security/security-config";
 import { requireServerPermission } from "@/lib/security/server-guard";
-import { getDbService, type PageListItem } from "./db";
+import { getDbService, type AuthClient, type PageListItem } from "./db";
 
 /**
  * Public Database Actions.
@@ -105,4 +105,55 @@ export async function saveSecurityConfig(permissions: SecurityConfig) {
   await requireServerPermission({ all: ["role-permissions:update"] });
   const db = await getDbService();
   return db.saveSecurityConfig(permissions);
+}
+
+// ── OAuth clients ──────────────────────────────────────────────────
+
+export async function getAuthClients(): Promise<AuthClient[]> {
+  await requireServerPermission({ all: ["oauth-clients:manage"] });
+  const db = await getDbService();
+  return db.getAuthClients();
+}
+
+export async function getAuthClient(
+  clientId: string
+): Promise<AuthClient | null> {
+  await requireServerPermission({ all: ["oauth-clients:manage"] });
+  const db = await getDbService();
+  return db.getAuthClient(clientId);
+}
+
+export async function saveAuthClient(
+  client: AuthClient & { plainSecret?: string }
+): Promise<void> {
+  await requireServerPermission({ all: ["oauth-clients:manage"] });
+  const { plainSecret, ...rest } = client;
+  if (plainSecret) {
+    const { createHash } = await import("crypto");
+    rest.clientSecretHash = createHash("sha256")
+      .update(plainSecret)
+      .digest("hex");
+  }
+  const db = await getDbService();
+  return db.saveAuthClient(rest);
+}
+
+export async function deleteAuthClient(clientId: string): Promise<void> {
+  await requireServerPermission({ all: ["oauth-clients:manage"] });
+  const db = await getDbService();
+  return db.deleteAuthClient(clientId);
+}
+
+/**
+ * Fetch just the clientId + name list (for the role modal's service
+ * access checkboxes). Requires only role-permissions:read since it's
+ * used within the role editor.
+ */
+export async function getAuthClientList(): Promise<
+  Pick<AuthClient, "clientId" | "name">[]
+> {
+  await requireServerPermission({ all: ["role-permissions:read"] });
+  const db = await getDbService();
+  const clients = await db.getAuthClients();
+  return clients.map((c) => ({ clientId: c.clientId, name: c.name }));
 }

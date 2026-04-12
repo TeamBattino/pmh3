@@ -4,7 +4,7 @@ import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import type { SecurityConfig } from "@/lib/security/security-config";
 import type { Data } from "@puckeditor/core";
 import { Db, MongoClient, ObjectId, type Filter, type WithId } from "mongodb";
-import type { DatabaseService, PageListItem } from "./db";
+import type { AuthClient, DatabaseService, PageListItem } from "./db";
 import type {
   BulkDeleteResult,
   CascadeDeletePreview,
@@ -94,6 +94,7 @@ export class MongoService implements DatabaseService {
   readonly foldersCollectionName = "folders";
   readonly collectionsCollectionName = "collections";
   readonly collectionFilesCollectionName = "collection_files";
+  readonly authClientsCollectionName = "auth-clients";
 
   constructor(connectionString: string, dbName: string) {
     this.client = new MongoClient(connectionString);
@@ -216,6 +217,37 @@ export class MongoService implements DatabaseService {
         { $set: { data: securityConfig, type: "securityConfig" } },
         { upsert: true }
       );
+  }
+
+  // ── OAuth clients ──────────────────────────────────────────────────
+
+  async getAuthClients(): Promise<AuthClient[]> {
+    return this.db
+      .collection<AuthClient>(this.authClientsCollectionName)
+      .find()
+      .toArray() as unknown as AuthClient[];
+  }
+
+  async getAuthClient(clientId: string): Promise<AuthClient | null> {
+    return this.db
+      .collection<AuthClient>(this.authClientsCollectionName)
+      .findOne({ clientId }) as unknown as AuthClient | null;
+  }
+
+  async saveAuthClient(client: AuthClient): Promise<void> {
+    await this.db
+      .collection<AuthClient>(this.authClientsCollectionName)
+      .updateOne(
+        { clientId: client.clientId },
+        { $set: client },
+        { upsert: true }
+      );
+  }
+
+  async deleteAuthClient(clientId: string): Promise<void> {
+    await this.db
+      .collection(this.authClientsCollectionName)
+      .deleteOne({ clientId });
   }
 
   // ── File system: files ──────────────────────────────────────────────
