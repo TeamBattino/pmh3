@@ -10,7 +10,6 @@ import {
   DialogTrigger,
   DialogHeader,
 } from "@/components/ui/Dialog";
-import { Label } from "@/components/ui/Label";
 import { toast } from "@/components/ui/Sonner";
 import { getSecurityConfig, saveSecurityConfig } from "@/lib/db/db-actions";
 import { queryClient } from "@/lib/query-client";

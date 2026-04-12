@@ -272,7 +272,7 @@ export class MongoService implements DatabaseService {
       height: input.height,
       blurhash: input.blurhash,
       uploadedAt: new Date(),
-      uploadedBy: null, // TODO: populate after Keycloak migration
+      uploadedBy: null,
     };
     const { insertedId } = await files.insertOne(doc);
 

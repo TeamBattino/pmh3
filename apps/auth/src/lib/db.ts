@@ -53,7 +53,6 @@ async function seedDefaultClient(): Promise<void> {
   await authClientsCol().insertOne({
     clientId: "pfadimh-admin",
     // SHA-256 of "dev-secret"
-    // SHA-256 of "dev-secret"
     clientSecretHash: "298754db2dbab6ec62605ceb0379eb7ee376580359449efe0caa3aa06cd56736",
     name: "PMH Admin",
     description: "CMS admin panel",

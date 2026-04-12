@@ -43,10 +43,6 @@ export function authorizeRoutes(env: EnvConfig): Hono {
     // back in the callback. NextAuth manages state via cookies, not params.
     const clientSentState = !!state;
 
-    console.log(
-      `[authorize] ${c.req.method} client_id=${clientId} redirect_uri=${redirectUri}`
-    );
-
     // Validate required params
     if (!clientId || !redirectUri) {
       return c.json(

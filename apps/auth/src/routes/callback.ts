@@ -63,13 +63,6 @@ export function callbackRoutes(env: EnvConfig): Hono {
       // Map MiData groups → internal roles
       const roles = await mapRoles(userInfo);
 
-      // Map MiData groups → internal roles (log for debugging)
-      console.log(
-        `[callback] user=${userInfo.id} groups=${JSON.stringify(
-          userInfo.roles?.map((r) => ({ group_id: r.group_id, role_class: r.role_class }))
-        )} → matched roles: ${JSON.stringify(roles)}`
-      );
-
       // Check if any role grants access to the requesting client
       const allowed = await rolesAllowClient(roles, pending.clientId);
       if (!allowed) {
