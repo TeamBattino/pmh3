@@ -324,15 +324,25 @@ function FileDetailBody({
             }
           }}
         />
-        <Button
-          variant="outline"
-          className="flex-1 basis-[140px]"
-          onClick={() => setAddOpen(true)}
-        >
-          <FolderPlus className="mr-2 size-4" aria-hidden />
-          Add to album...
-        </Button>
-        {currentAlbum && !currentAlbum.isSystemAlbum && (
+        {/*
+          Albums are a media-pool concept. Files in the documents pool
+          (folderId !== null) can never belong to an album — the DB layer
+          already hard-skips them in `addFilesToAlbum` — so offering the
+          action in the UI just misleads the user. Gate on the pool, not
+          on kind: a document that happens to be an image is still a
+          document and still shouldn't be album-addable.
+        */}
+        {file.folderId === null && (
+          <Button
+            variant="outline"
+            className="flex-1 basis-[140px]"
+            onClick={() => setAddOpen(true)}
+          >
+            <FolderPlus className="mr-2 size-4" aria-hidden />
+            Add to album...
+          </Button>
+        )}
+        {file.folderId === null && currentAlbum && !currentAlbum.isSystemAlbum && (
           <Button
             variant="outline"
             className="flex-1 basis-[170px]"

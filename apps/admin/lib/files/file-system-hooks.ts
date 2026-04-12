@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-query";
 import * as actions from "@/lib/db/file-system-actions";
 import type {
+  CascadeDeletePreview,
   CollectionRecord,
   CreateCollectionInput,
   CreateFolderInput,
@@ -62,10 +63,16 @@ export function useTree(
   });
 }
 
-export function useFolderTree() {
+export function useFolderTree(
+  options?: Omit<
+    UseQueryOptions<FolderRecord[]>,
+    "queryKey" | "queryFn"
+  >
+) {
   return useQuery({
     queryKey: fileSystemKeys.folderTree(),
     queryFn: () => actions.getFolderTree(),
+    ...options,
   });
 }
 
@@ -224,6 +231,31 @@ export function useDeleteFolder() {
   return useInvalidating(
     (args: { folderId: string }) => actions.deleteFolder(args.folderId),
     () => [fileSystemKeys.tree(), fileSystemKeys.folderTree()]
+  );
+}
+
+export function usePreviewCascadeDeleteFolder(folderId: string | null) {
+  return useQuery({
+    queryKey: folderId
+      ? (["fs", "cascadePreview", folderId] as const)
+      : (["fs", "cascadePreview", "none"] as const),
+    queryFn: () =>
+      folderId
+        ? actions.previewCascadeDeleteFolder(folderId)
+        : Promise.resolve<CascadeDeletePreview | null>(null),
+    enabled: !!folderId,
+  });
+}
+
+export function useCascadeDeleteFolder() {
+  return useInvalidating(
+    (args: { folderId: string }) => actions.cascadeDeleteFolder(args.folderId),
+    () => [
+      fileSystemKeys.tree(),
+      fileSystemKeys.folderTree(),
+      ["fs", "folderFiles"],
+      ["fs", "cascadePreview"],
+    ]
   );
 }
 

@@ -34,7 +34,45 @@ export async function ensureFileSystemIndexes(
   const folders = db.collection(service.foldersCollectionName);
   await folders.createIndex({ parentId: 1, sortOrder: 1 });
   await folders.createIndex({ ancestorIds: 1 });
-  await folders.createIndex({ slug: 1 }, { unique: true });
+  // One-time migration: earlier versions stored slugs as
+  // `"{parentId}:{base}"` so a single `{ slug: 1 }` unique index could
+  // enforce uniqueness. That leaked the parentId prefix into the URL
+  // (colons break Next's route matching → 404). Fix: rewrite legacy
+  // composite slugs to their clean form, drop the old global-unique
+  // index, install the compound per-parent unique index.
+  const legacy = await folders.find({ slug: { $regex: /:/ } }).toArray();
+  for (const f of legacy) {
+    const rawSlug: unknown = (f as { slug?: unknown }).slug;
+    if (typeof rawSlug !== "string") continue;
+    const parts = rawSlug.split(":");
+    const base = parts.slice(1).join(":") || rawSlug;
+    const parent = (f as { parentId?: unknown }).parentId ?? null;
+    // Re-resolve uniqueness within the parent for the cleaned base.
+    let candidate = base;
+    let i = 1;
+    while (true) {
+      const clash = await folders.findOne({
+        slug: candidate,
+        parentId: parent,
+        _id: { $ne: (f as { _id: unknown })._id },
+      } as Record<string, unknown>);
+      if (!clash) break;
+      i += 1;
+      candidate = `${base}-${i}`;
+    }
+    if (candidate !== rawSlug) {
+      await folders.updateOne(
+        { _id: (f as { _id: unknown })._id } as Record<string, unknown>,
+        { $set: { slug: candidate } }
+      );
+    }
+  }
+  try {
+    await folders.dropIndex("slug_1");
+  } catch {
+    // Index may not exist on a fresh DB — that's fine.
+  }
+  await folders.createIndex({ parentId: 1, slug: 1 }, { unique: true });
   await folders.createIndex(
     { isSystemFolder: 1 },
     { partialFilterExpression: { isSystemFolder: true } }

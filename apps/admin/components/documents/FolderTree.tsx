@@ -19,6 +19,13 @@ export type FolderTreeProps = {
   selectedId: string | null;
   onSelect: (folderId: string) => void;
   className?: string;
+  /**
+   * Folder IDs that should render as disabled. Used by the move picker to
+   * hide invalid destinations (source folders, their descendants, and any
+   * target that would exceed the depth cap) without having to filter them
+   * out of the tree, which would break parent/child rendering.
+   */
+  disabledIds?: Set<string>;
 };
 
 type TreeNode = FolderRecord & { children: TreeNode[] };
@@ -28,6 +35,7 @@ export function FolderTree({
   selectedId,
   onSelect,
   className,
+  disabledIds,
 }: FolderTreeProps) {
   const { systemFolder, rootNodes } = useMemo(
     () => buildTree(folders),
@@ -51,10 +59,15 @@ export function FolderTree({
         <>
           <button
             type="button"
-            onClick={() => onSelect(systemFolder.id)}
+            onClick={() =>
+              !disabledIds?.has(systemFolder.id) && onSelect(systemFolder.id)
+            }
+            disabled={disabledIds?.has(systemFolder.id) ?? false}
             className={cn(
               "flex items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-accent",
-              selectedId === systemFolder.id && "bg-accent font-medium"
+              selectedId === systemFolder.id && "bg-accent font-medium",
+              disabledIds?.has(systemFolder.id) &&
+                "cursor-not-allowed opacity-40 hover:bg-transparent"
             )}
           >
             <Inbox className="size-4" aria-hidden />
@@ -73,6 +86,7 @@ export function FolderTree({
             expanded={expanded}
             onToggle={toggle}
             onSelect={onSelect}
+            disabledIds={disabledIds}
           />
         ))}
       </ul>
@@ -87,6 +101,7 @@ function TreeItem({
   expanded,
   onToggle,
   onSelect,
+  disabledIds,
 }: {
   node: TreeNode;
   depth: number;
@@ -94,16 +109,20 @@ function TreeItem({
   expanded: Set<string>;
   onToggle: (id: string) => void;
   onSelect: (id: string) => void;
+  disabledIds?: Set<string>;
 }) {
   const isExpanded = expanded.has(node.id);
   const isSelected = selectedId === node.id;
   const hasChildren = node.children.length > 0;
+  const isDisabled = disabledIds?.has(node.id) ?? false;
   return (
     <li>
       <div
         className={cn(
-          "flex items-center gap-1 rounded px-1 py-1.5 hover:bg-accent",
-          isSelected && "bg-accent font-medium"
+          "flex items-center gap-1 rounded px-1 py-1.5",
+          !isDisabled && "hover:bg-accent",
+          isSelected && "bg-accent font-medium",
+          isDisabled && "opacity-40"
         )}
         style={{ paddingLeft: `${depth * 0.75 + 0.25}rem` }}
       >
@@ -124,8 +143,12 @@ function TreeItem({
         </button>
         <button
           type="button"
-          onClick={() => onSelect(node.id)}
-          className="flex flex-1 items-center gap-2 text-left"
+          onClick={() => !isDisabled && onSelect(node.id)}
+          disabled={isDisabled}
+          className={cn(
+            "flex flex-1 items-center gap-2 text-left",
+            isDisabled && "cursor-not-allowed"
+          )}
         >
           {isExpanded ? (
             <FolderOpen className="size-4" aria-hidden />
@@ -146,6 +169,7 @@ function TreeItem({
               expanded={expanded}
               onToggle={onToggle}
               onSelect={onSelect}
+              disabledIds={disabledIds}
             />
           ))}
         </ul>

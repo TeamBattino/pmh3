@@ -7,6 +7,8 @@ import { Db, MongoClient, ObjectId, type Filter, type WithId } from "mongodb";
 import type { DatabaseService } from "./db";
 import type {
   BulkDeleteResult,
+  CascadeDeletePreview,
+  CascadeDeleteResult,
   CollectionRecord,
   CollectionType,
   CreateCollectionInput,
@@ -478,7 +480,9 @@ export class MongoService implements DatabaseService {
     if (!current) return;
     if (current.isSystemFolder)
       throw new Error("System folders cannot be deleted");
-    // Block if non-empty.
+    // Block if non-empty. Callers that want to delete non-empty folders
+    // must go through `cascadeDeleteFolder`, which shows the user the full
+    // scope of the delete before committing.
     const childFolder = await folders.findOne({ parentId: _id });
     if (childFolder) throw new Error("Folder is not empty");
     const childFile = await this.db
@@ -486,6 +490,118 @@ export class MongoService implements DatabaseService {
       .findOne({ folderId: _id });
     if (childFile) throw new Error("Folder is not empty");
     await folders.deleteOne({ _id });
+  }
+
+  async previewCascadeDeleteFolder(
+    id: string
+  ): Promise<CascadeDeletePreview> {
+    if (!ObjectId.isValid(id))
+      return { fileCount: 0, subfolderCount: 0, blockedFiles: [] };
+    const _id = new ObjectId(id);
+    const folders = this.db.collection<FolderDoc>(this.foldersCollectionName);
+    const files = this.db.collection<FileDoc>(this.filesCollectionName);
+
+    const current = await folders.findOne({ _id });
+    if (!current) return { fileCount: 0, subfolderCount: 0, blockedFiles: [] };
+    if (current.isSystemFolder)
+      throw new Error("System folders cannot be deleted");
+
+    const descendants = await folders
+      .find({ ancestorIds: _id })
+      .toArray();
+    const subtreeFolderIds = [_id, ...descendants.map((d) => d._id)];
+    const subtreeFiles = await files
+      .find({ folderId: { $in: subtreeFolderIds } })
+      .toArray();
+
+    const blockedFiles: CascadeDeletePreview["blockedFiles"] = [];
+    for (const fileDoc of subtreeFiles) {
+      const refs = await this.findFileReferencesInPuckData(
+        fileDoc._id.toString()
+      );
+      if (refs.length > 0) {
+        blockedFiles.push({
+          fileId: fileDoc._id.toString(),
+          filename: fileDoc.originalFilename,
+          references: refs,
+        });
+      }
+    }
+
+    return {
+      fileCount: subtreeFiles.length,
+      subfolderCount: descendants.length,
+      blockedFiles,
+    };
+  }
+
+  async cascadeDeleteFolder(id: string): Promise<CascadeDeleteResult> {
+    const empty: CascadeDeleteResult = {
+      deletedFileIds: [],
+      deletedFolderIds: [],
+      s3Keys: [],
+      blocked: [],
+    };
+    if (!ObjectId.isValid(id)) return empty;
+    const _id = new ObjectId(id);
+    const folders = this.db.collection<FolderDoc>(this.foldersCollectionName);
+    const files = this.db.collection<FileDoc>(this.filesCollectionName);
+    const current = await folders.findOne({ _id });
+    if (!current) return empty;
+    if (current.isSystemFolder)
+      throw new Error("System folders cannot be deleted");
+
+    const descendants = await folders
+      .find({ ancestorIds: _id })
+      .toArray();
+    const subtreeFolderIds = [_id, ...descendants.map((d) => d._id)];
+    const subtreeFiles = await files
+      .find({ folderId: { $in: subtreeFolderIds } })
+      .toArray();
+
+    // Hard-block on any referenced file. Nothing mutates before this
+    // check completes.
+    const blocked: CascadeDeleteResult["blocked"] = [];
+    for (const fileDoc of subtreeFiles) {
+      const refs = await this.findFileReferencesInPuckData(
+        fileDoc._id.toString()
+      );
+      if (refs.length > 0) {
+        blocked.push({
+          fileId: fileDoc._id.toString(),
+          filename: fileDoc.originalFilename,
+          references: refs,
+        });
+      }
+    }
+    if (blocked.length > 0) {
+      return { ...empty, blocked };
+    }
+
+    const s3Keys: string[] = [];
+    for (const f of subtreeFiles) {
+      s3Keys.push(f.s3Key);
+      if (f.thumbSmKey) s3Keys.push(f.thumbSmKey);
+      if (f.thumbMdKey) s3Keys.push(f.thumbMdKey);
+    }
+    const fileObjectIds = subtreeFiles.map((f) => f._id);
+
+    if (fileObjectIds.length > 0) {
+      await files.deleteMany({ _id: { $in: fileObjectIds } });
+      // Clean up any album memberships the files had (normally none for
+      // documents, but the files collection is shared).
+      await this.db
+        .collection(this.collectionFilesCollectionName)
+        .deleteMany({ fileId: { $in: fileObjectIds } });
+    }
+    await folders.deleteMany({ _id: { $in: subtreeFolderIds } });
+
+    return {
+      deletedFileIds: fileObjectIds.map((oid) => oid.toString()),
+      deletedFolderIds: subtreeFolderIds.map((oid) => oid.toString()),
+      s3Keys,
+      blocked: [],
+    };
   }
 
   async listFolderFiles(
@@ -836,17 +952,19 @@ export class MongoService implements DatabaseService {
     parentId: ObjectId | null,
     ignoreId?: ObjectId
   ): Promise<string> {
+    // Clean slugs (no parentId prefix). Uniqueness is enforced per-parent
+    // by the compound `{ parentId, slug }` index — see `ensureFileSystemIndexes`.
     const folders = this.db.collection<FolderDoc>(this.foldersCollectionName);
-    const key = `${parentId?.toString() ?? "root"}:${base}`;
-    let candidate = key;
+    const cleanBase = base || "untitled";
+    let candidate = cleanBase;
     let i = 1;
     while (true) {
-      const filter: Filter<FolderDoc> = { slug: candidate };
+      const filter: Filter<FolderDoc> = { slug: candidate, parentId };
       if (ignoreId) filter._id = { $ne: ignoreId };
       const clash = await folders.findOne(filter);
       if (!clash) return candidate;
       i += 1;
-      candidate = `${key}-${i}`;
+      candidate = `${cleanBase}-${i}`;
     }
   }
 

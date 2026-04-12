@@ -12,6 +12,8 @@ import { isMediaAllowed } from "@/lib/files/classify";
 import { getDbService } from "./db";
 import type {
   BulkDeleteResult,
+  CascadeDeletePreview,
+  CascadeDeleteResult,
   CollectionRecord,
   CreateCollectionInput,
   CreateFolderInput,
@@ -317,6 +319,33 @@ export async function deleteFolder(folderId: string): Promise<void> {
   await requireServerPermission({ all: ["asset:delete"] });
   const db = await getDbService();
   await db.deleteFolder(folderId);
+}
+
+export async function previewCascadeDeleteFolder(
+  folderId: string
+): Promise<CascadeDeletePreview> {
+  await requireServerPermission({ all: ["asset:delete"] });
+  const db = await getDbService();
+  return db.previewCascadeDeleteFolder(folderId);
+}
+
+export async function cascadeDeleteFolder(
+  folderId: string
+): Promise<CascadeDeleteResult> {
+  await requireServerPermission({ all: ["asset:delete"] });
+  const db = await getDbService();
+  const result = await db.cascadeDeleteFolder(folderId);
+  if (result.blocked.length === 0 && result.s3Keys.length > 0) {
+    // Mirror the pattern used by deleteFile/bulkDeleteFiles: best-effort
+    // S3 cleanup after the DB commit. Failures here leave orphans for the
+    // next GC pass but never roll the DB back.
+    try {
+      await deleteObjects(result.s3Keys);
+    } catch (err) {
+      console.error("Failed to delete cascade s3 objects", err);
+    }
+  }
+  return result;
 }
 
 export async function listFolderFiles(

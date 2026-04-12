@@ -164,3 +164,41 @@ export type BulkDeleteResult = {
   deleted: string[];
   blocked: Array<{ fileId: string; references: Reference[] }>;
 };
+
+/**
+ * Read-only preview of a folder cascade delete. Powers the confirmation
+ * modal so the user sees what they're about to wipe, and any blocking
+ * references, before committing.
+ */
+export type CascadeDeletePreview = {
+  /** Total files in the subtree (self + all descendants). */
+  fileCount: number;
+  /** Descendant folder count (does NOT include the root folder itself). */
+  subfolderCount: number;
+  /**
+   * Files inside the subtree that have puck-data references. Any entry
+   * here hard-blocks the cascade — the user has to unreference them first.
+   */
+  blockedFiles: Array<{
+    fileId: string;
+    filename: string;
+    references: Reference[];
+  }>;
+};
+
+/**
+ * Result of a folder cascade delete. When `blocked` is non-empty, nothing
+ * was touched — cascade aborts atomically on the first reference found.
+ */
+export type CascadeDeleteResult = {
+  deletedFileIds: string[];
+  /** Includes the root folder. */
+  deletedFolderIds: string[];
+  /** S3 keys the caller should free after a successful cascade. */
+  s3Keys: string[];
+  blocked: Array<{
+    fileId: string;
+    filename: string;
+    references: Reference[];
+  }>;
+};

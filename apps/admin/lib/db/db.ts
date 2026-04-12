@@ -8,6 +8,8 @@ import { ensureSeeded } from "./db-bootstrap";
 import { MongoService } from "./db-mongo-impl";
 import type {
   BulkDeleteResult,
+  CascadeDeletePreview,
+  CascadeDeleteResult,
   CollectionRecord,
   CreateCollectionInput,
   CreateFileInput,
@@ -52,6 +54,19 @@ export interface DatabaseService {
   createFolder(input: CreateFolderInput): Promise<FolderRecord>;
   updateFolder(id: string, patch: UpdateFolderPatch): Promise<void>;
   deleteFolder(id: string): Promise<void>;
+  /**
+   * Read-only walk of the folder's subtree that returns counts plus any
+   * referenced files that would block a cascade. Used by the confirmation
+   * modal so the user sees the consequences before committing.
+   */
+  previewCascadeDeleteFolder(id: string): Promise<CascadeDeletePreview>;
+  /**
+   * Atomically delete a folder and everything beneath it (descendant
+   * folders + all their files). Hard-aborts if any file has puck-data
+   * references — no partial deletion. Returns the s3 keys the caller
+   * should free on success.
+   */
+  cascadeDeleteFolder(id: string): Promise<CascadeDeleteResult>;
   listFolderFiles(folderId: string, page: PageArgs): Promise<FileRecord[]>;
   moveFilesToFolder(fileIds: string[], targetFolderId: string): Promise<void>;
 
