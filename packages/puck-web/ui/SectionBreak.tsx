@@ -1,11 +1,9 @@
-"use client";
 import {
   PremudBreak,
   PresunBreak,
 } from "@pfadipuck/graphics/SectionBreakSvgs";
-import { useSectionTheme } from "../lib/section-theme-context";
+import type { Theme } from "../lib/section-theming";
 
-export function SectionBreak() {
-  const theme = useSectionTheme();
+export function SectionBreak({ theme }: { theme: Theme }) {
   return theme === "mud" ? <PremudBreak /> : <PresunBreak />;
 }
