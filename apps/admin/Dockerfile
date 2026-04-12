@@ -32,6 +32,7 @@ WORKDIR /app
 RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
 COPY --from=installer /app/apps/admin/.next/standalone ./
 COPY --from=installer /app/apps/admin/.next/static ./apps/admin/.next/static
+COPY --from=installer /app/apps/admin/public ./apps/admin/public
 EXPOSE 3001
 ENV PORT=3001 HOSTNAME=0.0.0.0
 CMD ["bun", "run", "apps/admin/server.js"]

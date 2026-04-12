@@ -1,0 +1,9 @@
+[build]
+dockerfilePath = "apps/auth/Dockerfile"
+watchPatterns = ["/apps/auth/**", "/packages/typescript-config/**"]
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

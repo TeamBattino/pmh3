@@ -1,0 +1,9 @@
+[build]
+dockerfilePath = "apps/admin/Dockerfile"
+watchPatterns = ["/apps/admin/**", "/packages/puck-web/**", "/packages/graphics/**"]
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
