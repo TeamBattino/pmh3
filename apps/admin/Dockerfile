@@ -24,6 +24,11 @@ ENV AUTH_SECRET=build-placeholder \
     S3_REGION=auto \
     S3_ACCESS_KEY_ID=build-placeholder \
     S3_SECRET_ACCESS_KEY=build-placeholder
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so
+# they must be real values (not placeholders). Pipe Railway's env var in as
+# a build arg.
+ARG NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 RUN bun run build --filter=@pfadipuck/admin
 
 FROM base AS runner
