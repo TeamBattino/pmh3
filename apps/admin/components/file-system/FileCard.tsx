@@ -5,7 +5,7 @@ import { FileText, FileVideo, FileArchive, FileIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { FileRecord } from "@/lib/db/file-system-types";
-import { bestThumbnailKey, publicUrlFor } from "./thumb-url";
+import { bestThumbnailUrl } from "./thumb-url";
 import { useLongPress } from "@/lib/hooks/use-long-press";
 
 /**
@@ -42,7 +42,7 @@ export function FileCard({
 }: FileCardProps) {
   const showCheckbox = anySelected || !!selected;
   const isImage = file.kind === "image";
-  const thumbUrl = isImage ? publicUrlFor(bestThumbnailKey(file)) : "";
+  const thumbUrl = isImage ? bestThumbnailUrl(file) : "";
 
   const { handlers: longPressHandlers, wasLongPress, resetLongPress } = useLongPress(() => {
     if (onSelectChange) {

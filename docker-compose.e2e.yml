@@ -120,16 +120,14 @@ services:
       AUTH_OIDC_ISSUER: http://auth:3002
       AUTH_OIDC_CLIENT_ID: pfadimh-admin
       AUTH_OIDC_CLIENT_SECRET: dev-secret
-      # S3 / MinIO. `S3_PUBLIC_URL_BASE` must be reachable by the headless
-      # browser inside the compose network, so it points at the `minio`
-      # DNS name (not localhost). Playwright resolves this via the shared
-      # docker network.
+      # S3 / MinIO. Reads go through presigned GET URLs signed by the admin,
+      # and those URLs must be reachable by the headless browser inside the
+      # compose network — `S3_ENDPOINT` is used as the host for signed URLs.
       S3_ENDPOINT: http://minio:9000
       S3_BUCKET: pfadimh-files
       S3_REGION: auto
       S3_ACCESS_KEY_ID: minioadmin
       S3_SECRET_ACCESS_KEY: minioadmin
-      S3_PUBLIC_URL_BASE: http://minio:9000/pfadimh-files
     depends_on:
       pfadimh-mongo:
         condition: service_healthy
@@ -152,8 +150,6 @@ services:
     environment:
       MONGODB_CONNECTION_STRING: mongodb://root:example@pfadimh-mongo:27017
       MONGODB_DB_NAME: pfadimh_e2e
-      # Site only needs the read URL prefix — it never writes to S3.
-      S3_PUBLIC_URL_BASE: http://minio:9000/pfadimh-files
     depends_on:
       pfadimh-mongo:
         condition: service_healthy

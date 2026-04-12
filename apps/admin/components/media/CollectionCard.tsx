@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import type { CollectionRecord } from "@/lib/db/file-system-types";
 import { useFile } from "@/lib/files/file-system-hooks";
-import { bestThumbnailKey, publicUrlFor } from "@/components/file-system/thumb-url";
+import { bestThumbnailUrl } from "@/components/file-system/thumb-url";
 
 /**
  * Landing tile for an album collection. Renders the collection's cover
@@ -48,7 +48,7 @@ function CollectionCover({ coverFileId }: { coverFileId: string | null }) {
       <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={publicUrlFor(bestThumbnailKey(file))}
+          src={bestThumbnailUrl(file)}
           alt={file.altText ?? file.originalFilename}
           className="size-full object-cover"
           loading="lazy"

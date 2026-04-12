@@ -25,6 +25,14 @@ export type FileRecordLike = {
   width: number | null;
   height: number | null;
   blurhash: string | null;
+  /**
+   * Presigned read URLs populated by the caller's `db.getFile` before
+   * reaching the renderer. Components build their `<img src>` / `<a href>`
+   * directly from these fields.
+   */
+  signedUrl?: string;
+  signedThumbSmUrl?: string | null;
+  signedThumbMdUrl?: string | null;
 };
 
 export type AnyFileRef = MediaRef | DocumentRef;

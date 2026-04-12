@@ -23,8 +23,7 @@ ENV AUTH_SECRET=build-placeholder \
     S3_BUCKET=build-placeholder \
     S3_REGION=auto \
     S3_ACCESS_KEY_ID=build-placeholder \
-    S3_SECRET_ACCESS_KEY=build-placeholder \
-    S3_PUBLIC_URL_BASE=http://build.invalid
+    S3_SECRET_ACCESS_KEY=build-placeholder
 RUN bun run build --filter=@pfadipuck/admin
 
 FROM base AS runner

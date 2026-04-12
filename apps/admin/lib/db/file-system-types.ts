@@ -32,6 +32,16 @@ export type FileRecord = {
   height: number | null;
   blurhash: string | null;
 
+  /**
+   * Presigned read URLs populated server-side by `enrichFileRecord` before
+   * returning the record to a client/server action consumer. Undefined iff
+   * the record was fetched via a code path that doesn't need signed URLs
+   * (e.g. internal server-to-server lookups).
+   */
+  signedUrl?: string;
+  signedThumbSmUrl?: string | null;
+  signedThumbMdUrl?: string | null;
+
   uploadedAt: Date;
   /** Populated once Keycloak migration lands. v1 always writes null. */
   uploadedBy: string | null;

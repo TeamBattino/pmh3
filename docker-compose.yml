@@ -47,10 +47,10 @@ services:
       timeout: 5s
       retries: 10
 
-  # One-shot bootstrapper. Creates the `pfadimh-files` bucket and flips it
-  # to anonymous download so the public site can load images via plain
-  # `<img src>` without signing every GET. PUTs still require presigned
-  # URLs minted by the admin, which is what `presignUpload` returns.
+  # One-shot bootstrapper. Creates the `pfadimh-files` bucket. Reads are
+  # served via presigned GET URLs minted by the admin (the production bucket
+  # is private), so no public-access flag is needed on the dev bucket either.
+  # PUTs also use presigned URLs, which is what `presignUpload` returns.
   #
   # This container exits after the setup completes; that's intentional.
   minio-init:
@@ -63,7 +63,6 @@ services:
         echo 'Waiting for minio...' && sleep 1;
       done;
       /usr/bin/mc mb --ignore-existing local/pfadimh-files;
-      /usr/bin/mc anonymous set download local/pfadimh-files;
       echo 'MinIO bucket ready.';
       exit 0;
       "

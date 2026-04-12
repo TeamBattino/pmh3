@@ -1,11 +1,13 @@
 import {
   DeleteObjectsCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@/lib/env";
+import type { FileRecord } from "@/lib/db/file-system-types";
 
 /**
  * S3-compatible storage client. The server never touches file bytes — uploads
@@ -67,14 +69,42 @@ export async function headObject(key: string): Promise<boolean> {
 }
 
 /**
- * Compute the public read URL for an S3 key. Absolute URLs are built at
- * render time from this prefix so changing the bucket host never requires a
- * data migration.
+ * S3 SigV4's hard max for presigned URL expiry.
  */
-export function publicUrl(key: string): string {
-  const base = env.S3_PUBLIC_URL_BASE.replace(/\/+$/, "");
-  const k = key.replace(/^\/+/, "");
-  return `${base}/${k}`;
+const MAX_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
+
+/**
+ * Mint a presigned GET URL for a private bucket object. We serve all file
+ * reads via signed URLs because the production bucket is not public. URLs are
+ * baked into HTML at render time, so the 7-day TTL is effectively "forever"
+ * for any rendered page (browser will refresh on next page load).
+ */
+export async function signedReadUrl(
+  key: string,
+  expiresSeconds = MAX_SIGNED_URL_TTL_SECONDS
+): Promise<string> {
+  const cmd = new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: key });
+  return getSignedUrl(s3Client(), cmd, { expiresIn: expiresSeconds });
+}
+
+/**
+ * Enrich a `FileRecord` with presigned read URLs for the original and any
+ * thumbnails. Client components render from these fields directly — they
+ * never need to know the bucket host or presign anything themselves.
+ */
+export async function enrichFileRecord(file: FileRecord): Promise<FileRecord> {
+  const [signedUrl, signedThumbSmUrl, signedThumbMdUrl] = await Promise.all([
+    signedReadUrl(file.s3Key),
+    file.thumbSmKey ? signedReadUrl(file.thumbSmKey) : Promise.resolve(null),
+    file.thumbMdKey ? signedReadUrl(file.thumbMdKey) : Promise.resolve(null),
+  ]);
+  return { ...file, signedUrl, signedThumbSmUrl, signedThumbMdUrl };
+}
+
+export async function enrichFileRecords(
+  files: FileRecord[]
+): Promise<FileRecord[]> {
+  return Promise.all(files.map(enrichFileRecord));
 }
 
 /**

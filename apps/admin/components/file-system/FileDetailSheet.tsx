@@ -38,7 +38,6 @@ import { toast } from "sonner";
 import { AddToAlbumDialog } from "../media/AddToAlbumDialog";
 import { DeleteBlockedDialog } from "./DeleteBlockedDialog";
 import { formatBytes } from "./format";
-import { publicUrlFor } from "./thumb-url";
 
 /**
  * A target that can have its cover image set to the currently-displayed
@@ -291,7 +290,7 @@ function FileDetailBody({
       <div className="flex flex-wrap gap-2 border-t border-border px-6 py-4">
         <Button asChild variant="outline" className="flex-1 basis-[120px]">
           <a
-            href={publicUrlFor(file.s3Key)}
+            href={file.signedUrl ?? "#"}
             download={file.originalFilename}
           >
             <Download className="mr-2 size-4" aria-hidden />
@@ -401,8 +400,7 @@ function PreviewArea({ file }: { file: FileRecord }) {
   const [open, setOpen] = useState(false);
 
   if (file.kind === "image") {
-    const thumbUrl = publicUrlFor(file.thumbMdKey ?? file.s3Key);
-    const originalUrl = publicUrlFor(file.s3Key);
+    const thumbUrl = file.signedThumbMdUrl ?? file.signedUrl ?? "";
     return (
       <>
         <button
@@ -432,7 +430,7 @@ function PreviewArea({ file }: { file: FileRecord }) {
     return (
       <video
         controls
-        src={publicUrlFor(file.s3Key)}
+        src={file.signedUrl ?? ""}
         className="w-full rounded-md border border-border"
       />
     );
@@ -442,7 +440,7 @@ function PreviewArea({ file }: { file: FileRecord }) {
       <div className="text-sm font-medium">{file.originalFilename}</div>
       <Button asChild variant="outline">
         <a
-          href={publicUrlFor(file.s3Key)}
+          href={file.signedUrl ?? "#"}
           target="_blank"
           rel="noreferrer"
         >

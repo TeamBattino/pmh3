@@ -16,7 +16,6 @@ export const env = createEnv({
     S3_REGION: z.string().min(1).default("auto"),
     S3_ACCESS_KEY_ID: z.string().min(1),
     S3_SECRET_ACCESS_KEY: z.string().min(1),
-    S3_PUBLIC_URL_BASE: z.string().url(),
   },
   client: {
     // Add NEXT_PUBLIC_ variables here
@@ -34,7 +33,6 @@ export const env = createEnv({
     S3_REGION: process.env.S3_REGION,
     S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
-    S3_PUBLIC_URL_BASE: process.env.S3_PUBLIC_URL_BASE,
   },
   emptyStringAsUndefined: true,
 });

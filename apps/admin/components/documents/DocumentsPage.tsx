@@ -19,7 +19,6 @@ import {
   useUpdateFile,
   useUpdateFolder,
 } from "@/lib/files/file-system-hooks";
-import { publicUrlFor } from "@/components/file-system/thumb-url";
 import { hrefForFolder } from "@/lib/files/folder-path";
 import type {
   FileRecord,
@@ -268,8 +267,9 @@ export function DocumentsPage({
   };
 
   const onDownload = (file: FileRecord) => {
+    if (!file.signedUrl) return;
     const a = document.createElement("a");
-    a.href = publicUrlFor(file.s3Key);
+    a.href = file.signedUrl;
     a.download = file.originalFilename;
     document.body.appendChild(a);
     a.click();

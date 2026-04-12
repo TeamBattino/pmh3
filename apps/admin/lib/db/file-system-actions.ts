@@ -4,9 +4,11 @@ import { randomUUID } from "crypto";
 import { requireServerPermission } from "@/lib/security/server-guard";
 import {
   deleteObjects,
+  enrichFileRecord,
+  enrichFileRecords,
   headObject,
   presignPut,
-  publicUrl,
+  signedReadUrl,
 } from "@/lib/storage/s3";
 import { isMediaAllowed } from "@/lib/files/classify";
 import { getDbService } from "./db";
@@ -127,7 +129,7 @@ export async function confirmUpload(
   }
 
   const db = await getDbService();
-  return db.createFile({
+  const created = await db.createFile({
     uuid: input.uuid,
     kind: input.kind,
     originalFilename: input.originalFilename,
@@ -142,6 +144,7 @@ export async function confirmUpload(
     blurhash: input.blurhash ?? null,
     pool: input.pool,
   });
+  return enrichFileRecord(created);
 }
 
 // ── Files ──────────────────────────────────────────────────────────────
@@ -149,7 +152,8 @@ export async function confirmUpload(
 export async function getFile(fileId: string): Promise<FileRecord | null> {
   await requireServerPermission({ all: ["asset:read"] });
   const db = await getDbService();
-  return db.getFile(fileId);
+  const file = await db.getFile(fileId);
+  return file ? enrichFileRecord(file) : null;
 }
 
 export async function updateFile(
@@ -225,7 +229,7 @@ export async function replaceFile(
 
   const updated = await db.getFile(fileId);
   if (!updated) throw new Error("File disappeared mid-replace");
-  return updated;
+  return enrichFileRecord(updated);
 }
 
 export async function deleteFile(fileId: string): Promise<DeleteFileResult> {
@@ -279,7 +283,7 @@ export async function bulkDeleteFiles(
 export async function searchFiles(q: SearchQuery): Promise<FileRecord[]> {
   await requireServerPermission({ all: ["asset:read"] });
   const db = await getDbService();
-  return db.searchFiles(q);
+  return enrichFileRecords(await db.searchFiles(q));
 }
 
 export async function getFileReferences(
@@ -354,7 +358,7 @@ export async function listFolderFiles(
 ): Promise<FileRecord[]> {
   await requireServerPermission({ all: ["asset:read"] });
   const db = await getDbService();
-  return db.listFolderFiles(folderId, page);
+  return enrichFileRecords(await db.listFolderFiles(folderId, page));
 }
 
 export async function moveFilesToFolder(
@@ -403,7 +407,7 @@ export async function listCollectionFiles(
 ): Promise<FileRecord[]> {
   await requireServerPermission({ all: ["asset:read"] });
   const db = await getDbService();
-  return db.listCollectionFiles(collectionId, page);
+  return enrichFileRecords(await db.listCollectionFiles(collectionId, page));
 }
 
 export async function addFilesToAlbum(
@@ -453,9 +457,15 @@ export async function getTree(): Promise<{
 
 // ── URL helper ─────────────────────────────────────────────────────────
 
-export async function getPublicUrl(key: string): Promise<string> {
+/**
+ * Mint a presigned read URL for an arbitrary S3 key. Only used by a handful
+ * of client flows (e.g. the upload UI needs a signed URL for a key it just
+ * PUT but doesn't yet have a `FileRecord` for). For normal rendering, use
+ * `file.signedUrl` from an enriched `FileRecord`.
+ */
+export async function getSignedFileUrl(key: string): Promise<string> {
   await requireServerPermission({ all: ["asset:read"] });
-  return publicUrl(key);
+  return signedReadUrl(key);
 }
 
 // ── Orphan GC ──────────────────────────────────────────────────────────
@@ -471,7 +481,7 @@ export type OrphanGcResult = {
 export async function previewOrphanGc(): Promise<FileRecord[]> {
   await requireServerPermission({ all: ["asset:delete"] });
   const db = await getDbService();
-  return db.findOrphanFiles();
+  return enrichFileRecords(await db.findOrphanFiles());
 }
 
 /**
