@@ -1,18 +1,25 @@
 import { PostHeroSvg } from "@pfadipuck/graphics/PostHeroSvg";
-import { uploadFileField } from "../fields/upload-file";
-import { ComponentConfig } from "@puckeditor/core";
-import Image from "next/image";
+import { mediaField } from "../fields/media-field";
+import type { FileUrlResolver, MediaRef } from "../fields/file-picker-types";
+import { ComponentConfig, CustomField } from "@puckeditor/core";
 
 export type HeroProps = {
   title: string;
-  backgroundImage?: string;
+  backgroundImage?: MediaRef;
+  /** Populated by `resolveData` from the caller-supplied `metadata.resolveFileUrl`. Not user-editable. */
+  _resolvedBackgroundUrl?: string;
 };
 
-function Hero({ title, backgroundImage: url }: HeroProps) {
+function Hero({ title, _resolvedBackgroundUrl: url }: HeroProps) {
   return (
     <div className="full w-full h-96 relative flex flex-col justify-center overflow-hidden items-center">
       {url && (
-        <Image fill src={url} alt="Hero Image" style={{ objectFit: "cover" }} />
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt="Hero Image"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       )}
       {title && (
         <>
@@ -34,6 +41,24 @@ export const heroConfig: ComponentConfig<HeroProps> = {
       type: "text",
       label: "Title (Optional)",
     },
-    backgroundImage: uploadFileField,
+    backgroundImage: mediaField({
+      mode: "single",
+      accept: ["image"],
+    }) as CustomField<MediaRef | undefined>,
+  },
+  resolveData: async (data, { metadata }) => {
+    const resolveFileUrl = (metadata as { resolveFileUrl?: FileUrlResolver })
+      ?.resolveFileUrl;
+    const ref = data.props.backgroundImage;
+    let resolved: string | undefined;
+    if (ref && ref.type === "file" && resolveFileUrl) {
+      // Hero renders a full-bleed 384px-tall banner — lg (1600px) keeps the
+      // image sharp on wide displays without pulling the full original.
+      resolved = (await resolveFileUrl(ref.fileId, "lg")) ?? undefined;
+    }
+    return {
+      ...data,
+      props: { ...data.props, _resolvedBackgroundUrl: resolved },
+    };
   },
 };

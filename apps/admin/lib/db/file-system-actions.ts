@@ -44,7 +44,7 @@ import type {
 // ── Uploads ────────────────────────────────────────────────────────────
 
 export type PresignUploadVariant = {
-  variant: "original" | "thumb_sm" | "thumb_md";
+  variant: "original" | "thumb_sm" | "thumb_md" | "thumb_lg";
   contentType: string;
   /** Arbitrary suffix appended to the key, e.g. `.jpg` or `_thumb_sm.webp`. */
   keySuffix: string;
@@ -98,6 +98,7 @@ export type ConfirmUploadInput = {
     original: string;
     thumbSm?: string | null;
     thumbMd?: string | null;
+    thumbLg?: string | null;
   };
   pool:
     | { kind: "documents"; folderId: string }
@@ -123,6 +124,7 @@ export async function confirmUpload(
   const verify = [input.keys.original];
   if (input.keys.thumbSm) verify.push(input.keys.thumbSm);
   if (input.keys.thumbMd) verify.push(input.keys.thumbMd);
+  if (input.keys.thumbLg) verify.push(input.keys.thumbLg);
   const exists = await Promise.all(verify.map((k) => headObject(k)));
   if (exists.some((v) => !v)) {
     throw new Error("Upload verification failed: one or more objects missing");
@@ -139,6 +141,7 @@ export async function confirmUpload(
     s3Key: input.keys.original,
     thumbSmKey: input.keys.thumbSm ?? null,
     thumbMdKey: input.keys.thumbMd ?? null,
+    thumbLgKey: input.keys.thumbLg ?? null,
     width: input.width ?? null,
     height: input.height ?? null,
     blurhash: input.blurhash ?? null,
@@ -176,6 +179,7 @@ export type ReplaceFilePayload = {
     original: string;
     thumbSm?: string | null;
     thumbMd?: string | null;
+    thumbLg?: string | null;
   };
 };
 
@@ -196,6 +200,7 @@ export async function replaceFile(
   const verify = [input.keys.original];
   if (input.keys.thumbSm) verify.push(input.keys.thumbSm);
   if (input.keys.thumbMd) verify.push(input.keys.thumbMd);
+  if (input.keys.thumbLg) verify.push(input.keys.thumbLg);
   const exists = await Promise.all(verify.map((k) => headObject(k)));
   if (exists.some((v) => !v)) {
     throw new Error("Replace verification failed: one or more objects missing");
@@ -205,12 +210,14 @@ export async function replaceFile(
     current.s3Key,
     ...(current.thumbSmKey ? [current.thumbSmKey] : []),
     ...(current.thumbMdKey ? [current.thumbMdKey] : []),
+    ...(current.thumbLgKey ? [current.thumbLgKey] : []),
   ];
 
   await db.replaceFile(fileId, {
     s3Key: input.keys.original,
     thumbSmKey: input.keys.thumbSm ?? null,
     thumbMdKey: input.keys.thumbMd ?? null,
+    thumbLgKey: input.keys.thumbLg ?? null,
     mimeType: input.mimeType,
     sizeBytes: input.sizeBytes,
     width: input.width ?? null,
@@ -242,6 +249,7 @@ export async function deleteFile(fileId: string): Promise<DeleteFileResult> {
       current.s3Key,
       ...(current.thumbSmKey ? [current.thumbSmKey] : []),
       ...(current.thumbMdKey ? [current.thumbMdKey] : []),
+      ...(current.thumbLgKey ? [current.thumbLgKey] : []),
     ];
     try {
       await deleteObjects(keys);
@@ -271,6 +279,7 @@ export async function bulkDeleteFiles(
     keys.push(f.s3Key);
     if (f.thumbSmKey) keys.push(f.thumbSmKey);
     if (f.thumbMdKey) keys.push(f.thumbMdKey);
+    if (f.thumbLgKey) keys.push(f.thumbLgKey);
   }
   try {
     await deleteObjects(keys);

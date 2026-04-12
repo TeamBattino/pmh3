@@ -93,12 +93,20 @@ export async function signedReadUrl(
  * never need to know the bucket host or presign anything themselves.
  */
 export async function enrichFileRecord(file: FileRecord): Promise<FileRecord> {
-  const [signedUrl, signedThumbSmUrl, signedThumbMdUrl] = await Promise.all([
-    signedReadUrl(file.s3Key),
-    file.thumbSmKey ? signedReadUrl(file.thumbSmKey) : Promise.resolve(null),
-    file.thumbMdKey ? signedReadUrl(file.thumbMdKey) : Promise.resolve(null),
-  ]);
-  return { ...file, signedUrl, signedThumbSmUrl, signedThumbMdUrl };
+  const [signedUrl, signedThumbSmUrl, signedThumbMdUrl, signedThumbLgUrl] =
+    await Promise.all([
+      signedReadUrl(file.s3Key),
+      file.thumbSmKey ? signedReadUrl(file.thumbSmKey) : Promise.resolve(null),
+      file.thumbMdKey ? signedReadUrl(file.thumbMdKey) : Promise.resolve(null),
+      file.thumbLgKey ? signedReadUrl(file.thumbLgKey) : Promise.resolve(null),
+    ]);
+  return {
+    ...file,
+    signedUrl,
+    signedThumbSmUrl,
+    signedThumbMdUrl,
+    signedThumbLgUrl,
+  };
 }
 
 export async function enrichFileRecords(

@@ -75,6 +75,15 @@ export function useFileReplace() {
                   },
                 ]
               : []),
+            ...(processed.thumbLg
+              ? [
+                  {
+                    variant: "thumb_lg" as const,
+                    contentType: processed.thumbLg.contentType,
+                    keySuffix: processed.thumbLg.keySuffix,
+                  },
+                ]
+              : []),
           ];
 
           const presigned = await presignUpload({
@@ -91,6 +100,7 @@ export function useFileReplace() {
           weights.set("original", 0.9);
           if (processed.thumbSm) weights.set("thumb_sm", 0.05);
           if (processed.thumbMd) weights.set("thumb_md", 0.05);
+          if (processed.thumbLg) weights.set("thumb_lg", 0.05);
           const total = [...weights.values()].reduce((a, b) => a + b, 0);
           for (const [k, v] of weights) weights.set(k, v / total);
 
@@ -141,6 +151,20 @@ export function useFileReplace() {
                   }),
                 ]
               : []),
+            ...(processed.thumbLg
+              ? [
+                  xhrPut({
+                    url: byVariant.get("thumb_lg")!.presignedUrl,
+                    blob: processed.thumbLg.blob,
+                    contentType: processed.thumbLg.contentType,
+                    signal: controller.signal,
+                    onProgress: (p) => {
+                      progressByVariant.set("thumb_lg", p);
+                      bump();
+                    },
+                  }),
+                ]
+              : []),
           ]);
 
           const record = await replaceFileAction(current.id, {
@@ -154,6 +178,7 @@ export function useFileReplace() {
               original: byVariant.get("original")!.key,
               thumbSm: byVariant.get("thumb_sm")?.key ?? null,
               thumbMd: byVariant.get("thumb_md")?.key ?? null,
+              thumbLg: byVariant.get("thumb_lg")?.key ?? null,
             },
           });
           qc.invalidateQueries({ queryKey: fileSystemKeys.file(current.id) });

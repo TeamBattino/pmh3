@@ -39,6 +39,7 @@ type FileDoc = {
   s3Key: string;
   thumbSmKey: string | null;
   thumbMdKey: string | null;
+  thumbLgKey: string | null;
   width: number | null;
   height: number | null;
   blurhash: string | null;
@@ -268,6 +269,7 @@ export class MongoService implements DatabaseService {
       s3Key: input.s3Key,
       thumbSmKey: input.thumbSmKey,
       thumbMdKey: input.thumbMdKey,
+      thumbLgKey: input.thumbLgKey,
       width: input.width,
       height: input.height,
       blurhash: input.blurhash,
@@ -314,6 +316,7 @@ export class MongoService implements DatabaseService {
           s3Key: input.s3Key,
           thumbSmKey: input.thumbSmKey,
           thumbMdKey: input.thumbMdKey,
+          thumbLgKey: input.thumbLgKey,
           mimeType: input.mimeType,
           sizeBytes: input.sizeBytes,
           width: input.width,
@@ -630,6 +633,7 @@ export class MongoService implements DatabaseService {
       s3Keys.push(f.s3Key);
       if (f.thumbSmKey) s3Keys.push(f.thumbSmKey);
       if (f.thumbMdKey) s3Keys.push(f.thumbMdKey);
+      if (f.thumbLgKey) s3Keys.push(f.thumbLgKey);
     }
     const fileObjectIds = subtreeFiles.map((f) => f._id);
 
@@ -1060,6 +1064,7 @@ export class MongoService implements DatabaseService {
       s3Key: doc.s3Key,
       thumbSmKey: doc.thumbSmKey,
       thumbMdKey: doc.thumbMdKey,
+      thumbLgKey: doc.thumbLgKey ?? null,
       width: doc.width,
       height: doc.height,
       blurhash: doc.blurhash,

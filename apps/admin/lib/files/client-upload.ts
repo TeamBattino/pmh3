@@ -42,6 +42,7 @@ export type ProcessedFile = {
   original: { blob: Blob; contentType: string; keySuffix: string };
   thumbSm?: { blob: Blob; contentType: string; keySuffix: string };
   thumbMd?: { blob: Blob; contentType: string; keySuffix: string };
+  thumbLg?: { blob: Blob; contentType: string; keySuffix: string };
   width: number | null;
   height: number | null;
   blurhash: string | null;
@@ -96,9 +97,10 @@ export async function processFileForUpload(
     base.width = loaded.width;
     base.height = loaded.height;
 
-    const [thumbSm, thumbMd] = await Promise.all([
+    const [thumbSm, thumbMd, thumbLg] = await Promise.all([
       canvasResizeToWebp(loaded.image, 200, 0.8),
       canvasResizeToWebp(loaded.image, 800, 0.85),
+      canvasResizeToWebp(loaded.image, 1600, 0.85),
     ]);
     base.thumbSm = {
       blob: thumbSm,
@@ -109,6 +111,11 @@ export async function processFileForUpload(
       blob: thumbMd,
       contentType: "image/webp",
       keySuffix: `_thumb_md.webp`,
+    };
+    base.thumbLg = {
+      blob: thumbLg,
+      contentType: "image/webp",
+      keySuffix: `_thumb_lg.webp`,
     };
 
     if (cls.computeBlurhash) {
@@ -151,6 +158,12 @@ export async function uploadProcessedFile(
       contentType: processed.thumbMd.contentType,
       keySuffix: processed.thumbMd.keySuffix,
     });
+  if (processed.thumbLg)
+    variants.push({
+      variant: "thumb_lg",
+      contentType: processed.thumbLg.contentType,
+      keySuffix: processed.thumbLg.keySuffix,
+    });
 
   onProgress?.({ percent: 0, phase: "uploading" });
 
@@ -161,6 +174,7 @@ export async function uploadProcessedFile(
   weights.set("original", WEIGHT_ORIGINAL);
   if (processed.thumbSm) weights.set("thumb_sm", WEIGHT_THUMB);
   if (processed.thumbMd) weights.set("thumb_md", WEIGHT_THUMB);
+  if (processed.thumbLg) weights.set("thumb_lg", WEIGHT_THUMB);
   // Normalize so weights sum to 1 (non-image uploads skip thumbs entirely).
   const totalWeight = [...weights.values()].reduce((a, b) => a + b, 0);
   for (const [k, v] of weights) weights.set(k, v / totalWeight);
@@ -183,6 +197,9 @@ export async function uploadProcessedFile(
       : []),
     ...(processed.thumbMd
       ? [["thumb_md", processed.thumbMd] as const]
+      : []),
+    ...(processed.thumbLg
+      ? [["thumb_lg", processed.thumbLg] as const]
       : []),
   ]) {
     const upload = byVariant.get(variantKey);
@@ -218,6 +235,7 @@ export async function uploadProcessedFile(
       original: original.key,
       thumbSm: byVariant.get("thumb_sm")?.key ?? null,
       thumbMd: byVariant.get("thumb_md")?.key ?? null,
+      thumbLg: byVariant.get("thumb_lg")?.key ?? null,
     },
     pool,
   });

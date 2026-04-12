@@ -11,6 +11,7 @@
     "./lib/*": "./lib/*.ts",
     "./lib/*.tsx": "./lib/*.tsx",
     "./fields/*": "./fields/*.tsx",
+    "./fields/file-picker-types": "./fields/file-picker-types.ts",
     "./styles/*": "./styles/*"
   },
   "devDependencies": {

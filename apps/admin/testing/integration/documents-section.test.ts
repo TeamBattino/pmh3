@@ -39,6 +39,7 @@ function docFile(uuid: string, folderId: string, filename = `${uuid}.pdf`) {
     s3Key: `${uuid}.pdf`,
     thumbSmKey: null,
     thumbMdKey: null,
+    thumbLgKey: null,
     width: null,
     height: null,
     blurhash: null,
@@ -280,6 +281,7 @@ describe("Documents section (integration)", () => {
         s3Key: "cascade-thumbs.jpg",
         thumbSmKey: "cascade-thumbs_sm.webp",
         thumbMdKey: "cascade-thumbs_md.webp",
+        thumbLgKey: "cascade-thumbs_lg.webp",
         width: 100,
         height: 100,
         blurhash: null,
@@ -293,6 +295,7 @@ describe("Documents section (integration)", () => {
           "cascade-thumbs.jpg",
           "cascade-thumbs_sm.webp",
           "cascade-thumbs_md.webp",
+          "cascade-thumbs_lg.webp",
         ].sort()
       );
     });

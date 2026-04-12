@@ -401,6 +401,8 @@ function PreviewArea({ file }: { file: FileRecord }) {
 
   if (file.kind === "image") {
     const thumbUrl = file.signedThumbMdUrl ?? file.signedUrl ?? "";
+    const lightboxUrl =
+      file.signedThumbLgUrl ?? file.signedUrl ?? thumbUrl;
     return (
       <>
         <button
@@ -420,7 +422,7 @@ function PreviewArea({ file }: { file: FileRecord }) {
         <NativeLightbox
           open={open}
           onClose={() => setOpen(false)}
-          src={thumbUrl}
+          src={lightboxUrl}
           alt={file.altText ?? file.originalFilename}
         />
       </>

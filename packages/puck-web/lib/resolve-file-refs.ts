@@ -18,6 +18,7 @@ export type FileRecordLike = {
   s3Key: string;
   thumbSmKey: string | null;
   thumbMdKey: string | null;
+  thumbLgKey: string | null;
   originalFilename: string;
   altText: string | null;
   mimeType: string;
@@ -33,6 +34,7 @@ export type FileRecordLike = {
   signedUrl?: string;
   signedThumbSmUrl?: string | null;
   signedThumbMdUrl?: string | null;
+  signedThumbLgUrl?: string | null;
 };
 
 export type AnyFileRef = MediaRef | DocumentRef;

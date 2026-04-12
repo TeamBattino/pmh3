@@ -28,6 +28,7 @@ export type FileRecord = {
   s3Key: string;
   thumbSmKey: string | null;
   thumbMdKey: string | null;
+  thumbLgKey: string | null;
   width: number | null;
   height: number | null;
   blurhash: string | null;
@@ -41,6 +42,7 @@ export type FileRecord = {
   signedUrl?: string;
   signedThumbSmUrl?: string | null;
   signedThumbMdUrl?: string | null;
+  signedThumbLgUrl?: string | null;
 
   uploadedAt: Date;
   /** Populated once Keycloak migration lands. v1 always writes null. */
@@ -95,6 +97,7 @@ export type CreateFileInput = {
   s3Key: string;
   thumbSmKey: string | null;
   thumbMdKey: string | null;
+  thumbLgKey: string | null;
   width: number | null;
   height: number | null;
   blurhash: string | null;
@@ -112,6 +115,7 @@ export type ReplaceFileInput = {
   s3Key: string;
   thumbSmKey: string | null;
   thumbMdKey: string | null;
+  thumbLgKey: string | null;
   mimeType: string;
   sizeBytes: number;
   width: number | null;
