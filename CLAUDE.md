@@ -67,6 +67,17 @@ The path is relative to the CSS file location (`apps/{app}/app/globals.css`), no
 - Navbar and footer configs do NOT use section theming. Their editor previews need a manual `PreviewRoot` wrapper with `mud-theme bg-ground font-poppins` to look correct.
 - The `iframe: { enabled: true }` prop on `<Puck>` controls iframe rendering. Keep it enabled.
 
+## Critical: Puck Render Functions Must Be Server Components
+
+Puck's RSC `Render` (resolved via the `react-server` conditional export, `@puckeditor/core/dist/rsc.mjs`) injects `puck: { renderDropZone, dragRef, metadata, isEditing }` into the props of every registered `ComponentConfig.render` (and `root.render`). `renderDropZone` and `dragRef` are functions — they **cannot cross a server→client boundary**. The site 500s with *"Functions cannot be passed directly to Client Components"* on every page render otherwise.
+
+**Rules.**
+
+1. Any function registered as `ComponentConfig.render` or `root.render` (and any wrapper in between, like `sectionThemedComponentConfig`'s `SectionThemedRender`) must be a server component — **no `"use client"` at the top of that file**.
+2. No Client Component may sit in the ancestry of `<config.render {...props} />` such that the element is serialized as its child. In particular, do **not** wrap children in a client-only context provider inside the Puck render path. If you need to share values with Puck-rendered components, inject them as plain props via the data layer (see `applySectionTheming`) instead of React context.
+3. For interactive leaves, split the component: the outer, config-registered render stays server-side; a separate `"use client"` inner component (like `FAQItem`) holds the state. Pass only serializable data to the client leaf — never forward the `puck` prop.
+4. Puck's own `DropZone` (returned by `renderDropZone`) is already a Client Component and is safe to render — its props (`zone`, `allow`) are serializable.
+
 ## Permissions
 
 String literals in `lib/security/security-config.ts`. Key ones: `admin-ui:read`, `page:create/update/delete`, `navbar:update`, `footer:update`, `role-permissions:read/update`, `global-admin` (grants all). Use `<PermissionGuard>` client-side, `requireServerPermission()` server-side.
