@@ -1,4 +1,5 @@
 import { MongoClient, type Collection, type Db } from "mongodb";
+import { hashSecret } from "./crypto";
 import type {
   AuthClient,
   PendingAuthorization,
@@ -61,11 +62,15 @@ async function seedDefaultClient(): Promise<void> {
     redirectUris.push(`${base}/auth/callback/oidc`);
   }
 
+  // Secret defaults to "dev-secret" for local dev. In prod, set
+  // ADMIN_CLIENT_SECRET on the auth service and the matching
+  // AUTH_OIDC_CLIENT_SECRET on the admin service to the same value.
+  const clientSecret = process.env.ADMIN_CLIENT_SECRET ?? "dev-secret";
+
   console.log("Seeding default OAuth client: pfadimh-admin");
   await authClientsCol().insertOne({
     clientId: "pfadimh-admin",
-    // SHA-256 of "dev-secret"
-    clientSecretHash: "298754db2dbab6ec62605ceb0379eb7ee376580359449efe0caa3aa06cd56736",
+    clientSecretHash: hashSecret(clientSecret),
     name: "PMH Admin",
     description: "CMS admin panel",
     redirectUris,
