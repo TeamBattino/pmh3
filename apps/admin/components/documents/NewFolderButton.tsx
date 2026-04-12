@@ -49,9 +49,10 @@ export function NewFolderButton({
         title={
           disabled ? "Cannot nest more than three levels deep" : "New folder"
         }
+        className="px-2 md:px-3"
       >
-        <FolderPlus className="mr-1 size-4" aria-hidden />
-        New folder
+        <FolderPlus className="size-4 md:mr-1" aria-hidden />
+        <span className="hidden md:inline">New folder</span>
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

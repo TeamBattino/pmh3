@@ -230,7 +230,7 @@ export function EntryList({
   // ── Render ─────────────────────────────────────────────────────────
 
   const gridCols =
-    "grid-cols-[2.5rem_1.25rem_1fr_5rem_6rem_2rem]";
+    "grid-cols-[1.25rem_1fr_2rem] gap-2 md:grid-cols-[2.5rem_1.25rem_1fr_5rem_6rem_2rem] md:gap-3";
 
   return (
     <div className="w-full">
@@ -241,7 +241,7 @@ export function EntryList({
         )}
       >
         <label
-          className="flex h-8 w-full cursor-pointer items-center justify-center"
+          className="hidden h-8 w-full cursor-pointer items-center justify-center md:flex"
           aria-label={allSelected ? "Deselect all" : "Select all"}
           onClick={(e) => e.stopPropagation()}
         >
@@ -261,6 +261,7 @@ export function EntryList({
           sort={sort}
           onClick={toggleSort}
           align="end"
+          className="hidden md:flex"
         />
         <SortHeader
           label="Date"
@@ -268,6 +269,7 @@ export function EntryList({
           sort={sort}
           onClick={toggleSort}
           align="end"
+          className="hidden md:flex"
         />
         <span aria-hidden />
       </div>
@@ -326,12 +328,14 @@ function SortHeader({
   sort,
   onClick,
   align = "start",
+  className,
 }: {
   label: string;
   col: SortCol;
   sort: SortState;
   onClick: (col: SortCol) => void;
   align?: "start" | "end";
+  className?: string;
 }) {
   const active = sort.col === col;
   return (
@@ -340,7 +344,8 @@ function SortHeader({
       onClick={() => onClick(col)}
       className={cn(
         "flex items-center gap-1 hover:text-foreground",
-        align === "end" && "justify-end"
+        align === "end" && "justify-end",
+        className
       )}
     >
       <span>{label}</span>
@@ -465,7 +470,7 @@ function EntryRow({
       <label
         data-row-stop=""
         className={cn(
-          "flex h-8 w-full cursor-pointer items-center justify-center rounded transition-opacity hover:bg-accent/60",
+          "hidden h-8 w-full cursor-pointer items-center justify-center rounded transition-opacity hover:bg-accent/60 md:flex",
           !anySelected && !selected && "opacity-0 md:group-hover:opacity-100"
         )}
         onClick={(e) => e.stopPropagation()}
@@ -490,10 +495,10 @@ function EntryRow({
           <span className="block truncate">{name}</span>
         )}
       </div>
-      <span className="truncate text-right text-xs text-muted-foreground">
+      <span className="hidden truncate text-right text-xs text-muted-foreground md:block">
         {sizeLabel}
       </span>
-      <span className="truncate text-right text-xs text-muted-foreground">
+      <span className="hidden truncate text-right text-xs text-muted-foreground md:block">
         {date.toLocaleDateString()}
       </span>
       <div

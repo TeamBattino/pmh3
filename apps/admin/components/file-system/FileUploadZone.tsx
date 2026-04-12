@@ -59,12 +59,12 @@ export function FileUploadZone({
           onClick={openPicker}
           disabled={disabled}
           className={cn(
-            "inline-flex items-center gap-2 rounded-md bg-admin-primary px-3 py-2 text-sm text-admin-primary-foreground hover:opacity-90 disabled:opacity-50",
+            "inline-flex items-center gap-2 rounded-md bg-admin-primary px-2 py-2 text-sm text-admin-primary-foreground hover:opacity-90 disabled:opacity-50 md:px-3",
             className
           )}
         >
-          <Upload className="size-4" aria-hidden />
-          Upload
+          <Upload className="size-4 md:mr-0.5" aria-hidden />
+          <span className="hidden md:inline">Upload</span>
         </button>
         <input
           ref={inputRef}

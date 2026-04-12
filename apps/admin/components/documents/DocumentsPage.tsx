@@ -357,7 +357,7 @@ export function DocumentsPage({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
+    <div className="flex h-[calc(100svh-theme(spacing.14)-theme(spacing.12))] min-h-0 flex-col gap-4">
       <h1 className="text-2xl font-semibold">Documents</h1>
       <div className="flex flex-1 gap-4 overflow-hidden">
         <aside className="hidden w-64 shrink-0 flex-col gap-2 rounded-md border border-border bg-card p-2 md:flex">
