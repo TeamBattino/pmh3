@@ -16,11 +16,18 @@ ENV MONGODB_CONNECTION_STRING=mongodb://build.invalid:27017 \
     MONGODB_DB_NAME=build
 RUN bun run build --filter=@pfadipuck/site
 
-FROM base AS runner
+# Runtime on Node, not Bun: Puck's rich-text SSR pipeline pulls in
+# `@tiptap/html/server` → `happy-dom`, which uses Node's `vm.Script` to
+# bootstrap globals (SyntaxError, RangeError, …) onto its synthetic Window.
+# Bun's `vm` impl doesn't fully run that bootstrap, so the Window has no
+# `SyntaxError` and the moment any tiptap extension parses HTML the render
+# crashes with `new this.window.SyntaxError(...)` → "undefined is not a
+# constructor". Node runs happy-dom correctly.
+FROM node:22-alpine AS runner
 WORKDIR /app
-RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 COPY --from=installer /app/apps/site/.next/standalone ./
 COPY --from=installer /app/apps/site/.next/static ./apps/site/.next/static
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
-CMD ["bun", "run", "apps/site/server.js"]
+CMD ["node", "apps/site/server.js"]

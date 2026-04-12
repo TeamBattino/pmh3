@@ -158,9 +158,13 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      # bash's /dev/tcp is a TCP probe that doesn't care about HTTP
-      # status — site may legitimately 404 at `/` with a fresh Mongo.
-      test: ["CMD", "bash", "-c", "</dev/tcp/localhost/3000"]
+      # Alpine Node image ships without bash, so we can't use `/dev/tcp`.
+      # `curl -fsS` treats any 2xx/3xx as success; the site may legitimately
+      # 404 at `/` with a fresh Mongo, hence the `|| test $? -eq 22` escape
+      # (curl exit 22 is "HTTP error", which means the server answered).
+      test:
+        - CMD-SHELL
+        - "curl -fsS http://localhost:3000 > /dev/null || test $$? -eq 22"
       interval: 5s
       timeout: 5s
       retries: 30

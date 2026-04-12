@@ -12,12 +12,23 @@ Turborepo monorepo for Pfadi Meilen Herrliberg — a CMS built with Puck (visual
 ## Commands
 
 ```bash
-bun run dev          # both apps
-bun run dev:admin    # admin only
-bun run dev:site     # site only
-bun run build        # turbo build (both)
+npm run dev          # both apps (use npm, not bun — see Runtime below)
+npm run dev:admin    # admin only
+npm run dev:site     # site only
+bun install          # Bun is kept for install speed + lockfile
+bun run build        # build is runtime-agnostic, Bun is fine here
 bun run storybook    # storybook at root
 ```
+
+## Critical: Runtime is Node, not Bun
+
+`apps/site` and `apps/admin` must run under **Node**, never under Bun. Puck's rich-text SSR pipeline (`@tiptap/html/server`) uses `happy-dom`, which bootstraps globals like `SyntaxError` onto its synthetic `Window` via Node's built-in `vm.Script.runInContext()`. Bun's `vm` implementation doesn't complete that bootstrap, so `window.SyntaxError` ends up undefined and the first CSS-selector match (e.g. tiptap's Heading extension parsing HTML) crashes with *"undefined is not a constructor"* on `new this.window.SyntaxError(...)`. This is a runtime gap — no bundler / Next config knob can fix it.
+
+**Production.** Both Dockerfiles (`apps/site/Dockerfile`, `apps/admin/Dockerfile`) install + build with Bun (fast), but the final `runner` stage is `node:22-alpine` and the container runs `node apps/<app>/server.js`.
+
+**Development.** Install Node 22 locally (e.g. `nvm install 22`, `fnm install 22`). Use `npm run dev` / `npm run dev:site` / `npm run dev:admin`. Do **not** use `bun run dev` — Bun injects a `node` shim into `PATH` for every script it runs (at `/tmp/bun-node-*/node`) that silently redirects to Bun, so even `node …` commands inside the script end up on Bun. Script-level tricks (`env node`, `sh -c`, absolute paths) don't survive this. The auth service (`apps/auth`) is Bun-only and is unaffected.
+
+**Bun is still the package manager.** `bun install` is fast and the `bun.lock` is authoritative. Only the *runtime* needs to be Node.
 
 ## Environment
 
@@ -66,6 +77,12 @@ The path is relative to the CSS file location (`apps/{app}/app/globals.css`), no
 - Page config uses `sectionThemedConfig()` which wraps each component in `SectionThemedComponent` (applies `mud-theme`/`sun-theme` + `bg-ground` + `content-main`).
 - Navbar and footer configs do NOT use section theming. Their editor previews need a manual `PreviewRoot` wrapper with `mud-theme bg-ground font-poppins` to look correct.
 - The `iframe: { enabled: true }` prop on `<Puck>` controls iframe rendering. Keep it enabled.
+
+## Critical: Rich Text Parses Through Happy-Dom
+
+Puck's admin editor saves every `type: "richtext"` field value as an **HTML string** (via `editor.getHTML()`). On the site, Puck's RSC `RichTextRender` detects the HTML string at render time and calls `generateJSON(html, extensions)` from `@tiptap/html/server` — which uses `happy-dom` to parse HTML and run each tiptap extension's `parseHTML` selector rules. This requires Node (see *Runtime* above). Plain paragraphs happen to bypass some selector matching; headings (or any extension with meaningful `parseHTML` rules) always trigger it.
+
+Long-term, storing rich text as tiptap JSON (`{ type: "doc", content: [...] }`) on save would skip the parse on every render — but currently we don't do that conversion. If you add it, do the `generateJSON` call in a `savePage`/`saveNavbar`/`saveFooter` server action; Node handles happy-dom fine. Do not attempt to do it at render time on Bun.
 
 ## Critical: Puck Render Functions Must Be Server Components
 

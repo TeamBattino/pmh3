@@ -31,12 +31,15 @@ ARG NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 RUN bun run build --filter=@pfadipuck/admin
 
-FROM base AS runner
+# Runtime on Node, not Bun: matches site for symmetry and insulates any
+# future admin-side code paths that depend on Node's `vm` (e.g. happy-dom
+# via `@tiptap/html/server` if we ever pre-render richtext at save time).
+FROM node:22-alpine AS runner
 WORKDIR /app
-RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 COPY --from=installer /app/apps/admin/.next/standalone ./
 COPY --from=installer /app/apps/admin/.next/static ./apps/admin/.next/static
 COPY --from=installer /app/apps/admin/public ./apps/admin/public
 EXPOSE 3001
 ENV PORT=3001 HOSTNAME=0.0.0.0
-CMD ["bun", "run", "apps/admin/server.js"]
+CMD ["node", "apps/admin/server.js"]
