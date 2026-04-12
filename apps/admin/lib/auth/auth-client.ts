@@ -5,6 +5,9 @@ import NextAuth from "next-auth";
 
 const { handlers, signIn, signOut, auth } = NextAuth({
   basePath: "/auth",
+  pages: {
+    signIn: "/login",
+  },
   providers: [
     {
       id: "oidc",
