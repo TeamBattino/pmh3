@@ -18,9 +18,12 @@ export const env = createEnv({
     S3_SECRET_ACCESS_KEY: z.string().min(1),
   },
   client: {
-    // Add NEXT_PUBLIC_ variables here
+    // Public base URL of the prod site app — used by the editor's "View Page"
+    // button so it opens the live site instead of routing inside the admin.
+    NEXT_PUBLIC_SITE_URL: z.string().url(),
   },
   runtimeEnv: {
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     AUTH_SECRET: process.env.AUTH_SECRET,
     MONGODB_CONNECTION_STRING: process.env.MONGODB_CONNECTION_STRING,
     MONGODB_DB_NAME: process.env.MONGODB_DB_NAME,

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/DropdownMenu";
 import { PermissionGuard } from "@/components/security/PermissionGuard";
 import { cn } from "@/lib/cn";
+import { env } from "@/lib/env";
 
 export type PageRowMenuProps = {
   path: string;
@@ -53,7 +54,13 @@ export function PageRowMenu({
           </DropdownMenuItem>
         </PermissionGuard>
         <DropdownMenuItem
-          onSelect={() => window.open(path, "_blank")}
+          onSelect={() =>
+            window.open(
+              new URL(path, env.NEXT_PUBLIC_SITE_URL).toString(),
+              "_blank",
+              "noopener,noreferrer"
+            )
+          }
         >
           <ExternalLink aria-hidden />
           View on site

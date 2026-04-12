@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { toast } from "@/components/ui/Sonner";
 import { PageConfig } from "@pfadipuck/puck-web/config/page.config";
 import { savePage } from "@/lib/db/db-actions";
+import { env } from "@/lib/env";
 import { queryClient } from "@/lib/query-client";
 import { usePuck } from "@puckeditor/core";
 import { useMutation } from "@tanstack/react-query";
@@ -45,7 +46,13 @@ function PageHeaderActions({ path }: PageHeaderActionsProps) {
         </Button>
 
         <Button
-          onClick={() => router.push(path)}
+          onClick={() =>
+            window.open(
+              new URL(path, env.NEXT_PUBLIC_SITE_URL).toString(),
+              "_blank",
+              "noopener,noreferrer"
+            )
+          }
           variant="outline"
           size="sm"
           className="flex-1 sm:flex-none"
