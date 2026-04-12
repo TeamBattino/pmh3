@@ -49,6 +49,18 @@ async function seedDefaultClient(): Promise<void> {
   const existing = await authClientsCol().findOne({ clientId: "pfadimh-admin" });
   if (existing) return;
 
+  const redirectUris = [
+    "http://localhost:3001/auth/callback/oidc",
+    // Docker compose network (e2e + containerized deployments)
+    "http://admin:3001/auth/callback/oidc",
+  ];
+
+  // Production/staging: add callback for the real admin URL
+  if (process.env.ADMIN_URL) {
+    const base = process.env.ADMIN_URL.replace(/\/+$/, "");
+    redirectUris.push(`${base}/auth/callback/oidc`);
+  }
+
   console.log("Seeding default OAuth client: pfadimh-admin");
   await authClientsCol().insertOne({
     clientId: "pfadimh-admin",
@@ -56,11 +68,7 @@ async function seedDefaultClient(): Promise<void> {
     clientSecretHash: "298754db2dbab6ec62605ceb0379eb7ee376580359449efe0caa3aa06cd56736",
     name: "PMH Admin",
     description: "CMS admin panel",
-    redirectUris: [
-      "http://localhost:3001/auth/callback/oidc",
-      // Docker compose network (e2e + containerized deployments)
-      "http://admin:3001/auth/callback/oidc",
-    ],
+    redirectUris,
   });
 }
 
