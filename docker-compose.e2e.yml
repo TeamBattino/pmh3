@@ -111,6 +111,8 @@ services:
     build:
       context: .
       dockerfile: apps/admin/Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: http://site:3000
     environment:
       AUTH_SECRET: e2e-test-secret
       AUTH_URL: http://admin:3001

@@ -26,16 +26,17 @@ test.describe("SSO role mapping", () => {
 
   test("Member user with no matching groups is denied", async ({ page }) => {
     await page.goto("/");
-    await page.waitForURL(/\/auth\/signin/);
-    await page.getByRole("button", { name: /oidc/i }).click();
+    await page.waitForURL(/\/login/);
+    await page.getByRole("button", { name: /login with midata/i }).click();
     // Click the "Dev Member" button — this user's group 7777 doesn't match any role
     await page
       .getByRole("button", { name: /Dev Member/ })
       .click();
 
-    // Should end up on an error page — auth service returns access_denied
-    // which NextAuth surfaces as an OAuthCallbackError
-    await expect(page).toHaveURL(/\/auth\/signin\?error/);
+    // Should end up on the login page with an error — auth service returns
+    // access_denied which NextAuth surfaces as an OAuthCallbackError, then
+    // redirects back to `pages.signIn` with `?error=...`
+    await expect(page).toHaveURL(/\/login\?error/);
   });
 });
 

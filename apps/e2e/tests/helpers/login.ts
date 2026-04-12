@@ -18,9 +18,9 @@ export async function loginAs(
   user: TestUser
 ): Promise<void> {
   await page.goto("/");
-  await page.waitForURL(/\/auth\/signin/);
-  // Click the OIDC sign-in button on NextAuth's signin page
-  await page.getByRole("button", { name: /oidc/i }).click();
+  await page.waitForURL(/\/login/);
+  // Click the OIDC sign-in button on the admin's custom /login page
+  await page.getByRole("button", { name: /login with midata/i }).click();
   // Now on mock-oidc's login page — click the test user button.
   // The button text starts with the user name.
   await page.getByRole("button", { name: new RegExp(`^${user}`) }).click();
