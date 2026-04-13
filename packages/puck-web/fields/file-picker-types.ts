@@ -26,12 +26,29 @@ export type MediaRef =
 
 export type DocumentRef = { type: "file"; fileId: string };
 
-export type PickerConfig = {
-  pool: "media" | "documents";
-  mode: "single" | "multi";
-  accept?: string[];
-  allowCollection?: boolean;
-};
+/**
+ * File kind buckets, matching `FileRecord.kind` in the admin app. The media
+ * picker filters by kind (coarse); the documents picker filters by mime type
+ * (fine). Keeping the two vocabularies on distinct field names prevents
+ * callers from passing `"image/png"` to a kind filter or `"image"` to a mime
+ * filter and silently getting zero results.
+ */
+export type FileKind = "image" | "video" | "document";
+
+export type PickerConfig =
+  | {
+      pool: "media";
+      mode: "single" | "multi";
+      /** Restrict the media picker to specific kinds, e.g. `["image"]`. */
+      acceptKinds?: FileKind[];
+      allowCollection?: boolean;
+    }
+  | {
+      pool: "documents";
+      mode: "single" | "multi";
+      /** Restrict the documents picker to specific mime types. */
+      acceptMimeTypes?: string[];
+    };
 
 export type PickerSelection =
   | { pool: "media"; refs: MediaRef[] }

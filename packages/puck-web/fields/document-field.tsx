@@ -84,7 +84,7 @@ function DocumentFieldRender({
     const selection = await openPicker({
       pool: "documents",
       mode,
-      accept,
+      acceptMimeTypes: accept,
     });
     if (!selection || selection.pool !== "documents") return;
     if (mode === "single") onChange(selection.refs[0] ?? undefined);

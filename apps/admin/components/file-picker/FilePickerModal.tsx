@@ -60,7 +60,7 @@ export function FilePickerModal({
             {config.mode === "single"
               ? "Pick one file."
               : "Pick one or more files."}
-            {config.allowCollection && config.pool === "media"
+            {config.pool === "media" && config.allowCollection
               ? " You can also select a whole album."
               : ""}
           </DialogDescription>
@@ -88,7 +88,7 @@ function MediaPickerBody({
   onCancel,
   onConfirm,
 }: {
-  config: PickerConfig;
+  config: Extract<PickerConfig, { pool: "media" }>;
   onCancel: () => void;
   onConfirm: (selection: PickerSelection) => void;
 }) {
@@ -100,6 +100,11 @@ function MediaPickerBody({
   const { data: files = [], isLoading: loadingFiles } = useCollectionFiles(
     effectiveId
   );
+
+  const visibleFiles = useMemo(() => {
+    if (!config.acceptKinds || config.acceptKinds.length === 0) return files;
+    return files.filter((f) => config.acceptKinds!.includes(f.kind));
+  }, [files, config.acceptKinds]);
 
   const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(
     new Set()
@@ -209,13 +214,15 @@ function MediaPickerBody({
             <div className="p-4">
               <Skeleton className="h-40 w-full" />
             </div>
-          ) : files.length === 0 ? (
+          ) : visibleFiles.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              No files in this album.
+              {files.length === 0
+                ? "No files in this album."
+                : "No files in this album match the allowed types."}
             </div>
           ) : (
             <FileGrid
-              files={files}
+              files={visibleFiles}
               selectedIds={selectedFileIds}
               onToggleSelect={toggleFile}
               onOpen={(f) => toggleFile(f.id)}
@@ -250,7 +257,7 @@ function DocumentsPickerBody({
   onCancel,
   onConfirm,
 }: {
-  config: PickerConfig;
+  config: Extract<PickerConfig, { pool: "documents" }>;
   onCancel: () => void;
   onConfirm: (selection: PickerSelection) => void;
 }) {
@@ -277,12 +284,13 @@ function DocumentsPickerBody({
     });
 
   const filtered = useMemo(() => {
-    if (!config.accept || config.accept.length === 0) return files;
+    if (!config.acceptMimeTypes || config.acceptMimeTypes.length === 0)
+      return files;
     return files.map((f) => ({
       ...f,
-      _dimmed: !config.accept!.includes(f.mimeType),
+      _dimmed: !config.acceptMimeTypes!.includes(f.mimeType),
     }));
-  }, [files, config.accept]);
+  }, [files, config.acceptMimeTypes]);
 
   const confirm = () => {
     const refs: DocumentRef[] = Array.from(selectedFileIds).map((fileId) => ({

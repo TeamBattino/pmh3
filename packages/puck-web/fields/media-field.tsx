@@ -64,7 +64,7 @@ export function mediaField(
       <MediaFieldRender
         {...(props as CustomFieldRenderProps<MediaFieldValue>)}
         mode={mode}
-        accept={opts.accept}
+        acceptKinds={opts.accept}
         allowCollection={opts.allowCollection}
       />
     ),
@@ -75,11 +75,11 @@ function MediaFieldRender({
   value,
   onChange,
   mode,
-  accept,
+  acceptKinds,
   allowCollection,
 }: CustomFieldRenderProps<MediaFieldValue> & {
   mode: "single" | "multi";
-  accept?: ("image" | "video")[];
+  acceptKinds?: ("image" | "video")[];
   allowCollection?: boolean;
 }) {
   const { openPicker } = useFilePicker();
@@ -88,7 +88,7 @@ function MediaFieldRender({
     const selection = await openPicker({
       pool: "media",
       mode,
-      accept,
+      acceptKinds,
       allowCollection: allowCollection ?? false,
     });
     if (!selection || selection.pool !== "media") return;
