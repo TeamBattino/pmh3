@@ -51,7 +51,7 @@ export function FilePickerModal({
   if (!config) return null;
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="flex h-[calc(100%-2rem)] max-h-[calc(100%-2rem)] flex-col sm:max-w-5xl lg:max-w-6xl">
         <DialogHeader>
           <DialogTitle>
             {config.pool === "media" ? "Select media" : "Select document"}
@@ -146,10 +146,11 @@ function MediaPickerBody({
 
   const totalSelected = selectedFileIds.size + selectedCollectionIds.size;
 
+  const uploadAlbumId = effectiveId ?? systemAlbum?.id ?? null;
   return (
-    <div className="flex flex-col gap-3">
-      <div className="grid min-h-96 grid-cols-[200px_1fr] gap-3">
-        <aside className="flex flex-col gap-1 overflow-y-auto rounded-md border border-border p-2 text-sm">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 md:grid md:grid-cols-[220px_1fr]">
+        <aside className="flex h-[7.5rem] shrink-0 flex-col gap-1 overflow-y-auto rounded-md border border-border p-2 text-sm md:h-auto">
           {loadingTree ? (
             <Skeleton className="h-40 w-full" />
           ) : (
@@ -158,7 +159,7 @@ function MediaPickerBody({
                 <button
                   type="button"
                   onClick={() => setAlbumId(systemAlbum.id)}
-                  className={`rounded px-2 py-1 text-left hover:bg-accent ${
+                  className={`shrink-0 truncate rounded px-2 py-1 text-left hover:bg-accent ${
                     effectiveId === systemAlbum.id
                       ? "bg-accent font-medium"
                       : ""
@@ -167,12 +168,12 @@ function MediaPickerBody({
                   CMS Uploads
                 </button>
               )}
-              <div className="my-1 border-t border-border" aria-hidden />
+              <div className="my-1 shrink-0 border-t border-border" aria-hidden />
               {collections
                 .filter((c) => c.type === "album_collection")
                 .map((ac) => (
-                  <div key={ac.id} className="mb-1">
-                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                  <div key={ac.id} className="mb-1 shrink-0">
+                    <div className="truncate px-2 py-1 text-xs font-semibold text-muted-foreground">
                       {ac.title}
                     </div>
                     {collections
@@ -180,7 +181,7 @@ function MediaPickerBody({
                       .map((album) => (
                         <div
                           key={album.id}
-                          className="flex items-center gap-1 px-2"
+                          className="flex min-w-0 items-center gap-1 px-2"
                         >
                           {config.allowCollection && (
                             <input
@@ -194,7 +195,8 @@ function MediaPickerBody({
                           <button
                             type="button"
                             onClick={() => setAlbumId(album.id)}
-                            className={`flex-1 rounded py-1 text-left text-sm hover:bg-accent ${
+                            title={album.title}
+                            className={`min-w-0 flex-1 truncate rounded py-1 text-left text-sm hover:bg-accent ${
                               effectiveId === album.id
                                 ? "bg-accent font-medium"
                                 : ""
@@ -209,7 +211,7 @@ function MediaPickerBody({
             </>
           )}
         </aside>
-        <div className="h-96 overflow-hidden rounded-md border border-border">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-md border border-border">
           {loadingFiles ? (
             <div className="p-4">
               <Skeleton className="h-40 w-full" />
@@ -231,9 +233,9 @@ function MediaPickerBody({
           )}
         </div>
       </div>
-      {systemAlbum && (
+      {uploadAlbumId && (
         <FileUploadZone
-          pool={{ kind: "media", albumId: systemAlbum.id }}
+          pool={{ kind: "media", albumId: uploadAlbumId }}
           appearance="bar"
         />
       )}
@@ -301,9 +303,9 @@ function DocumentsPickerBody({
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="grid min-h-96 grid-cols-[200px_1fr] gap-3">
-        <aside className="flex flex-col gap-1 overflow-y-auto rounded-md border border-border p-2 text-sm">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 md:grid md:grid-cols-[220px_1fr]">
+        <aside className="flex h-[7.5rem] shrink-0 flex-col gap-1 overflow-y-auto rounded-md border border-border p-2 text-sm md:h-auto">
           {loadingTree ? (
             <Skeleton className="h-40 w-full" />
           ) : (
@@ -314,7 +316,7 @@ function DocumentsPickerBody({
             />
           )}
         </aside>
-        <div className="h-96 overflow-hidden rounded-md border border-border">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-md border border-border">
           {loadingFiles ? (
             <div className="p-4">
               <Skeleton className="h-40 w-full" />
