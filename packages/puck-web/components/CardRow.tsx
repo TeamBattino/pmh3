@@ -1,5 +1,6 @@
 import { ComponentConfig, CustomField } from "@puckeditor/core";
 import { mediaField } from "../fields/media-field";
+import { urlField } from "../fields/url-field";
 import type {
   FileUrlResolver,
   MediaRef,
@@ -55,7 +56,7 @@ export const cardRowConfig: ComponentConfig<CardRowProps> = {
           accept: ["image"],
         }) as CustomField<MediaRef | undefined>,
         title: { type: "text", label: "Title" },
-        link: { type: "text", label: "Link URL" },
+        link: urlField({ label: "Link" }) as CustomField<string>,
       },
       getItemSummary: (item) => item.title || "Untitled",
       defaultItemProps: {

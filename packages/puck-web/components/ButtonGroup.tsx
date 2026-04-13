@@ -1,4 +1,5 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { urlField } from "../fields/url-field";
+import { ComponentConfig, CustomField } from "@puckeditor/core";
 
 export type ButtonGroupProps = {
   buttons: {
@@ -37,7 +38,7 @@ export const buttonGroupConfig: ComponentConfig<ButtonGroupProps> = {
       label: "Buttons",
       arrayFields: {
         label: { type: "text", label: "Label" },
-        link: { type: "text", label: "Link URL" },
+        link: urlField({ label: "Link" }) as CustomField<string>,
         variant: {
           type: "radio",
           label: "Style",

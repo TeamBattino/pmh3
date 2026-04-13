@@ -1,6 +1,7 @@
 import { NavbarDropdownDesktop } from "./NavbarDropdownDesktop";
 import { NavbarDropdownMobile } from "./NavbarDropdownMobile";
-import { ComponentConfig, WithPuckProps } from "@puckeditor/core";
+import { urlField } from "../../fields/url-field";
+import { ComponentConfig, CustomField, WithPuckProps } from "@puckeditor/core";
 
 export interface NavbarDropdownItem {
   label: string;
@@ -84,13 +85,17 @@ export const navbarDropdownConfig: ComponentConfig<NavbarDropdownProps> = {
       arrayFields: {
         label: {
           type: "text",
+          label: "Label",
         },
-        url: {
-          type: "text",
-        },
+        url: urlField({ label: "Link" }) as CustomField<string | undefined>,
         groups_with: {
           type: "text",
+          label: "Group",
         },
+      },
+      defaultItemProps: {
+        label: "Item",
+        url: "",
       },
     },
   },

@@ -1,4 +1,5 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { urlField } from "../fields/url-field";
+import { ComponentConfig, CustomField } from "@puckeditor/core";
 
 export type CallToActionProps = {
   heading: string;
@@ -40,7 +41,7 @@ export const callToActionConfig: ComponentConfig<CallToActionProps> = {
     heading: { type: "text", label: "Heading" },
     body: { type: "textarea", label: "Body" },
     buttonText: { type: "text", label: "Button Text" },
-    buttonLink: { type: "text", label: "Button Link" },
+    buttonLink: urlField({ label: "Button Link" }) as CustomField<string>,
   },
   defaultProps: {
     heading: "Ready to join?",

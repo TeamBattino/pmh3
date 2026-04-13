@@ -1,5 +1,6 @@
 import { ComponentConfig, CustomField } from "@puckeditor/core";
 import { mediaField } from "../fields/media-field";
+import { urlField } from "../fields/url-field";
 import type {
   FileUrlResolver,
   MediaRef,
@@ -44,7 +45,7 @@ export const iconLinkConfig: ComponentConfig<IconLinkProps> = {
       accept: ["image"],
     }) as CustomField<MediaRef | undefined>,
     label: { type: "text", label: "Label" },
-    link: { type: "text", label: "Link URL" },
+    link: urlField({ label: "Link" }) as CustomField<string>,
   },
   defaultProps: {
     label: "Link",

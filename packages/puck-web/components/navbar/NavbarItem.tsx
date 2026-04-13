@@ -1,4 +1,5 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { urlField } from "../../fields/url-field";
+import { ComponentConfig, CustomField } from "@puckeditor/core";
 
 export type NavbarItemProps = {
   title: string;
@@ -46,9 +47,12 @@ export const navbarItemConfig: ComponentConfig<NavbarItemProps> = {
   fields: {
     title: {
       type: "text",
+      label: "Title",
     },
-    url: {
-      type: "text",
-    },
+    url: urlField({ label: "Link" }) as CustomField<string>,
+  },
+  defaultProps: {
+    title: "Menu Item",
+    url: "",
   },
 };

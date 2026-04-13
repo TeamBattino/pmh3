@@ -1,5 +1,6 @@
 import { ComponentConfig, CustomField } from "@puckeditor/core";
 import { mediaField } from "../fields/media-field";
+import { urlField } from "../fields/url-field";
 import type {
   FileUrlResolver,
   MediaRef,
@@ -60,7 +61,7 @@ export const imageRowConfig: ComponentConfig<ImageRowProps> = {
           mode: "single",
           accept: ["image"],
         }) as CustomField<MediaRef | undefined>,
-        link: { type: "text", label: "Link URL (optional)" },
+        link: urlField({ label: "Link (optional)" }) as CustomField<string>,
       },
       getItemSummary: (_, idx = 0) => `Image ${idx + 1}`,
       defaultItemProps: {
