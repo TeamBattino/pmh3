@@ -1,3 +1,4 @@
+import { NavbarDesktopLink } from "./NavbarDesktopLink";
 import { urlField } from "../../fields/url-field";
 import { ComponentConfig, CustomField } from "@puckeditor/core";
 
@@ -24,11 +25,7 @@ export function NavbarItem({ title, url, editMode }: NavbarItemProps) {
 }
 
 function NavbarItemDesktop({ title, url }: NavbarItemProps) {
-  return (
-    <a className="text-black text-2xl font-rockingsoda" href={url || undefined}>
-      {title}
-    </a>
-  );
+  return <NavbarDesktopLink href={url}>{title}</NavbarDesktopLink>;
 }
 
 function NavbarItemMobile({ title, url }: NavbarItemProps) {
