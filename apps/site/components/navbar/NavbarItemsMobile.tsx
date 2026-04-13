@@ -46,11 +46,11 @@ export function NavbarItemsMobile({
       {open && (
         <div
           id={navbarOverlayId}
-          className="md:hidden absolute z-10 overflow-auto w-full h-screen bg-[rgba(0,0,0,0.6)]"
+          className="md:hidden absolute z-10 overflow-auto w-full h-[calc(100vh-5rem)] bg-ground/90 backdrop-blur-sm"
         >
-          <div className="py-20 px-2">
+          <div className="px-4 pt-20 pb-10">
             <ClickAwayListener onClickAway={handleClickAway}>
-              <div className="flex flex-col gap-3">{navbarItems}</div>
+              <div className="flex flex-col gap-4">{navbarItems}</div>
             </ClickAwayListener>
           </div>
         </div>

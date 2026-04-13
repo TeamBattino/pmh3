@@ -13,34 +13,37 @@ export function NavbarDropdownMobile({
     setOpen((prevOpen) => !prevOpen);
   };
   return (
-    <>
+    <div className="flex flex-col gap-2">
       <button
         onClick={toggleOpen}
-        className="text-brand-yellow items-center gap-2 text-2xl font-rockingsoda bg-elevated w-full p-3 flex justify-center"
+        className="group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-brand-yellow/80 bg-primary px-4 py-3 font-rockingsoda text-2xl text-contrast-primary shadow-[4px_4px_0_0_var(--color-brand-yellow)] transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        aria-expanded={open}
       >
         {label}
         <NavbarDropdownArrowSvg
           invertRotationDirection={true}
           open={open}
-          className="fill-brand-yellow"
+          className="fill-contrast-primary"
         />
       </button>
       {open && (
-        <div className="px-4 flex gap-1 flex-col">
+        <div className="ml-4 flex flex-col gap-3 border-l-2 border-dashed border-brand-yellow/70 pl-4">
           {groupedItems.map((items, index) => (
-            <div key={index} className="bg-elevated w-full p-3">
+            <div key={index} className="flex flex-col gap-1">
               {items[0].groups_with && (
-                <span className="text-xl font-rockingsoda">
-                  {items[0].groups_with}
-                </span>
+                <div className="flex items-center gap-2 px-1">
+                  <span className="h-px flex-1 bg-brand-yellow/60" />
+                  <span className="font-rockingsoda text-sm uppercase tracking-widest text-brand-yellow">
+                    {items[0].groups_with}
+                  </span>
+                  <span className="h-px flex-1 bg-brand-yellow/60" />
+                </div>
               )}
-              <div className="h-[1px] bg-brand-yellow"></div>
-
-              {items.map((item, index) => (
+              {items.map((item, idx) => (
                 <a
-                  key={index}
-                  className="block text-center py-2"
+                  key={idx}
                   href={item.url || undefined}
+                  className="block rounded-md border border-brand-yellow/30 bg-transparent px-3 py-2 text-center font-rockingsoda text-xl text-contrast-ground transition-colors active:bg-primary active:text-contrast-primary"
                 >
                   {item.label}
                 </a>
@@ -49,6 +52,6 @@ export function NavbarDropdownMobile({
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }
