@@ -2,17 +2,16 @@
 import { NavbarHamburgerSvg } from "@pfadipuck/graphics/NavbarHamburgerSvg";
 import ClickAwayListener from "@pfadipuck/puck-web/ui/ClickAwayListener";
 import { NavbarLogo } from "./NavbarLogo";
-import { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import { ReactNode, useId, useRef, useState } from "react";
 
 export type NavbarComponentsProps = {
   navbarItems: ReactNode;
-  data: NavbarData;
+  logoUrl?: string;
 };
 
 export function NavbarItemsMobile({
   navbarItems,
-  data,
+  logoUrl,
 }: NavbarComponentsProps) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -24,13 +23,12 @@ export function NavbarItemsMobile({
 
     setOpen(false);
   }
-  const logo = data.root.props?.logo;
   return (
     <>
       <div className="md:hidden grid grid-cols-[1fr_min-content_1fr] border-b-[#edc600] border-b-8">
         <div></div> {/* Empty div to align logo */}
         <div className="relative z-20 w-28 h-28 mb-[-50px]">
-          {logo && <NavbarLogo logo={logo} />}
+          {logoUrl && <NavbarLogo logo={logoUrl} />}
         </div>
         <div className="flex items-center justify-end">
           <button

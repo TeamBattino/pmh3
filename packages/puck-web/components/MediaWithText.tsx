@@ -1,25 +1,30 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { ComponentConfig, CustomField } from "@puckeditor/core";
 import type { RichText } from "@puckeditor/core";
-import { uploadFileField } from "../fields/upload-file";
-import Image from "next/image";
-
+import { mediaField } from "../fields/media-field";
+import type {
+  FileUrlResolver,
+  MediaRef,
+} from "../fields/file-picker-types";
 export type MediaWithTextProps = {
-  image?: string;
+  image?: MediaRef;
+  /** Populated by `resolveData` from the caller-supplied `metadata.resolveFileUrl`. Not user-editable. */
+  _resolvedImageUrl?: string;
   heading: string;
   body: RichText;
   mediaPosition: "left" | "right";
 };
 
 function MediaWithText({
-  image,
+  _resolvedImageUrl: image,
   heading,
   body,
   mediaPosition,
 }: MediaWithTextProps) {
   const imageBlock = (
-    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-elevated">
+    <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-elevated">
       {image ? (
-        <Image src={image} alt="" fill className="object-cover" />
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt="" className="w-full h-full object-cover" />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-contrast-ground/50">
           No image selected
@@ -56,7 +61,10 @@ export const mediaWithTextConfig: ComponentConfig<MediaWithTextProps> = {
   label: "Media With Text",
   render: MediaWithText,
   fields: {
-    image: uploadFileField,
+    image: mediaField({
+      mode: "single",
+      accept: ["image"],
+    }) as CustomField<MediaRef | undefined>,
     heading: { type: "text", label: "Heading" },
     body: { type: "richtext", label: "Body" },
     mediaPosition: {
@@ -72,5 +80,18 @@ export const mediaWithTextConfig: ComponentConfig<MediaWithTextProps> = {
     heading: "Heading",
     body: "Write your content here...",
     mediaPosition: "left",
+  },
+  resolveData: async (data, { metadata }) => {
+    const resolveFileUrl = (metadata as { resolveFileUrl?: FileUrlResolver })
+      ?.resolveFileUrl;
+    const ref = data.props.image;
+    let resolved: string | undefined;
+    if (ref && ref.type === "file" && resolveFileUrl) {
+      resolved = (await resolveFileUrl(ref.fileId, "md")) ?? undefined;
+    }
+    return {
+      ...data,
+      props: { ...data.props, _resolvedImageUrl: resolved },
+    };
   },
 };

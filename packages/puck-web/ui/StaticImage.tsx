@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 interface StaticImageProps {
   path: string;
   title: string;
@@ -7,11 +5,11 @@ interface StaticImageProps {
 
 export function StaticImage({ path, title }: StaticImageProps) {
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={path}
       alt={title}
-      fill={true}
-      className="object-cover !static"
+      className="w-full h-full object-cover"
     />
   );
 }

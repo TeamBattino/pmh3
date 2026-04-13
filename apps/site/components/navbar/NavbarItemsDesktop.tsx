@@ -4,6 +4,7 @@ import { Render } from "@puckeditor/core";
 
 export type NavbarComponentsProps = {
   data: NavbarData;
+  logoUrl?: string;
 };
 
 function splitData(data: NavbarData) {
@@ -33,9 +34,8 @@ function splitData(data: NavbarData) {
   };
 }
 
-export function NavbarItemsDesktop({ data }: NavbarComponentsProps) {
+export function NavbarItemsDesktop({ data, logoUrl }: NavbarComponentsProps) {
   const { leftItems, rightItems } = splitData(data);
-  const logo = data.root.props?.logo;
   return (
     <div className="hidden md:grid grid-cols-[1fr_min-content_1fr] gap-4 items-end border-b-[#edc600] border-b-8">
       <div className="flex justify-end gap-4 flex-wrap mb-1">
@@ -43,7 +43,7 @@ export function NavbarItemsDesktop({ data }: NavbarComponentsProps) {
       </div>
 
       <div className="relative w-28 h-28 mb-[-50px]">
-        {logo && <NavbarLogo logo={logo} />}
+        {logoUrl && <NavbarLogo logo={logoUrl} />}
       </div>
 
       <div className="flex justify-start gap-4 flex-wrap mb-1">

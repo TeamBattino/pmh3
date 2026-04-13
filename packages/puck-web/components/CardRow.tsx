@@ -1,13 +1,19 @@
-import { ComponentConfig } from "@puckeditor/core";
-import { uploadFileField } from "../fields/upload-file";
-import Image from "next/image";
+import { ComponentConfig, CustomField } from "@puckeditor/core";
+import { mediaField } from "../fields/media-field";
+import type {
+  FileUrlResolver,
+  MediaRef,
+} from "../fields/file-picker-types";
+type CardRowCard = {
+  icon?: MediaRef;
+  /** Populated by `resolveData` from the caller-supplied `metadata.resolveFileUrl`. Not user-editable. */
+  _resolvedIconUrl?: string;
+  title: string;
+  link: string;
+};
 
 export type CardRowProps = {
-  cards: {
-    icon?: string;
-    title: string;
-    link: string;
-  }[];
+  cards: CardRowCard[];
 };
 
 function CardRow({ cards }: CardRowProps) {
@@ -19,10 +25,13 @@ function CardRow({ cards }: CardRowProps) {
           href={card.link || "#"}
           className="flex flex-col items-center gap-3 rounded-xl bg-elevated p-6 text-center transition-transform hover:scale-105"
         >
-          {card.icon && (
-            <div className="relative w-16 h-16">
-              <Image src={card.icon} alt="" fill className="object-contain" />
-            </div>
+          {card._resolvedIconUrl && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={card._resolvedIconUrl}
+              alt=""
+              className="w-16 h-16 object-contain"
+            />
           )}
           <span className="font-semibold text-contrast-ground">
             {card.title}
@@ -41,7 +50,10 @@ export const cardRowConfig: ComponentConfig<CardRowProps> = {
       type: "array",
       label: "Cards",
       arrayFields: {
-        icon: uploadFileField,
+        icon: mediaField({
+          mode: "single",
+          accept: ["image"],
+        }) as CustomField<MediaRef | undefined>,
         title: { type: "text", label: "Title" },
         link: { type: "text", label: "Link URL" },
       },
@@ -59,5 +71,23 @@ export const cardRowConfig: ComponentConfig<CardRowProps> = {
       { title: "Card 3", link: "" },
       { title: "Card 4", link: "" },
     ],
+  },
+  resolveData: async (data, { metadata }) => {
+    const resolveFileUrl = (metadata as { resolveFileUrl?: FileUrlResolver })
+      ?.resolveFileUrl;
+    const cards = await Promise.all(
+      (data.props.cards ?? []).map(async (card) => {
+        const ref = card.icon;
+        let resolved: string | undefined;
+        if (ref && ref.type === "file" && resolveFileUrl) {
+          resolved = (await resolveFileUrl(ref.fileId, "sm")) ?? undefined;
+        }
+        return { ...card, _resolvedIconUrl: resolved };
+      })
+    );
+    return {
+      ...data,
+      props: { ...data.props, cards },
+    };
   },
 };

@@ -1,23 +1,30 @@
-import { ComponentConfig } from "@puckeditor/core";
-import { uploadFileField } from "../fields/upload-file";
-import Image from "next/image";
-
+import { ComponentConfig, CustomField } from "@puckeditor/core";
+import { mediaField } from "../fields/media-field";
+import type {
+  FileUrlResolver,
+  MediaRef,
+} from "../fields/file-picker-types";
 export type IconLinkProps = {
-  icon?: string;
+  icon?: MediaRef;
+  /** Populated by `resolveData` from the caller-supplied `metadata.resolveFileUrl`. Not user-editable. */
+  _resolvedIconUrl?: string;
   label: string;
   link: string;
 };
 
-function IconLink({ icon, label, link }: IconLinkProps) {
+function IconLink({
+  _resolvedIconUrl: icon,
+  label,
+  link,
+}: IconLinkProps) {
   return (
     <a
       href={link || "#"}
       className="flex flex-col items-center gap-2 p-4 rounded-xl transition-transform hover:scale-105"
     >
       {icon ? (
-        <div className="relative w-12 h-12">
-          <Image src={icon} alt="" fill className="object-contain" />
-        </div>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={icon} alt="" className="w-12 h-12 object-contain" />
       ) : (
         <div className="w-12 h-12 rounded-full bg-elevated" />
       )}
@@ -32,12 +39,28 @@ export const iconLinkConfig: ComponentConfig<IconLinkProps> = {
   label: "Icon Link",
   render: IconLink,
   fields: {
-    icon: uploadFileField,
+    icon: mediaField({
+      mode: "single",
+      accept: ["image"],
+    }) as CustomField<MediaRef | undefined>,
     label: { type: "text", label: "Label" },
     link: { type: "text", label: "Link URL" },
   },
   defaultProps: {
     label: "Link",
     link: "",
+  },
+  resolveData: async (data, { metadata }) => {
+    const resolveFileUrl = (metadata as { resolveFileUrl?: FileUrlResolver })
+      ?.resolveFileUrl;
+    const ref = data.props.icon;
+    let resolved: string | undefined;
+    if (ref && ref.type === "file" && resolveFileUrl) {
+      resolved = (await resolveFileUrl(ref.fileId, "sm")) ?? undefined;
+    }
+    return {
+      ...data,
+      props: { ...data.props, _resolvedIconUrl: resolved },
+    };
   },
 };
