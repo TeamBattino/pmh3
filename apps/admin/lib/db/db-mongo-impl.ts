@@ -18,6 +18,7 @@ import type {
   FileKind,
   FileRecord,
   FolderRecord,
+  MediaSettings,
   PageArgs,
   Reference,
   RemoveFromAlbumResult,
@@ -40,9 +41,11 @@ type FileDoc = {
   thumbSmKey: string | null;
   thumbMdKey: string | null;
   thumbLgKey: string | null;
+  posterKey: string | null;
   width: number | null;
   height: number | null;
   blurhash: string | null;
+  passwordProtected: boolean;
   uploadedAt: Date;
   uploadedBy: string | null;
   updatedAt?: Date;
@@ -69,6 +72,7 @@ type CollectionDoc = {
   parentId: ObjectId | null;
   sortOrder: number;
   isSystemAlbum: boolean;
+  passwordProtected: boolean;
   createdAt: Date;
 };
 
@@ -96,6 +100,7 @@ export class MongoService implements DatabaseService {
   readonly collectionsCollectionName = "collections";
   readonly collectionFilesCollectionName = "collection_files";
   readonly authClientsCollectionName = "auth-clients";
+  readonly settingsCollectionName = "settings";
 
   constructor(connectionString: string, dbName: string) {
     this.client = new MongoClient(connectionString);
@@ -270,9 +275,11 @@ export class MongoService implements DatabaseService {
       thumbSmKey: input.thumbSmKey,
       thumbMdKey: input.thumbMdKey,
       thumbLgKey: input.thumbLgKey,
+      posterKey: input.posterKey,
       width: input.width,
       height: input.height,
       blurhash: input.blurhash,
+      passwordProtected: false,
       uploadedAt: new Date(),
       uploadedBy: null,
     };
@@ -317,6 +324,7 @@ export class MongoService implements DatabaseService {
           thumbSmKey: input.thumbSmKey,
           thumbMdKey: input.thumbMdKey,
           thumbLgKey: input.thumbLgKey,
+          posterKey: input.posterKey,
           mimeType: input.mimeType,
           sizeBytes: input.sizeBytes,
           width: input.width,
@@ -354,6 +362,22 @@ export class MongoService implements DatabaseService {
       else blocked.push({ fileId: id, references: result.references });
     }
     return { deleted, blocked };
+  }
+
+  async setFilesPasswordProtected(
+    ids: string[],
+    passwordProtected: boolean
+  ): Promise<void> {
+    const objectIds = ids
+      .filter((id) => ObjectId.isValid(id))
+      .map((id) => new ObjectId(id));
+    if (objectIds.length === 0) return;
+    await this.db
+      .collection<FileDoc>(this.filesCollectionName)
+      .updateMany(
+        { _id: { $in: objectIds } },
+        { $set: { passwordProtected, updatedAt: new Date() } }
+      );
   }
 
   async searchFiles(q: SearchQuery): Promise<FileRecord[]> {
@@ -634,6 +658,7 @@ export class MongoService implements DatabaseService {
       if (f.thumbSmKey) s3Keys.push(f.thumbSmKey);
       if (f.thumbMdKey) s3Keys.push(f.thumbMdKey);
       if (f.thumbLgKey) s3Keys.push(f.thumbLgKey);
+      if (f.posterKey) s3Keys.push(f.posterKey);
     }
     const fileObjectIds = subtreeFiles.map((f) => f._id);
 
@@ -739,6 +764,7 @@ export class MongoService implements DatabaseService {
       parentId: parentObjectId,
       sortOrder: Date.now(),
       isSystemAlbum: false,
+      passwordProtected: false,
       createdAt: new Date(),
     };
     const { insertedId } = await collections.insertOne(doc);
@@ -772,6 +798,8 @@ export class MongoService implements DatabaseService {
         patch.coverFileId && ObjectId.isValid(patch.coverFileId)
           ? new ObjectId(patch.coverFileId)
           : null;
+    if (patch.passwordProtected !== undefined)
+      $set.passwordProtected = patch.passwordProtected;
     if (Object.keys($set).length > 0)
       await collections.updateOne({ _id }, { $set });
   }
@@ -921,6 +949,23 @@ export class MongoService implements DatabaseService {
     return orphans;
   }
 
+  // ── Settings ────────────────────────────────────────────────────────
+
+  async getMediaSettings(): Promise<MediaSettings> {
+    const doc = await this.db
+      .collection(this.settingsCollectionName)
+      .findOne({ _id: "media" as unknown as ObjectId });
+    return { mediaPassword: (doc?.mediaPassword as string | undefined) ?? "" };
+  }
+
+  async setMediaPassword(password: string): Promise<void> {
+    await this.db.collection(this.settingsCollectionName).updateOne(
+      { _id: "media" as unknown as ObjectId },
+      { $set: { mediaPassword: password, updatedAt: new Date() } },
+      { upsert: true }
+    );
+  }
+
   async resolveCollectionRef(collectionId: string): Promise<string[]> {
     if (!ObjectId.isValid(collectionId)) return [];
     const memberships = await this.db
@@ -971,6 +1016,7 @@ export class MongoService implements DatabaseService {
       parentId: null,
       sortOrder: -1,
       isSystemAlbum: true,
+      passwordProtected: false,
       createdAt: new Date(),
     };
     await collections.insertOne(doc);
@@ -1065,9 +1111,11 @@ export class MongoService implements DatabaseService {
       thumbSmKey: doc.thumbSmKey,
       thumbMdKey: doc.thumbMdKey,
       thumbLgKey: doc.thumbLgKey ?? null,
+      posterKey: doc.posterKey ?? null,
       width: doc.width,
       height: doc.height,
       blurhash: doc.blurhash,
+      passwordProtected: doc.passwordProtected ?? false,
       uploadedAt: doc.uploadedAt,
       uploadedBy: doc.uploadedBy,
     };
@@ -1099,6 +1147,7 @@ export class MongoService implements DatabaseService {
       parentId: doc.parentId?.toString() ?? null,
       sortOrder: doc.sortOrder,
       isSystemAlbum: doc.isSystemAlbum,
+      passwordProtected: doc.passwordProtected ?? false,
       createdAt: doc.createdAt,
     };
   }

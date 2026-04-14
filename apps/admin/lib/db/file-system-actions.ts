@@ -23,6 +23,7 @@ import type {
   FileKind,
   FileRecord,
   FolderRecord,
+  MediaSettings,
   PageArgs,
   Reference,
   RemoveFromAlbumResult,
@@ -44,7 +45,7 @@ import type {
 // ── Uploads ────────────────────────────────────────────────────────────
 
 export type PresignUploadVariant = {
-  variant: "original" | "thumb_sm" | "thumb_md" | "thumb_lg";
+  variant: "original" | "thumb_sm" | "thumb_md" | "thumb_lg" | "poster";
   contentType: string;
   /** Arbitrary suffix appended to the key, e.g. `.jpg` or `_thumb_sm.webp`. */
   keySuffix: string;
@@ -99,6 +100,7 @@ export type ConfirmUploadInput = {
     thumbSm?: string | null;
     thumbMd?: string | null;
     thumbLg?: string | null;
+    poster?: string | null;
   };
   pool:
     | { kind: "documents"; folderId: string }
@@ -125,6 +127,7 @@ export async function confirmUpload(
   if (input.keys.thumbSm) verify.push(input.keys.thumbSm);
   if (input.keys.thumbMd) verify.push(input.keys.thumbMd);
   if (input.keys.thumbLg) verify.push(input.keys.thumbLg);
+  if (input.keys.poster) verify.push(input.keys.poster);
   const exists = await Promise.all(verify.map((k) => headObject(k)));
   if (exists.some((v) => !v)) {
     throw new Error("Upload verification failed: one or more objects missing");
@@ -142,6 +145,7 @@ export async function confirmUpload(
     thumbSmKey: input.keys.thumbSm ?? null,
     thumbMdKey: input.keys.thumbMd ?? null,
     thumbLgKey: input.keys.thumbLg ?? null,
+    posterKey: input.keys.poster ?? null,
     width: input.width ?? null,
     height: input.height ?? null,
     blurhash: input.blurhash ?? null,
@@ -180,6 +184,7 @@ export type ReplaceFilePayload = {
     thumbSm?: string | null;
     thumbMd?: string | null;
     thumbLg?: string | null;
+    poster?: string | null;
   };
 };
 
@@ -201,6 +206,7 @@ export async function replaceFile(
   if (input.keys.thumbSm) verify.push(input.keys.thumbSm);
   if (input.keys.thumbMd) verify.push(input.keys.thumbMd);
   if (input.keys.thumbLg) verify.push(input.keys.thumbLg);
+  if (input.keys.poster) verify.push(input.keys.poster);
   const exists = await Promise.all(verify.map((k) => headObject(k)));
   if (exists.some((v) => !v)) {
     throw new Error("Replace verification failed: one or more objects missing");
@@ -211,6 +217,7 @@ export async function replaceFile(
     ...(current.thumbSmKey ? [current.thumbSmKey] : []),
     ...(current.thumbMdKey ? [current.thumbMdKey] : []),
     ...(current.thumbLgKey ? [current.thumbLgKey] : []),
+    ...(current.posterKey ? [current.posterKey] : []),
   ];
 
   await db.replaceFile(fileId, {
@@ -218,6 +225,7 @@ export async function replaceFile(
     thumbSmKey: input.keys.thumbSm ?? null,
     thumbMdKey: input.keys.thumbMd ?? null,
     thumbLgKey: input.keys.thumbLg ?? null,
+    posterKey: input.keys.poster ?? null,
     mimeType: input.mimeType,
     sizeBytes: input.sizeBytes,
     width: input.width ?? null,
@@ -250,6 +258,7 @@ export async function deleteFile(fileId: string): Promise<DeleteFileResult> {
       ...(current.thumbSmKey ? [current.thumbSmKey] : []),
       ...(current.thumbMdKey ? [current.thumbMdKey] : []),
       ...(current.thumbLgKey ? [current.thumbLgKey] : []),
+      ...(current.posterKey ? [current.posterKey] : []),
     ];
     try {
       await deleteObjects(keys);
@@ -280,6 +289,7 @@ export async function bulkDeleteFiles(
     if (f.thumbSmKey) keys.push(f.thumbSmKey);
     if (f.thumbMdKey) keys.push(f.thumbMdKey);
     if (f.thumbLgKey) keys.push(f.thumbLgKey);
+    if (f.posterKey) keys.push(f.posterKey);
   }
   try {
     await deleteObjects(keys);
@@ -419,6 +429,23 @@ export async function listCollectionFiles(
   return enrichFileRecords(await db.listCollectionFiles(collectionId, page));
 }
 
+/**
+ * Returns album files in the same order the public site renders them
+ * (`sortOrder` then `addedAt` ascending). Used by the Puck editor preview
+ * so editors see the exact order visitors will see.
+ */
+export async function listCollectionFilesOrdered(
+  collectionId: string
+): Promise<FileRecord[]> {
+  await requireServerPermission({ all: ["asset:read"] });
+  const db = await getDbService();
+  const ids = await db.resolveCollectionRef(collectionId);
+  if (ids.length === 0) return [];
+  const files = await Promise.all(ids.map((id) => db.getFile(id)));
+  const present = files.filter((f): f is FileRecord => !!f);
+  return enrichFileRecords(present);
+}
+
 export async function addFilesToAlbum(
   fileIds: string[],
   targetAlbumId: string
@@ -523,4 +550,29 @@ export async function runOrphanGc(): Promise<OrphanGcResult> {
     console.error("GC delete failed", err);
   }
   return { deletedFileRecords: recordCount, deletedS3Keys: keys.length };
+}
+
+// ── Media password protection ──────────────────────────────────────────
+
+export async function setFilesPasswordProtected(
+  fileIds: string[],
+  passwordProtected: boolean
+): Promise<void> {
+  await requireServerPermission({ all: ["asset:update"] });
+  const db = await getDbService();
+  await db.setFilesPasswordProtected(fileIds, passwordProtected);
+}
+
+// ── Media settings ─────────────────────────────────────────────────────
+
+export async function getMediaSettings(): Promise<MediaSettings> {
+  await requireServerPermission({ all: ["asset:read"] });
+  const db = await getDbService();
+  return db.getMediaSettings();
+}
+
+export async function setMediaPassword(password: string): Promise<void> {
+  await requireServerPermission({ all: ["asset:update"] });
+  const db = await getDbService();
+  await db.setMediaPassword(password);
 }

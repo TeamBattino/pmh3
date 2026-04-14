@@ -29,9 +29,12 @@ export type FileRecord = {
   thumbSmKey: string | null;
   thumbMdKey: string | null;
   thumbLgKey: string | null;
+  /** Video poster frame (WebP). Null for non-video files. */
+  posterKey: string | null;
   width: number | null;
   height: number | null;
   blurhash: string | null;
+  passwordProtected: boolean;
 
   /**
    * Presigned read URLs populated server-side by `enrichFileRecord` before
@@ -43,6 +46,7 @@ export type FileRecord = {
   signedThumbSmUrl?: string | null;
   signedThumbMdUrl?: string | null;
   signedThumbLgUrl?: string | null;
+  signedPosterUrl?: string | null;
 
   uploadedAt: Date;
   /** Populated once Keycloak migration lands. v1 always writes null. */
@@ -74,6 +78,7 @@ export type CollectionRecord = {
   parentId: string | null;
   sortOrder: number;
   isSystemAlbum: boolean;
+  passwordProtected: boolean;
   createdAt: Date;
 };
 
@@ -98,6 +103,7 @@ export type CreateFileInput = {
   thumbSmKey: string | null;
   thumbMdKey: string | null;
   thumbLgKey: string | null;
+  posterKey: string | null;
   width: number | null;
   height: number | null;
   blurhash: string | null;
@@ -116,6 +122,7 @@ export type ReplaceFileInput = {
   thumbSmKey: string | null;
   thumbMdKey: string | null;
   thumbLgKey: string | null;
+  posterKey: string | null;
   mimeType: string;
   sizeBytes: number;
   width: number | null;
@@ -153,6 +160,14 @@ export type UpdateCollectionPatch = {
   title?: string;
   description?: string | null;
   coverFileId?: string | null;
+  passwordProtected?: boolean;
+};
+
+// ── Settings ────────────────────────────────────────────────────────────
+
+export type MediaSettings = {
+  /** Plain text. Empty string means no protection password is configured. */
+  mediaPassword: string;
 };
 
 /**

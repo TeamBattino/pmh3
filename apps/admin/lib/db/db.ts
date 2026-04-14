@@ -26,6 +26,7 @@ import type {
   DeleteFileResult,
   FileRecord,
   FolderRecord,
+  MediaSettings,
   PageArgs,
   Reference,
   RemoveFromAlbumResult,
@@ -68,6 +69,11 @@ export interface DatabaseService {
   replaceFile(id: string, input: ReplaceFileInput): Promise<void>;
   deleteFile(id: string): Promise<DeleteFileResult>;
   bulkDeleteFiles(ids: string[]): Promise<BulkDeleteResult>;
+  /** Set passwordProtected on one or more files in a single update. */
+  setFilesPasswordProtected(
+    ids: string[],
+    passwordProtected: boolean
+  ): Promise<void>;
   searchFiles(q: SearchQuery): Promise<FileRecord[]>;
   findFileReferencesInPuckData(fileId: string): Promise<Reference[]>;
 
@@ -126,6 +132,10 @@ export interface DatabaseService {
    * memberships. Used by the manual orphan GC.
    */
   findOrphanFiles(): Promise<FileRecord[]>;
+
+  // ── Settings ────────────────────────────────────────────────────────
+  getMediaSettings(): Promise<MediaSettings>;
+  setMediaPassword(password: string): Promise<void>;
 }
 
 let _dbServicePromise: Promise<DatabaseService> | undefined;
