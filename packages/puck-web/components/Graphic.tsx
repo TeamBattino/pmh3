@@ -32,4 +32,7 @@ export const graphicConfig: ComponentConfig<GraphicProps> = {
       label: "Graphic Type",
     },
   },
+  defaultProps: {
+    graphicType: "parallax",
+  },
 };

@@ -4,16 +4,16 @@ import { describe, expect, test } from "vitest";
 
 describe("applySectionTheming", () => {
   test("alternate sun/mud themes divided by SectionDivider", () => {
-    const data: PageData = {
+    const data = {
       content: [
-        { type: "Heading", props: { id: "", text: "Heading", textAlign: "center", level: "h1" } },
+        { type: "TextBlock", props: { id: "", heading: "", body: "" } },
         { type: "SectionDivider", props: { id: "" } },
-        { type: "Text", props: { id: "", text: "Mir sind Voll Däbii!" } },
+        { type: "TextBlock", props: { id: "", heading: "", body: "" } },
         { type: "SectionDivider", props: { id: "" } },
-        { type: "Text", props: { id: "", text: "Mir sind Voll Däbii!" } },
+        { type: "TextBlock", props: { id: "", heading: "", body: "" } },
       ],
       root: { props: { title: "Test Page" } },
-    };
+    } as PageData;
 
     const result = applySectionTheming(data);
 

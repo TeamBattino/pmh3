@@ -39,12 +39,15 @@ export const heroConfig: ComponentConfig<HeroProps> = {
   fields: {
     title: {
       type: "text",
-      label: "Title (Optional)",
+      label: "Title",
     },
     backgroundImage: mediaField({
       mode: "single",
       accept: ["image"],
     }) as CustomField<MediaRef | undefined>,
+  },
+  defaultProps: {
+    title: "Willkommen",
   },
   resolveData: async (data, { metadata }) => {
     const resolveFileUrl = (metadata as { resolveFileUrl?: FileUrlResolver })

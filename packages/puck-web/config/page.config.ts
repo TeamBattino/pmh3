@@ -12,10 +12,8 @@ import { ColumnsProps, columnsConfig } from "../components/Columns";
 import { FAQProps, faqConfig } from "../components/FAQ";
 import { GalleryProps, galleryConfig } from "../components/Gallery";
 import { GraphicProps, graphicConfig } from "../components/Graphic";
-import { HeadingProps, headingConfig } from "../components/Heading";
 import { HeroProps, heroConfig } from "../components/Hero";
 import { IconLinkProps, iconLinkConfig } from "../components/IconLink";
-import { IFrameProps, iframeConfig } from "../components/IFrame";
 import {
   ImageBannerProps,
   imageBannerConfig,
@@ -29,7 +27,6 @@ import {
 import { PuckCardProps, puckCardConfig } from "../components/PuckCard";
 import { StepListProps, stepListConfig } from "../components/StepList";
 import { TextBlockProps, textBlockConfig } from "../components/TextBlock";
-import { TextProps, textConfig } from "../components/Text";
 import {
   TextSectionProps,
   textSectionConfig,
@@ -38,10 +35,6 @@ import {
   SectionDividerProps,
   sectionDividerConfig,
 } from "../components/SectionDivider";
-import {
-  VerticalSpaceProps,
-  verticalSpaceConfig,
-} from "../components/VerticalSpace";
 import { sectionThemedConfig } from "../lib/section-theming";
 import type { Config, Data } from "@puckeditor/core";
 
@@ -56,9 +49,7 @@ export type PageProps = {
   FAQ: FAQProps;
   Gallery: GalleryProps;
   Graphic: GraphicProps;
-  Heading: HeadingProps;
   Hero: HeroProps;
-  IFrame: IFrameProps;
   IconLink: IconLinkProps;
   ImageBanner: ImageBannerProps;
   ImageRow: ImageRowProps;
@@ -66,10 +57,8 @@ export type PageProps = {
   MediaWithText: MediaWithTextProps;
   SectionDivider: SectionDividerProps;
   StepList: StepListProps;
-  Text: TextProps;
   TextBlock: TextBlockProps;
   TextSection: TextSectionProps;
-  VerticalSpace: VerticalSpaceProps;
 };
 export type PageRootProps = {
   title: string;
@@ -101,9 +90,6 @@ export const pageConfig: PageConfig = sectionThemedConfig({
     Components: {
       components: ["TextBlock", "MediaBlock", "Card", "ButtonGroup", "IconLink"],
     },
-    Legacy: {
-      components: ["Heading", "IFrame", "Text", "VerticalSpace"],
-    },
   },
   // @keep-sorted
   components: {
@@ -116,9 +102,7 @@ export const pageConfig: PageConfig = sectionThemedConfig({
     FAQ: faqConfig,
     Gallery: galleryConfig,
     Graphic: graphicConfig,
-    Heading: headingConfig,
     Hero: heroConfig,
-    IFrame: iframeConfig,
     IconLink: iconLinkConfig,
     ImageBanner: imageBannerConfig,
     ImageRow: imageRowConfig,
@@ -126,10 +110,8 @@ export const pageConfig: PageConfig = sectionThemedConfig({
     MediaWithText: mediaWithTextConfig,
     SectionDivider: sectionDividerConfig,
     StepList: stepListConfig,
-    Text: textConfig,
     TextBlock: textBlockConfig,
     TextSection: textSectionConfig,
-    VerticalSpace: verticalSpaceConfig,
   },
 });
 
