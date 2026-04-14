@@ -14,12 +14,17 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { FileGrid } from "@/components/file-system/FileGrid";
 import { FileUploadZone } from "@/components/file-system/FileUploadZone";
 import { FolderTree } from "@/components/documents/FolderTree";
+import { bestThumbnailUrl } from "@/components/file-system/thumb-url";
+import { Image as ImageIcon, Lock } from "lucide-react";
 import {
+  useAlbumFileCounts,
   useCollectionFiles,
   useCollectionTree,
+  useFile,
   useFolderFiles,
   useFolderTree,
 } from "@/lib/files/file-system-hooks";
+import type { CollectionRecord } from "@/lib/db/file-system-types";
 import type {
   MediaRef,
   DocumentRef,
@@ -65,7 +70,13 @@ export function FilePickerModal({
               : ""}
           </DialogDescription>
         </DialogHeader>
-        {config.pool === "media" ? (
+        {config.pool === "media" && config.albumOnly ? (
+          <AlbumPickerBody
+            config={config}
+            onCancel={onCancel}
+            onConfirm={onConfirm}
+          />
+        ) : config.pool === "media" ? (
           <MediaPickerBody
             config={config}
             onCancel={onCancel}
@@ -102,9 +113,17 @@ function MediaPickerBody({
   );
 
   const visibleFiles = useMemo(() => {
-    if (!config.acceptKinds || config.acceptKinds.length === 0) return files;
-    return files.filter((f) => config.acceptKinds!.includes(f.kind));
-  }, [files, config.acceptKinds]);
+    let next = files;
+    // Single-select mode never offers password-protected files — they can
+    // only appear inside a Gallery via an album reference.
+    if (config.mode === "single") {
+      next = next.filter((f) => !f.passwordProtected);
+    }
+    if (config.acceptKinds && config.acceptKinds.length > 0) {
+      next = next.filter((f) => config.acceptKinds!.includes(f.kind));
+    }
+    return next;
+  }, [files, config.acceptKinds, config.mode]);
 
   const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(
     new Set()
@@ -127,7 +146,10 @@ function MediaPickerBody({
     setSelectedCollectionIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
-      else next.add(id);
+      else {
+        if (config.mode === "single") next.clear();
+        next.add(id);
+      }
       return next;
     });
 
@@ -177,7 +199,17 @@ function MediaPickerBody({
                       {ac.title}
                     </div>
                     {collections
-                      .filter((c) => c.type === "album" && c.parentId === ac.id)
+                      .filter(
+                        (c) =>
+                          c.type === "album" &&
+                          c.parentId === ac.id &&
+                          // Protected albums are hidden from file pickers —
+                          // any file inside them is gated on the public site,
+                          // so they're not useful selection targets. The
+                          // dedicated album picker (`albumOnly`) still shows
+                          // them.
+                          !c.passwordProtected
+                      )
                       .map((album) => (
                         <div
                           key={album.id}
@@ -247,6 +279,108 @@ function MediaPickerBody({
           Cancel
         </Button>
         <Button onClick={confirm} disabled={totalSelected === 0}>
+          Confirm
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
+function AlbumPickerBody({
+  config,
+  onCancel,
+  onConfirm,
+}: {
+  config: Extract<PickerConfig, { pool: "media" }>;
+  onCancel: () => void;
+  onConfirm: (selection: PickerSelection) => void;
+}) {
+  const { data: collections = [], isLoading } = useCollectionTree();
+  const { data: fileCounts = {} } = useAlbumFileCounts();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const groups = useMemo(() => {
+    // Exclude the system album ("CMS Uploads") — editors must pick a curated
+    // album, not the raw upload dumping ground.
+    const albumCollections = collections.filter(
+      (c) => c.type === "album_collection"
+    );
+    return albumCollections.map((ac) => ({
+      collection: ac,
+      albums: collections.filter(
+        (c) => c.type === "album" && c.parentId === ac.id && !c.isSystemAlbum
+      ),
+    }));
+  }, [collections]);
+
+  const confirm = () => {
+    if (!selectedId) return;
+    onConfirm({
+      pool: "media",
+      refs: [{ type: "collection", collectionId: selectedId }],
+    });
+  };
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="min-h-0 flex-1 overflow-y-auto rounded-md border border-border p-3">
+        {isLoading ? (
+          <Skeleton className="h-40 w-full" />
+        ) : groups.length === 0 ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            No albums yet. Create one from the Media page.
+          </div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            {groups.map(({ collection, albums }) => (
+              <section key={collection.id} className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground">
+                  {collection.title}
+                </h3>
+                {albums.length === 0 ? (
+                  <div className="rounded-md border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                    No albums.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {albums.map((album) => {
+                      const selected = selectedId === album.id;
+                      return (
+                        <AlbumTile
+                          key={album.id}
+                          album={album}
+                          fileCount={fileCounts[album.id] ?? 0}
+                          selected={selected}
+                          onClick={() => setSelectedId(album.id)}
+                          onDoubleClick={() =>
+                            onConfirm({
+                              pool: "media",
+                              refs: [
+                                {
+                                  type: "collection",
+                                  collectionId: album.id,
+                                },
+                              ],
+                            })
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            ))}
+          </div>
+        )}
+      </div>
+      <DialogFooter>
+        <span className="mr-auto text-xs text-muted-foreground">
+          {selectedId ? "1 album selected" : "No album selected"}
+        </span>
+        <Button variant="ghost" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={confirm} disabled={!selectedId}>
           Confirm
         </Button>
       </DialogFooter>
@@ -353,6 +487,72 @@ function DocumentsPickerBody({
           Confirm
         </Button>
       </DialogFooter>
+    </div>
+  );
+}
+
+function AlbumTile({
+  album,
+  fileCount,
+  selected,
+  onClick,
+  onDoubleClick,
+}: {
+  album: CollectionRecord;
+  fileCount: number;
+  selected: boolean;
+  onClick: () => void;
+  onDoubleClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+      aria-pressed={selected}
+      className={`group relative flex flex-col overflow-hidden rounded-md border bg-card text-left transition-colors hover:border-admin-primary ${
+        selected
+          ? "border-admin-primary ring-2 ring-admin-primary"
+          : "border-border"
+      }`}
+    >
+      {album.passwordProtected && (
+        <div
+          className="absolute right-2 top-2 z-10 flex size-5 items-center justify-center rounded bg-background/80 text-foreground shadow"
+          title="Password protected"
+        >
+          <Lock className="size-3" aria-hidden />
+        </div>
+      )}
+      <AlbumTileCover coverFileId={album.coverFileId} />
+      <div className="flex flex-col gap-0.5 border-t border-border px-3 py-2">
+        <div className="truncate text-sm font-medium">{album.title}</div>
+        <div className="text-xs text-muted-foreground">
+          {fileCount} file{fileCount === 1 ? "" : "s"}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function AlbumTileCover({ coverFileId }: { coverFileId: string | null }) {
+  const { data: file } = useFile(coverFileId);
+  if (file && file.kind === "image") {
+    return (
+      <div className="aspect-square w-full overflow-hidden bg-muted">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={bestThumbnailUrl(file)}
+          alt={file.altText ?? file.originalFilename}
+          className="size-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="flex aspect-square items-center justify-center bg-muted text-muted-foreground">
+      <ImageIcon className="size-10" aria-hidden />
     </div>
   );
 }

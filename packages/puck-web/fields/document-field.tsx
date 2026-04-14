@@ -78,7 +78,7 @@ function DocumentFieldRender({
   mode: "single" | "multi";
   accept?: string[];
 }) {
-  const { openPicker } = useFilePicker();
+  const { openPicker, useFileName } = useFilePicker();
 
   const openPickerModal = async () => {
     const selection = await openPicker({
@@ -115,23 +115,12 @@ function DocumentFieldRender({
         </div>
       )}
       {refs.map((ref, i) => (
-        <div
+        <DocumentRefRow
           key={`${ref.fileId}-${i}`}
-          className="flex items-center gap-2 rounded-md border border-gray-200 p-2 text-xs"
-        >
-          <FileTextIcon className="h-4 w-4 text-gray-500" aria-hidden />
-          <div className="flex-1 truncate">
-            <code className="font-mono">{ref.fileId}</code>
-          </div>
-          <button
-            type="button"
-            onClick={() => removeAt(i)}
-            className="rounded p-1 hover:bg-gray-100"
-            aria-label="Remove"
-          >
-            <XIcon className="h-3 w-3" aria-hidden />
-          </button>
-        </div>
+          fileId={ref.fileId}
+          useFileName={useFileName}
+          onRemove={() => removeAt(i)}
+        />
       ))}
       <button
         type="button"
@@ -139,6 +128,38 @@ function DocumentFieldRender({
         className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50"
       >
         {refs.length === 0 ? "Select document" : "Change selection"}
+      </button>
+    </div>
+  );
+}
+
+function DocumentRefRow({
+  fileId,
+  useFileName,
+  onRemove,
+}: {
+  fileId: string;
+  useFileName: (id: string | null | undefined) => string | null;
+  onRemove: () => void;
+}) {
+  const name = useFileName(fileId);
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-gray-200 p-2 text-xs">
+      <FileTextIcon className="h-4 w-4 text-gray-500" aria-hidden />
+      <div className="flex-1 truncate">
+        {name ? (
+          <span className="font-medium">{name}</span>
+        ) : (
+          <span className="text-gray-500">Document loading…</span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="rounded p-1 hover:bg-gray-100"
+        aria-label="Remove"
+      >
+        <XIcon className="h-3 w-3" aria-hidden />
       </button>
     </div>
   );

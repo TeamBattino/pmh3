@@ -82,7 +82,7 @@ function MediaFieldRender({
   acceptKinds?: ("image" | "video")[];
   allowCollection?: boolean;
 }) {
-  const { openPicker } = useFilePicker();
+  const { openPicker, useCollectionName, useFileName } = useFilePicker();
 
   const openPickerModal = async () => {
     const selection = await openPicker({
@@ -120,33 +120,15 @@ function MediaFieldRender({
         </div>
       )}
       {refs.map((ref, i) => (
-        <div
+        <MediaRefRow
           key={`${ref.type}-${
             ref.type === "file" ? ref.fileId : ref.collectionId
           }-${i}`}
-          className="flex items-center gap-2 rounded-md border border-gray-200 p-2 text-xs"
-        >
-          <ImageIcon className="h-4 w-4 text-gray-500" aria-hidden />
-          <div className="flex-1 truncate">
-            {ref.type === "file" ? (
-              <span>
-                File <code className="font-mono">{ref.fileId}</code>
-              </span>
-            ) : (
-              <span>
-                Album <code className="font-mono">{ref.collectionId}</code>
-              </span>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => removeAt(i)}
-            className="rounded p-1 hover:bg-gray-100"
-            aria-label="Remove"
-          >
-            <XIcon className="h-3 w-3" aria-hidden />
-          </button>
-        </div>
+          ref_={ref}
+          useCollectionName={useCollectionName}
+          useFileName={useFileName}
+          onRemove={() => removeAt(i)}
+        />
       ))}
       <button
         type="button"
@@ -154,6 +136,49 @@ function MediaFieldRender({
         className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50"
       >
         {refs.length === 0 ? "Select media" : "Change selection"}
+      </button>
+    </div>
+  );
+}
+
+function MediaRefRow({
+  ref_,
+  useCollectionName,
+  useFileName,
+  onRemove,
+}: {
+  ref_: MediaRef;
+  useCollectionName: (id: string | null | undefined) => string | null;
+  useFileName: (id: string | null | undefined) => string | null;
+  onRemove: () => void;
+}) {
+  const albumName = useCollectionName(
+    ref_.type === "collection" ? ref_.collectionId : null
+  );
+  const fileName = useFileName(ref_.type === "file" ? ref_.fileId : null);
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-gray-200 p-2 text-xs">
+      <ImageIcon className="h-4 w-4 text-gray-500" aria-hidden />
+      <div className="flex-1 truncate">
+        {ref_.type === "file" ? (
+          fileName ? (
+            <span className="font-medium">{fileName}</span>
+          ) : (
+            <span className="text-gray-500">File loading…</span>
+          )
+        ) : albumName ? (
+          <span className="font-medium">Album: {albumName}</span>
+        ) : (
+          <span className="text-gray-500">Album loading…</span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="rounded p-1 hover:bg-gray-100"
+        aria-label="Remove"
+      >
+        <XIcon className="h-3 w-3" aria-hidden />
       </button>
     </div>
   );

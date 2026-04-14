@@ -7,6 +7,7 @@ import {
   type PickerConfig,
   type PickerSelection,
 } from "@pfadipuck/puck-web/fields/file-picker-context";
+import { useCollectionTree, useFile } from "@/lib/files/file-system-hooks";
 import { FilePickerModal } from "./FilePickerModal";
 
 /**
@@ -45,7 +46,7 @@ export function FilePickerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<FilePickerContextValue>(
-    () => ({ openPicker }),
+    () => ({ openPicker, useCollectionName, useFileName }),
     [openPicker]
   );
 
@@ -60,4 +61,16 @@ export function FilePickerProvider({ children }: { children: ReactNode }) {
       />
     </FilePickerContext.Provider>
   );
+}
+
+function useCollectionName(collectionId: string | null | undefined): string | null {
+  const { data: collections = [] } = useCollectionTree();
+  if (!collectionId) return null;
+  const match = collections.find((c) => c.id === collectionId);
+  return match?.title ?? null;
+}
+
+function useFileName(fileId: string | null | undefined): string | null {
+  const { data: file } = useFile(fileId ?? null);
+  return file?.originalFilename ?? null;
 }

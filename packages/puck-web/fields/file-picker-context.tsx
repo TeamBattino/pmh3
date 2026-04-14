@@ -19,6 +19,12 @@ export type {
 
 export type FilePickerContextValue = {
   openPicker: (config: PickerConfig) => Promise<PickerSelection | null>;
+  /** Resolve an album / album collection title from its id. Returns null
+   *  while loading or if unknown. Used for human-readable field previews. */
+  useCollectionName: (collectionId: string | null | undefined) => string | null;
+  /** Resolve a file's display name from its id. Returns null while loading
+   *  or if unknown. */
+  useFileName: (fileId: string | null | undefined) => string | null;
 };
 
 const notWired: FilePickerContextValue = {
@@ -29,6 +35,8 @@ const notWired: FilePickerContextValue = {
         "call openPicker()."
     );
   },
+  useCollectionName: () => null,
+  useFileName: () => null,
 };
 
 export const FilePickerContext =

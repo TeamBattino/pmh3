@@ -20,6 +20,48 @@ export type FileUrlResolver = (
   size: FileSize
 ) => Promise<string | null>;
 
+/**
+ * One resolved item inside an album. Returned by `AlbumResolver` for the
+ * Gallery component. URLs are populated only for items the current request
+ * is allowed to view (i.e. the file is unprotected, or the unlock cookie
+ * is set). Locked items still include dimensions + blurhash so the
+ * placeholder can render at the right aspect ratio.
+ */
+export type AlbumItem = {
+  fileId: string;
+  kind: "image" | "video";
+  width: number | null;
+  height: number | null;
+  blurhash: string | null;
+  alt: string | null;
+  /** Whether *this specific item* is gated for the current viewer. */
+  locked: boolean;
+  /** Signed image URLs (thumbnails). For videos these are the generated
+   *  poster-frame thumbs, NOT the video file. Null for locked items. */
+  urls: { sm: string | null; md: string | null; lg: string | null } | null;
+  /** Signed video poster url — legacy fallback for old uploads. Null for
+   *  images, null for new videos (which use `urls` instead). */
+  posterUrl: string | null;
+  /** Signed URL of the actual video binary. Null for images. Populated for
+   *  videos even when the Gallery shows the still thumb, so the lightbox
+   *  can play the clip without a second resolver round-trip. */
+  videoUrl: string | null;
+};
+
+export type ResolvedAlbum = {
+  collectionId: string;
+  title: string;
+  /** True when the album itself is password-protected. */
+  passwordProtected: boolean;
+  /** True iff the viewer has the unlock cookie set. */
+  unlocked: boolean;
+  items: AlbumItem[];
+};
+
+export type AlbumResolver = (
+  collectionId: string
+) => Promise<ResolvedAlbum | null>;
+
 export type MediaRef =
   | { type: "file"; fileId: string }
   | { type: "collection"; collectionId: string };
@@ -42,6 +84,12 @@ export type PickerConfig =
       /** Restrict the media picker to specific kinds, e.g. `["image"]`. */
       acceptKinds?: FileKind[];
       allowCollection?: boolean;
+      /**
+       * Album-only mode: hides the file grid pane entirely, leaving only
+       * album-level selection in the sidebar. Implies `allowCollection: true`
+       * and forbids file selection.
+       */
+      albumOnly?: boolean;
     }
   | {
       pool: "documents";
