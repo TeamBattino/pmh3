@@ -82,7 +82,7 @@ export function Footer({
             <div className="flex flex-wrap items-center gap-x-2">
               <span>©{year} Pfadi Meilen Herrliberg</span>
               <span aria-hidden>·</span>
-              <span>Erstellt mit ♥</span>
+              <span>Erstellt mit ♥ von Battino</span>
             </div>
           </div>
         </div>
