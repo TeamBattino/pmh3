@@ -5,8 +5,7 @@ import {
   FolderArchive,
   Home,
   ImageIcon,
-  LayoutPanelTop,
-  PanelBottom,
+  Settings,
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
@@ -55,18 +54,12 @@ const groups: NavGroup[] = [
         isActive: (p) => p === "/web" || p.startsWith("/web/editor"),
       },
       {
-        href: "/web/navbar",
-        label: "Navbar",
-        icon: LayoutPanelTop,
-        policy: { all: ["navbar:update"] },
-        isActive: (p) => p === "/web/navbar",
-      },
-      {
-        href: "/web/footer",
-        label: "Footer",
-        icon: PanelBottom,
-        policy: { all: ["footer:update"] },
-        isActive: (p) => p === "/web/footer",
+        href: "/web/settings",
+        label: "Web Settings",
+        icon: Settings,
+        policy: { all: ["web:update"] },
+        isActive: (p) =>
+          p === "/web/settings" || p === "/web/navbar",
       },
     ],
   },
