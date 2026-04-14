@@ -324,5 +324,32 @@ export function useRemoveFilesFromAlbum() {
   );
 }
 
+export function useMediaSettings() {
+  return useQuery({
+    queryKey: ["mediaSettings"] as const,
+    queryFn: () => actions.getMediaSettings(),
+  });
+}
+
+export function useSetMediaPassword() {
+  return useInvalidating(
+    (password: string) => actions.setMediaPassword(password),
+    () => [["mediaSettings"]] as QueryKey[]
+  );
+}
+
+export function useSetFilesPasswordProtected() {
+  return useInvalidating(
+    (args: { fileIds: string[]; passwordProtected: boolean }) =>
+      actions.setFilesPasswordProtected(args.fileIds, args.passwordProtected),
+    (args) => [
+      ...args.fileIds.map((id) => fileSystemKeys.file(id)),
+      ["fs", "collectionFiles"],
+      ["fs", "folderFiles"],
+      ["fs", "fileSearch"],
+    ] as QueryKey[]
+  );
+}
+
 // Re-export FileRecord so call sites can import it from one place.
 export type { FileRecord };

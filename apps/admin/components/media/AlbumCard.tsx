@@ -1,6 +1,6 @@
 "use client";
 
-import { Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, Lock } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import type { CollectionRecord } from "@/lib/db/file-system-types";
@@ -22,10 +22,18 @@ export function AlbumCard({
     <Link
       href={href}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-md border border-border bg-card transition-colors hover:border-admin-primary",
+        "group relative flex flex-col overflow-hidden rounded-md border border-border bg-card transition-colors hover:border-admin-primary",
         className
       )}
     >
+      {album.passwordProtected && (
+        <div
+          className="absolute right-2 top-2 z-10 flex size-5 items-center justify-center rounded bg-background/80 text-foreground shadow"
+          title="Password protected"
+        >
+          <Lock className="size-3" aria-hidden />
+        </div>
+      )}
       <AlbumCover coverFileId={album.coverFileId} />
       <div className="flex flex-col gap-0.5 border-t border-border px-3 py-2">
         <div className="truncate text-sm font-medium">{album.title}</div>

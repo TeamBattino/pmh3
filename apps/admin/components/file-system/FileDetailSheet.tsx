@@ -18,6 +18,7 @@ import {
   useFileAlbumCount,
   useFileReferences,
   useRemoveFilesFromAlbum,
+  useSetFilesPasswordProtected,
   useUpdateCollection,
   useUpdateFile,
 } from "@/lib/files/file-system-hooks";
@@ -28,6 +29,7 @@ import {
   FolderMinus,
   FolderPlus,
   Image as ImageIcon,
+  Lock,
   Pencil,
   Replace,
   Trash2,
@@ -121,6 +123,7 @@ function FileDetailBody({
   const refsQuery = useFileReferences(file.id);
   const updateFile = useUpdateFile();
   const updateCollection = useUpdateCollection();
+  const setProtected = useSetFilesPasswordProtected();
   const deleteFile = useDeleteFile();
   const { replaceFile: runReplace } = useFileReplace();
 
@@ -255,6 +258,42 @@ function FileDetailBody({
           </div>
         )}
 
+        {file.folderId === null && (
+          <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border bg-card p-3">
+            <input
+              type="checkbox"
+              className="mt-0.5 size-4 accent-admin-primary"
+              checked={file.passwordProtected}
+              onChange={async (e) => {
+                const next = e.target.checked;
+                try {
+                  await setProtected.mutateAsync({
+                    fileIds: [file.id],
+                    passwordProtected: next,
+                  });
+                  toast.success(
+                    next ? "File protected" : "Protection removed"
+                  );
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error ? err.message : "Could not update"
+                  );
+                }
+              }}
+            />
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-1 text-sm font-medium">
+                <Lock className="size-3.5" aria-hidden />
+                Password protected
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Visitors must enter the global media password to view this file
+                in any gallery. Hidden from single-select pickers.
+              </div>
+            </div>
+          </label>
+        )}
+
         {file.kind === "image" && coverTargets && coverTargets.length > 0 && (
           <div className="space-y-2">
             <div className="text-xs font-medium text-muted-foreground">Cover image</div>
@@ -278,8 +317,6 @@ function FileDetailBody({
             </div>
           </div>
         )}
-
-
 
         <UsedInSection
           isLoading={refsQuery.isLoading}

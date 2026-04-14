@@ -8,6 +8,7 @@ import {
   useCollectionTree,
 } from "@/lib/files/file-system-hooks";
 import { CollectionCard } from "./CollectionCard";
+import { MediaSettingsButton } from "./MediaSettingsButton";
 import { NewCollectionButton } from "./NewCollectionButton";
 
 /**
@@ -31,11 +32,14 @@ export function MediaLanding() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Media</h1>
-        <NewCollectionButton
-          type="album_collection"
-          parentId={null}
-          label="New album collection"
-        />
+        <div className="flex items-center gap-2">
+          <MediaSettingsButton />
+          <NewCollectionButton
+            type="album_collection"
+            parentId={null}
+            label="New album collection"
+          />
+        </div>
       </div>
 
       {isLoading ? (

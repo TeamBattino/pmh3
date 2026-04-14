@@ -1,6 +1,14 @@
 "use client";
 
-import { CheckSquare, ChevronRight, Square, Trash2, X } from "lucide-react";
+import {
+  CheckSquare,
+  ChevronRight,
+  Lock,
+  LockOpen,
+  Square,
+  Trash2,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -17,6 +25,7 @@ import {
   useCollectionFiles,
   useCollectionTree,
   useRemoveFilesFromAlbum,
+  useSetFilesPasswordProtected,
 } from "@/lib/files/file-system-hooks";
 import type { Reference } from "@/lib/db/file-system-types";
 import { AddToAlbumDialog } from "./AddToAlbumDialog";
@@ -54,6 +63,7 @@ export function AlbumView({
 
   const bulkDelete = useBulkDeleteFiles();
   const removeFromAlbum = useRemoveFilesFromAlbum();
+  const setProtected = useSetFilesPasswordProtected();
 
   const toggle = (id: string) =>
     setSelection((prev) => {
@@ -228,6 +238,43 @@ export function AlbumView({
                 Remove from this album
               </Button>
             )}
+            {(() => {
+              const selectedFiles = files.filter((f) => selection.has(f.id));
+              const allProtected =
+                selectedFiles.length > 0 &&
+                selectedFiles.every((f) => f.passwordProtected);
+              return (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={setProtected.isPending}
+                  onClick={async () => {
+                    await setProtected.mutateAsync({
+                      fileIds: Array.from(selection),
+                      passwordProtected: !allProtected,
+                    });
+                    toast.success(
+                      allProtected
+                        ? `Protection removed from ${selection.size} file(s)`
+                        : `${selection.size} file(s) protected`
+                    );
+                    clear();
+                  }}
+                >
+                  {allProtected ? (
+                    <>
+                      <LockOpen className="mr-1 size-4" aria-hidden />
+                      Unprotect
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="mr-1 size-4" aria-hidden />
+                      Protect
+                    </>
+                  )}
+                </Button>
+              );
+            })()}
             <Button
               variant="destructive"
               size="sm"

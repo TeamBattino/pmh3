@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Lock, LockOpen, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
@@ -106,6 +106,39 @@ export function CollectionManageMenu({
             <Pencil className="mr-2 size-4" aria-hidden />
             Rename
           </DropdownMenuItem>
+          {collection.type === "album" && (
+            <DropdownMenuItem
+              onSelect={async () => {
+                try {
+                  await update.mutateAsync({
+                    collectionId: collection.id,
+                    patch: { passwordProtected: !collection.passwordProtected },
+                  });
+                  toast.success(
+                    collection.passwordProtected
+                      ? "Album unlocked"
+                      : "Album protected"
+                  );
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error ? err.message : "Could not update"
+                  );
+                }
+              }}
+            >
+              {collection.passwordProtected ? (
+                <>
+                  <LockOpen className="mr-2 size-4" aria-hidden />
+                  Remove password protection
+                </>
+              ) : (
+                <>
+                  <Lock className="mr-2 size-4" aria-hidden />
+                  Password protect album
+                </>
+              )}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onSelect={() => setDeleteOpen(true)}

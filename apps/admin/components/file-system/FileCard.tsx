@@ -1,7 +1,7 @@
 "use client";
 
 import { decode as decodeBlurhash } from "blurhash";
-import { FileText, FileVideo, FileArchive, FileIcon } from "lucide-react";
+import { FileText, FileVideo, FileArchive, FileIcon, Lock } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { FileRecord } from "@/lib/db/file-system-types";
@@ -100,6 +100,15 @@ export function FileCard({
             aria-label={`Select ${file.originalFilename}`}
           />
         </label>
+      )}
+
+      {file.passwordProtected && (
+        <div
+          className="absolute right-2 top-2 z-10 flex size-5 items-center justify-center rounded bg-background/80 text-foreground shadow"
+          title="Password protected"
+        >
+          <Lock className="size-3" aria-hidden />
+        </div>
       )}
 
       <div className="relative flex-1">
