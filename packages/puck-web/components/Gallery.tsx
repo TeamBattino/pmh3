@@ -24,7 +24,7 @@ function Gallery({
 }: GalleryProps) {
   if (!_resolvedAlbum) {
     return (
-      <div className="w-full content-main">
+      <div className="popout">
         <div className="rounded-xl bg-elevated p-6 text-center text-contrast-ground/60">
           No album selected.
         </div>
@@ -38,7 +38,7 @@ function Gallery({
 
   if (items.length === 0) {
     return (
-      <div className="w-full content-main">
+      <div className="popout">
         <div className="flex flex-col items-center gap-1 rounded-xl bg-elevated p-8 text-center text-contrast-ground/60">
           <div className="text-sm font-medium">{_resolvedAlbum.title}</div>
           <div className="text-sm">This album is empty.</div>
@@ -48,7 +48,7 @@ function Gallery({
   }
 
   return (
-    <div className="w-full content-main">
+    <div className="popout">
       <GalleryClient
         album={{
           ..._resolvedAlbum,

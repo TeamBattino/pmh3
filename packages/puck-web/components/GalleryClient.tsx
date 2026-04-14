@@ -199,7 +199,10 @@ function GalleryCarousel({
     setActive(Math.max(0, Math.min(items.length - 1, next)));
 
   // Each slide takes 84% of the stage, leaving 8% peek on each side.
-  const slideW = width * 0.84;
+  // On narrow viewports the peek eats too much of the active image, so
+  // give the slide nearly the whole stage (96%) below ~640px.
+  const slideRatio = width < 640 ? 0.96 : 0.84;
+  const slideW = width * slideRatio;
   const gap = width * 0.02;
   const stride = slideW + gap;
   // Translate so slide `active` is centered.
@@ -300,7 +303,7 @@ function GalleryCarousel({
           }}
           disabled={active === 0}
           aria-label="Previous"
-          className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white opacity-0 backdrop-blur transition hover:bg-white/20 focus-visible:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-20 md:p-3.5"
+          className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur transition hover:bg-white/20 focus-visible:opacity-100 disabled:cursor-not-allowed disabled:opacity-20 md:p-3.5 md:opacity-0 md:group-hover:opacity-100"
         >
           <Chevron d="m15 18-6-6 6-6" />
         </button>
@@ -312,16 +315,16 @@ function GalleryCarousel({
           }}
           disabled={active === items.length - 1}
           aria-label="Next"
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white opacity-0 backdrop-blur transition hover:bg-white/20 focus-visible:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-20 md:p-3.5"
+          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur transition hover:bg-white/20 focus-visible:opacity-100 disabled:cursor-not-allowed disabled:opacity-20 md:p-3.5 md:opacity-0 md:group-hover:opacity-100"
         >
           <Chevron d="m9 18 6-6-6-6" />
         </button>
       </div>
 
       {/* Progress bar */}
-      <div className="mt-3 h-0.5 w-full overflow-hidden rounded-full bg-black/10">
+      <div className="mt-3 h-0.5 w-full overflow-hidden rounded-full bg-contrast-ground/10">
         <div
-          className="h-full rounded-full bg-black/60 transition-all duration-500"
+          className="h-full rounded-full bg-contrast-ground/60 transition-all duration-500"
           style={{
             width: `${((active + 1) / items.length) * 100}%`,
           }}
@@ -348,7 +351,7 @@ function GalleryCarousel({
               aria-label={`Go to slide ${idx + 1}`}
               className={`relative aspect-square w-16 shrink-0 overflow-hidden rounded-md transition-all ${
                 idx === active
-                  ? "ring-2 ring-black/70"
+                  ? "ring-2 ring-contrast-ground/70"
                   : "opacity-60 hover:opacity-100"
               }`}
             >
