@@ -89,6 +89,49 @@ export async function processFileForUpload(
     mimeType,
   };
 
+  // Video uploads: extract a poster frame in-browser using HTMLVideoElement +
+  // canvas, then feed that frame through the same thumbnail + blurhash
+  // pipeline we use for raster images. Videos end up with thumbSm/Md/Lg
+  // plus a blurhash; we no longer produce a separate `_poster.webp` since
+  // `thumbLg` covers that role. Failure is non-fatal — the gallery falls
+  // back to a plain play-icon tile.
+  if (cls.kind === "video") {
+    try {
+      const extracted = await extractVideoPoster(file);
+      base.width = extracted.videoWidth;
+      base.height = extracted.videoHeight;
+      const loaded = await loadImageFromBlob(extracted.blob);
+      try {
+        const [thumbSm, thumbMd, thumbLg] = await Promise.all([
+          canvasResizeToWebp(loaded.image, 200, 0.8),
+          canvasResizeToWebp(loaded.image, 800, 0.85),
+          canvasResizeToWebp(loaded.image, 1600, 0.85),
+        ]);
+        base.thumbSm = {
+          blob: thumbSm,
+          contentType: "image/webp",
+          keySuffix: `_thumb_sm.webp`,
+        };
+        base.thumbMd = {
+          blob: thumbMd,
+          contentType: "image/webp",
+          keySuffix: `_thumb_md.webp`,
+        };
+        base.thumbLg = {
+          blob: thumbLg,
+          contentType: "image/webp",
+          keySuffix: `_thumb_lg.webp`,
+        };
+        base.blurhash = computeBlurhash(loaded.image);
+      } finally {
+        loaded.cleanup();
+      }
+    } catch (err) {
+      console.warn("Video poster extraction failed", err);
+    }
+    return base;
+  }
+
   if (!cls.generateThumbnails) return base;
 
   // Raster image path — generate thumbnails + blurhash from a single load.
@@ -164,7 +207,6 @@ export async function uploadProcessedFile(
       contentType: processed.thumbLg.contentType,
       keySuffix: processed.thumbLg.keySuffix,
     });
-
   onProgress?.({ percent: 0, phase: "uploading" });
 
   const presigned = await presignUpload({ variants });
@@ -236,6 +278,7 @@ export async function uploadProcessedFile(
       thumbSm: byVariant.get("thumb_sm")?.key ?? null,
       thumbMd: byVariant.get("thumb_md")?.key ?? null,
       thumbLg: byVariant.get("thumb_lg")?.key ?? null,
+      poster: null,
     },
     pool,
   });
@@ -315,4 +358,77 @@ function computeBlurhash(img: HTMLImageElement): string {
   ctx.drawImage(img, 0, 0, W, H);
   const { data } = ctx.getImageData(0, 0, W, H);
   return encodeBlurhash(data, W, H, 4, 3);
+}
+
+/**
+ * Extract a single poster frame from a video file via HTMLVideoElement +
+ * canvas. Seeks near the start and snapshots to WebP at up to 1600px on
+ * the longest side — large enough to feed the image thumbnail pipeline.
+ *
+ * Returns the encoded blob plus the video's native dimensions (not the
+ * poster's — the FileRecord stores the real video resolution). Browsers
+ * only succeed for codecs they can decode (mp4/h264, webm/vp9 etc.);
+ * exotic formats throw and the upload proceeds without thumbs.
+ */
+async function extractVideoPoster(
+  blob: Blob
+): Promise<{ blob: Blob; videoWidth: number; videoHeight: number }> {
+  const url = URL.createObjectURL(blob);
+  const video = document.createElement("video");
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  video.src = url;
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      video.addEventListener("loadeddata", () => resolve(), { once: true });
+      video.addEventListener(
+        "error",
+        () => reject(new Error("Video metadata failed to load")),
+        { once: true }
+      );
+    });
+
+    const target = Math.min(1, Math.max(0.05, (video.duration || 1) * 0.1));
+    await new Promise<void>((resolve, reject) => {
+      video.addEventListener("seeked", () => resolve(), { once: true });
+      video.addEventListener(
+        "error",
+        () => reject(new Error("Video seek failed")),
+        { once: true }
+      );
+      video.currentTime = target;
+    });
+
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    if (!w || !h) throw new Error("Video has no dimensions");
+
+    // Encode the poster at a size large enough for thumbLg (1600px) to
+    // downsample from. Larger than 1600 just wastes decode time.
+    const longest = 1600;
+    const ratio = Math.min(1, longest / Math.max(w, h));
+    const pw = Math.max(1, Math.round(w * ratio));
+    const ph = Math.max(1, Math.round(h * ratio));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = pw;
+    canvas.height = ph;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("No 2D canvas context");
+    ctx.drawImage(video, 0, 0, pw, ph);
+
+    const posterBlob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+        "image/webp",
+        0.9
+      );
+    });
+
+    return { blob: posterBlob, videoWidth: w, videoHeight: h };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
