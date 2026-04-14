@@ -5,15 +5,14 @@ export const assignablePermissions = [
   "asset:delete",
   "asset:read",
   "asset:update",
-  "footer:update",
   "global-admin",
-  "navbar:update",
   "oauth-clients:manage",
   "page:create",
   "page:delete",
   "page:update",
   "role-permissions:read",
   "role-permissions:update",
+  "web:update",
 ] as const;
 
 /**
@@ -71,8 +70,7 @@ export const defaultSecurityConfig: SecurityConfig = {
         "page:update",
         "page:delete",
         "admin-ui:read",
-        "navbar:update",
-        "footer:update",
+        "web:update",
         "asset:create",
         "asset:read",
         "asset:update",

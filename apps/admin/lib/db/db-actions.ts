@@ -1,6 +1,6 @@
 "use server";
 
-import { FooterData } from "@pfadipuck/puck-web/config/footer.config";
+import type { FooterDoc } from "@pfadipuck/puck-web/lib/footer-doc";
 import { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import {
   defaultPageData,
@@ -35,7 +35,7 @@ export async function getPage(path: string): Promise<PageData | undefined> {
 }
 
 export async function saveNavbar(data: NavbarData) {
-  await requireServerPermission({ all: ["navbar:update"] });
+  await requireServerPermission({ all: ["web:update"] });
   const db = await getDbService();
   return db.saveNavbar(data);
 }
@@ -45,13 +45,13 @@ export async function getNavbar(): Promise<NavbarData> {
   return db.getNavbar();
 }
 
-export async function saveFooter(data: FooterData) {
-  await requireServerPermission({ all: ["footer:update"] });
+export async function saveFooter(data: FooterDoc) {
+  await requireServerPermission({ all: ["web:update"] });
   const db = await getDbService();
   return db.saveFooter(data);
 }
 
-export async function getFooter(): Promise<FooterData> {
+export async function getFooter(): Promise<FooterDoc> {
   const db = await getDbService();
   return db.getFooter();
 }

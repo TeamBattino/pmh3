@@ -65,7 +65,7 @@ describe("hasPermission", () => {
       ).toBe(true);
       // any: satisfied, all: NOT satisfied → false
       expect(
-        hasPermission(s, { any: ["page:update"], all: ["footer:update"] })
+        hasPermission(s, { any: ["page:update"], all: ["web:update"] })
       ).toBe(false);
     });
   });

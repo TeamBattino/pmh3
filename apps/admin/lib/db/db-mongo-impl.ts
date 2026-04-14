@@ -1,4 +1,4 @@
-import type { FooterData } from "@pfadipuck/puck-web/config/footer.config";
+import { defaultFooterDoc, type FooterDoc } from "@pfadipuck/puck-web/lib/footer-doc";
 import type { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import type { SecurityConfig } from "@/lib/security/security-config";
@@ -166,7 +166,7 @@ export class MongoService implements DatabaseService {
     return result.data;
   }
 
-  async saveFooter(data: FooterData): Promise<void> {
+  async saveFooter(data: FooterDoc): Promise<void> {
     await this.db
       .collection(this.puckDataCollectionName)
       .updateOne(
@@ -176,12 +176,15 @@ export class MongoService implements DatabaseService {
       );
   }
 
-  async getFooter(): Promise<FooterData> {
+  async getFooter(): Promise<FooterDoc> {
     const result = await this.db
       .collection(this.puckDataCollectionName)
       .findOne({ type: "footer" });
-    if (!result) throw new Error("Footer data not found");
-    return result.data;
+    const stored = (result?.data ?? {}) as Partial<FooterDoc>;
+    return {
+      columns: stored.columns ?? [],
+      legalLinks: stored.legalLinks ?? [],
+    };
   }
 
   async getAllPaths(): Promise<string[]> {

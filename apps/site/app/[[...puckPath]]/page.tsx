@@ -11,7 +11,6 @@
  */
 
 import PageRender from "@/components/PageRender";
-import { footerConfig } from "@pfadipuck/puck-web/config/footer.config";
 import { pageConfig } from "@pfadipuck/puck-web/config/page.config";
 import { getFooter, getNavbar, getPage } from "@/lib/db";
 import { puckPathToKey } from "@/lib/puck-path";
@@ -59,13 +58,9 @@ export default async function Page({ params }: { params: Params }) {
 
   return (
     <PageRender
-      {...{
-        navbarData,
-        pageData,
-        footerData,
-        pageConfig,
-        footerConfig,
-      }}
+      navbarData={navbarData}
+      pageData={pageData}
+      footerData={footerData}
     />
   );
 }

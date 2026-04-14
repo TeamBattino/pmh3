@@ -27,7 +27,7 @@ const permissionGroups = {
   Content: ["page:create", "page:update", "page:delete"],
   Assets: ["asset:create", "asset:update", "asset:delete", "asset:read"],
   Roles: ["role-permissions:read", "role-permissions:update"],
-  Navigation: ["navbar:update", "footer:update"],
+  Site: ["web:update"],
   "OAuth Clients": ["oauth-clients:manage"],
   Global: ["global-admin"],
 } as const;

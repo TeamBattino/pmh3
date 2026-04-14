@@ -1,14 +1,16 @@
 import { NavbarRender } from "@/components/navbar/NavbarRender";
+import { Footer } from "@pfadipuck/puck-web/ui/Footer";
 import { resolveAlbumData, resolveFileUrl } from "@/lib/file-resolver";
-import { footerConfig, FooterData } from "@pfadipuck/puck-web/config/footer.config";
+import type { FooterDoc } from "@pfadipuck/puck-web/lib/footer-doc";
 import { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import { pageConfig, PageData } from "@pfadipuck/puck-web/config/page.config";
+import { resolveLastTheme } from "@pfadipuck/puck-web/lib/section-theming.tsx";
 import { Render, resolveAllData } from "@puckeditor/core";
 
 export interface PageRenderProps {
   navbarData: NavbarData;
   pageData: PageData;
-  footerData: FooterData;
+  footerData: FooterDoc;
 }
 
 async function PageRender({
@@ -27,7 +29,7 @@ async function PageRender({
     <>
       <NavbarRender data={navbarData} />
       <Render config={pageConfig} data={resolvedPageData} />
-      <Render config={footerConfig} data={footerData} />
+      <Footer data={footerData} tailTheme={resolveLastTheme(resolvedPageData)} />
     </>
   );
 }

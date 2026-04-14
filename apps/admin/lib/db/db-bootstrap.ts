@@ -1,4 +1,4 @@
-import { defaultFooterData } from "@pfadipuck/puck-web/config/footer.config";
+import { defaultFooterDoc } from "@pfadipuck/puck-web/lib/footer-doc";
 import { defaultNavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import { defaultSecurityConfig } from "@/lib/security/security-config";
 import type { MongoService } from "./db-mongo-impl";
@@ -132,7 +132,7 @@ export async function ensureSeeded(service: MongoService): Promise<void> {
     .findOne({ type: "footer" });
   if (!footer) {
     console.log("Footer data not found, creating with default data");
-    await service.saveFooter(defaultFooterData);
+    await service.saveFooter(defaultFooterDoc);
   }
 
   // Seed security config if missing

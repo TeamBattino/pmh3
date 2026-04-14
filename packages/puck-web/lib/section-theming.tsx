@@ -8,6 +8,22 @@ import { mapObjectEntries } from "./typed-object-entries";
 export type Theme = "sun" | "mud";
 
 /**
+ * Resolve the theme at the *end* of a page — i.e. which theme the last
+ * rendered section is wearing. Used by the footer to match its top-edge
+ * background to whatever the page was last showing, so the `FooterBreak`
+ * SVG can carve into it without a color seam.
+ */
+export function resolveLastTheme(data: PageData): Theme {
+  let theme: Theme = "mud";
+  for (const item of data.content) {
+    if (item.type === "SectionDivider") {
+      theme = theme === "sun" ? "mud" : "sun";
+    }
+  }
+  return theme;
+}
+
+/**
  * This function takes a page data object and applies section theming to it. It
  * alternates between sun and mud themes for each section, divided by the
  * `SectionDivider` component.

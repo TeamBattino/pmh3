@@ -1,4 +1,4 @@
-import type { FooterData } from "@pfadipuck/puck-web/config/footer.config";
+import type { FooterDoc } from "@pfadipuck/puck-web/lib/footer-doc";
 import type { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import { MongoClient } from "mongodb";
@@ -28,7 +28,11 @@ export async function getNavbar(): Promise<NavbarData> {
   return doc!.data as NavbarData;
 }
 
-export async function getFooter(): Promise<FooterData> {
+export async function getFooter(): Promise<FooterDoc> {
   const doc = await getCollection().findOne({ type: "footer" });
-  return doc!.data as FooterData;
+  const stored = (doc?.data ?? {}) as Partial<FooterDoc>;
+  return {
+    columns: stored.columns ?? [],
+    legalLinks: stored.legalLinks ?? [],
+  };
 }

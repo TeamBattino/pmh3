@@ -97,4 +97,4 @@ Puck's RSC `Render` (resolved via the `react-server` conditional export, `@pucke
 
 ## Permissions
 
-String literals in `lib/security/security-config.ts`. Key ones: `admin-ui:read`, `page:create/update/delete`, `navbar:update`, `footer:update`, `role-permissions:read/update`, `global-admin` (grants all). Use `<PermissionGuard>` client-side, `requireServerPermission()` server-side.
+String literals in `lib/security/security-config.ts`. Key ones: `admin-ui:read`, `page:create/update/delete`, `web:update` (navbar + footer + other site-wide settings), `role-permissions:read/update`, `global-admin` (grants all). Use `<PermissionGuard>` client-side, `requireServerPermission()` server-side.

@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  await requireServerPermission({ all: ["navbar:update"] });
+  await requireServerPermission({ all: ["web:update"] });
 
   const data = await getNavbar();
 

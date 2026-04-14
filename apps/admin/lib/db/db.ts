@@ -1,4 +1,4 @@
-import type { FooterData } from "@pfadipuck/puck-web/config/footer.config";
+import type { FooterDoc } from "@pfadipuck/puck-web/lib/footer-doc";
 import type { NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
 import type { PageData } from "@pfadipuck/puck-web/config/page.config";
 import { env } from "@/lib/env";
@@ -49,8 +49,8 @@ export interface DatabaseService {
   getPage(path: string): Promise<PageData | undefined>;
   saveNavbar(data: NavbarData): Promise<void>;
   getNavbar(): Promise<NavbarData>;
-  saveFooter(data: FooterData): Promise<void>;
-  getFooter(): Promise<FooterData>;
+  saveFooter(data: FooterDoc): Promise<void>;
+  getFooter(): Promise<FooterDoc>;
   getAllPaths(): Promise<string[]>;
   getAllPages(): Promise<PageListItem[]>;
   getSecurityConfig(): Promise<SecurityConfig>;
