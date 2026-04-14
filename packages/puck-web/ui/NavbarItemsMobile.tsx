@@ -1,6 +1,6 @@
 "use client";
 import { NavbarHamburgerSvg } from "@pfadipuck/graphics/NavbarHamburgerSvg";
-import ClickAwayListener from "@pfadipuck/puck-web/ui/ClickAwayListener";
+import ClickAwayListener from "./ClickAwayListener";
 import { NavbarLogo } from "./NavbarLogo";
 import { ReactNode, useId, useRef, useState } from "react";
 
@@ -17,16 +17,14 @@ export function NavbarItemsMobile({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const navbarOverlayId = useId();
 
-  function handleClickAway(type: string, event: Event) {
-    // Ignore clicks on the button
+  function handleClickAway(_type: string, event: Event) {
     if (buttonRef.current?.contains(event.target as Node)) return;
-
     setOpen(false);
   }
   return (
     <>
       <div className="md:hidden grid grid-cols-[1fr_min-content_1fr] border-b-[#edc600] border-b-8">
-        <div></div> {/* Empty div to align logo */}
+        <div></div>
         <div className="relative z-20 w-28 h-28 mb-[-50px]">
           {logoUrl && <NavbarLogo logo={logoUrl} />}
         </div>

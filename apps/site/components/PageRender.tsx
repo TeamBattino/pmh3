@@ -1,4 +1,4 @@
-import { NavbarRender } from "@/components/navbar/NavbarRender";
+import { Navbar } from "@pfadipuck/puck-web/ui/Navbar";
 import { Footer } from "@pfadipuck/puck-web/ui/Footer";
 import { resolveAlbumData, resolveFileUrl } from "@/lib/file-resolver";
 import type { FooterDoc } from "@pfadipuck/puck-web/lib/footer-doc";
@@ -27,7 +27,7 @@ async function PageRender({
 
   return (
     <>
-      <NavbarRender data={navbarData} />
+      <Navbar data={navbarData} resolveFileUrl={resolveFileUrl} />
       <Render config={pageConfig} data={resolvedPageData} />
       <Footer data={footerData} tailTheme={resolveLastTheme(resolvedPageData)} />
     </>

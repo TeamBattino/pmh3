@@ -1,4 +1,4 @@
-import { StaticImage } from "@pfadipuck/puck-web/ui/StaticImage";
+import { StaticImage } from "./StaticImage";
 
 type NavbarLogoProps = {
   logo: string;

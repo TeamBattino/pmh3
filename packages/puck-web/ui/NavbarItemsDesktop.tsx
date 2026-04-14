@@ -1,5 +1,5 @@
 import { NavbarLogo } from "./NavbarLogo";
-import { navbarConfig, NavbarData } from "@pfadipuck/puck-web/config/navbar.config";
+import { navbarConfig, NavbarData } from "../config/navbar.config";
 import { Render } from "@puckeditor/core";
 
 export type NavbarComponentsProps = {
@@ -10,27 +10,14 @@ export type NavbarComponentsProps = {
 function splitData(data: NavbarData) {
   if (!data || !data.content || !Array.isArray(data.content)) {
     return {
-      leftItems: {
-        ...data,
-        content: [],
-      },
-      rightItems: {
-        ...data,
-        content: [],
-      },
+      leftItems: { ...data, content: [] },
+      rightItems: { ...data, content: [] },
     };
   }
-
   const halfLength = Math.ceil(data.content.length / 2);
   return {
-    leftItems: {
-      ...data,
-      content: data.content.slice(0, halfLength),
-    },
-    rightItems: {
-      ...data,
-      content: data.content.slice(halfLength),
-    },
+    leftItems: { ...data, content: data.content.slice(0, halfLength) },
+    rightItems: { ...data, content: data.content.slice(halfLength) },
   };
 }
 
