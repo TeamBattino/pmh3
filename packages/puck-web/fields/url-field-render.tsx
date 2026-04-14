@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Select as SelectPrimitive } from "radix-ui";
-import type { CustomFieldRenderProps } from "../lib/custom-field-types";
 import { usePagePaths } from "./page-paths-context";
 
 const ChevronDownIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -88,11 +87,17 @@ function PagePathSelect({
 
 export type UrlFieldValue = string | undefined;
 
+export type UrlFieldRenderProps = {
+  value: UrlFieldValue;
+  onChange: (value: UrlFieldValue) => void;
+  placeholder?: string;
+};
+
 export function UrlFieldRender({
   value,
   onChange,
   placeholder,
-}: CustomFieldRenderProps<UrlFieldValue> & { placeholder?: string }) {
+}: UrlFieldRenderProps) {
   const pagePaths = usePagePaths();
   const current = value ?? "";
   const isKnownPage = pagePaths.includes(current);

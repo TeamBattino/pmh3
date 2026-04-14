@@ -1,5 +1,4 @@
 import { CustomField } from "@puckeditor/core";
-import type { CustomFieldRenderProps } from "../lib/custom-field-types";
 import { UrlFieldRender, type UrlFieldValue } from "./url-field-render";
 
 export type { UrlFieldValue } from "./url-field-render";
@@ -15,9 +14,10 @@ export function urlField(
   return {
     type: "custom",
     label: opts.label ?? "Link",
-    render: (props) => (
+    render: ({ value, onChange }) => (
       <UrlFieldRender
-        {...(props as CustomFieldRenderProps<UrlFieldValue>)}
+        value={value}
+        onChange={onChange}
         placeholder={opts.placeholder}
       />
     ),
