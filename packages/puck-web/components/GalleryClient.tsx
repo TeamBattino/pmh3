@@ -181,16 +181,24 @@ function GalleryCarousel({
   }, [items.length]);
 
   // Keep the active thumbnail visible inside the hidden-scrollbar strip.
+  // Skip the initial mount so a below-the-fold gallery doesn't smooth-scroll
+  // the window down to itself on page load. Scroll the strip manually
+  // instead of scrollIntoView, which would also move the window.
+  const didMountRef = useRef(false);
   useEffect(() => {
     const strip = thumbStripRef.current;
     if (!strip) return;
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
     const el = strip.querySelector<HTMLElement>(`[data-idx="${active}"]`);
-    if (el)
-      el.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
-      });
+    if (!el) return;
+    const stripRect = strip.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const delta =
+      elRect.left - stripRect.left - (stripRect.width - elRect.width) / 2;
+    strip.scrollBy({ left: delta, behavior: "smooth" });
   }, [active]);
 
   if (items.length === 0) return null;

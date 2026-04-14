@@ -29,12 +29,6 @@
     "@puckeditor/core": "^0.21.0",
     "next": "^16.2.3",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-scroll-parallax": "^3.4.5"
-  },
-  "peerDependenciesMeta": {
-    "react-scroll-parallax": {
-      "optional": true
-    }
+    "react-dom": "^19.1.0"
   }
 }

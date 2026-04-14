@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef } from "react";
 import Layer1 from "../../graphics/src/parallax-layers/Layer1.svg";
 import Layer2 from "../../graphics/src/parallax-layers/Layer2.svg";
 import Layer3 from "../../graphics/src/parallax-layers/Layer3.svg";
@@ -7,56 +8,103 @@ import Layer5 from "../../graphics/src/parallax-layers/Layer5.svg";
 import Layer6 from "../../graphics/src/parallax-layers/Layer6.svg";
 import Layer7 from "../../graphics/src/parallax-layers/Layer7.svg";
 import Mobile from "../../graphics/src/parallax-layers/MobileCombined.svg";
-import { BannerLayer, ParallaxBanner } from "react-scroll-parallax";
+
+type LayerSpec = { src: string; translateY: [number, number] };
+
+// translateY is [start%, end%] of the layer's own height, applied as
+// `translate3d(0, Y%, 0)`. Progress goes 0→1 over one full banner-scroll,
+// so ranges here are ~half what react-scroll-parallax used (which spread
+// its 0→1 over viewport+banner of scroll). Tweak per-layer to taste.
+const LAYERS: LayerSpec[] = [
+  { src: Layer1.src, translateY: [-6, 34] },
+  { src: Layer2.src, translateY: [-6, 30] },
+  { src: Layer3.src, translateY: [-6, 26] },
+  { src: Layer4.src, translateY: [0, 24] },
+  { src: Layer5.src, translateY: [1, 19] },
+  { src: Layer6.src, translateY: [3, 15] },
+  { src: Layer7.src, translateY: [0, 0] },
+];
 
 function Parallax() {
-  const parallaxLayer1: BannerLayer = {
-    image: Layer1.src,
-    translateY: [-12, 68],
-    shouldAlwaysCompleteAnimation: true,
-    expanded: false,
-  };
+  const bannerRef = useRef<HTMLDivElement>(null);
+  const layerRefs = useRef<(HTMLImageElement | null)[]>([]);
 
-  const parallaxLayer2: BannerLayer = {
-    image: Layer2.src,
-    translateY: [-12, 60],
-    shouldAlwaysCompleteAnimation: true,
-    expanded: false,
-  };
+  useEffect(() => {
+    const banner = bannerRef.current;
+    if (!banner) return;
 
-  const parallaxLayer3: BannerLayer = {
-    image: Layer3.src,
-    translateY: [-12, 53],
-    shouldAlwaysCompleteAnimation: true,
-    expanded: false,
-  };
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  const parallaxLayer4: BannerLayer = {
-    image: Layer4.src,
-    translateY: [0, 49],
-    shouldAlwaysCompleteAnimation: true,
-    expanded: false,
-  };
+    const applyStatic = (progress: number) => {
+      for (let i = 0; i < LAYERS.length; i++) {
+        const el = layerRefs.current[i];
+        if (!el) continue;
+        const [start, end] = LAYERS[i].translateY;
+        const y = start + (end - start) * progress;
+        el.style.transform = `translate3d(0, ${y}%, 0)`;
+      }
+    };
 
-  const parallaxLayer5: BannerLayer = {
-    image: Layer5.src,
-    translateY: [2, 38],
-    shouldAlwaysCompleteAnimation: true,
-    expanded: false,
-  };
+    if (reduced.matches) {
+      applyStatic(0);
+      return;
+    }
 
-  const parallaxLayer6: BannerLayer = {
-    image: Layer6.src,
-    translateY: [7, 30],
-    shouldAlwaysCompleteAnimation: true,
-    expanded: false,
-  };
-  const parallaxLayer7: BannerLayer = {
-    image: Layer7.src,
-    translateY: [0, 0],
-    shouldAlwaysCompleteAnimation: true,
-    expanded: false,
-  };
+    // Cache the scroll endpoint (document-Y of banner's bottom edge) so the
+    // per-frame update doesn't need a layout-forcing getBoundingClientRect.
+    let endScroll = 0;
+    const measure = () => {
+      const rect = banner.getBoundingClientRect();
+      endScroll = rect.bottom + window.scrollY;
+    };
+
+    let rafId = 0;
+    let ticking = false;
+    let active = false;
+
+    const update = () => {
+      ticking = false;
+      const progress =
+        endScroll > 0
+          ? Math.max(0, Math.min(1, window.scrollY / endScroll))
+          : 0;
+      applyStatic(progress);
+    };
+
+    const onScroll = () => {
+      if (ticking || !active) return;
+      ticking = true;
+      rafId = requestAnimationFrame(update);
+    };
+
+    const onResize = () => {
+      measure();
+      onScroll();
+    };
+
+    // Only run the scroll loop while the banner is actually on screen.
+    const io = new IntersectionObserver(
+      (entries) => {
+        active = entries[0]?.isIntersecting ?? false;
+        if (active) onScroll();
+      },
+      { rootMargin: "0px" },
+    );
+    io.observe(banner);
+
+    measure();
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    window.addEventListener("load", onResize);
+    return () => {
+      cancelAnimationFrame(rafId);
+      io.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("load", onResize);
+    };
+  }, []);
 
   return (
     <div className="relative full">
@@ -70,19 +118,26 @@ function Parallax() {
         </div>
       </div>
       {/* DESKTOP */}
-      <div className="hidden md:block bg-[#ffaf1b]">
-        <ParallaxBanner
-          layers={[
-            parallaxLayer1,
-            parallaxLayer2,
-            parallaxLayer3,
-            parallaxLayer4,
-            parallaxLayer5,
-            parallaxLayer6,
-            parallaxLayer7,
-          ]}
-          className="h-[100vh]"
-        />
+      <div
+        ref={bannerRef}
+        className="relative hidden h-screen overflow-hidden bg-[#ffaf1b] md:block"
+      >
+        {LAYERS.map((layer, i) => (
+          <img
+            key={i}
+            ref={(el) => {
+              layerRefs.current[i] = el;
+            }}
+            src={layer.src}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-bottom [backface-visibility:hidden] will-change-transform"
+            style={{
+              transform: `translate3d(0, ${layer.translateY[0]}%, 0)`,
+            }}
+            decoding="async"
+            draggable={false}
+          />
+        ))}
         <div className="absolute inset-0 flex justify-center text-center top-1/3">
           <h1 className="text-9xl text-white drop-shadow-2xl">
             Pfadi Meilen Herrliberg
