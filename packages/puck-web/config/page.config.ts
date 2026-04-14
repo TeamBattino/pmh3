@@ -10,6 +10,7 @@ import { CardGridProps, cardGridConfig } from "../components/CardGrid";
 import { CardRowProps, cardRowConfig } from "../components/CardRow";
 import { ColumnsProps, columnsConfig } from "../components/Columns";
 import { FAQProps, faqConfig } from "../components/FAQ";
+import { GalleryProps, galleryConfig } from "../components/Gallery";
 import { GraphicProps, graphicConfig } from "../components/Graphic";
 import { HeadingProps, headingConfig } from "../components/Heading";
 import { HeroProps, heroConfig } from "../components/Hero";
@@ -53,6 +54,7 @@ export type PageProps = {
   CardRow: CardRowProps;
   Columns: ColumnsProps;
   FAQ: FAQProps;
+  Gallery: GalleryProps;
   Graphic: GraphicProps;
   Heading: HeadingProps;
   Hero: HeroProps;
@@ -90,6 +92,7 @@ export const pageConfig: PageConfig = sectionThemedConfig({
         "CallToAction",
         "FAQ",
         "ImageRow",
+        "Gallery",
       ],
     },
     Layouts: {
@@ -111,6 +114,7 @@ export const pageConfig: PageConfig = sectionThemedConfig({
     CardRow: cardRowConfig,
     Columns: columnsConfig,
     FAQ: faqConfig,
+    Gallery: galleryConfig,
     Graphic: graphicConfig,
     Heading: headingConfig,
     Hero: heroConfig,

@@ -3,6 +3,7 @@ import PageHeaderActions from "@/components/puck-overrides/PageHeaderActions";
 import PuckHeader from "@/components/puck-overrides/PuckHeader";
 import { PageConfig, pageConfig, PageData } from "@pfadipuck/puck-web/config/page.config";
 import { getFile } from "@/lib/db/file-system-actions";
+import { resolveAlbumDataAdmin } from "@/lib/files/resolve-album-admin";
 import type { FileUrlResolver } from "@pfadipuck/puck-web/fields/file-picker-types";
 import { Puck, usePuck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
@@ -50,6 +51,7 @@ export function PageEditor({ path, data }: PageEditorProps) {
         for (const url of chain[size]) if (url) return url;
         return null;
       }) satisfies FileUrlResolver,
+      resolveAlbumData: resolveAlbumDataAdmin,
     }),
     []
   );
