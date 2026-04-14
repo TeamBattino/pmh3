@@ -35,6 +35,10 @@ import {
   SectionDividerProps,
   sectionDividerConfig,
 } from "../components/SectionDivider";
+import {
+  VerticalSpaceProps,
+  verticalSpaceConfig,
+} from "../components/VerticalSpace";
 import { sectionThemedConfig } from "../lib/section-theming";
 import type { Config, Data } from "@puckeditor/core";
 
@@ -59,6 +63,7 @@ export type PageProps = {
   StepList: StepListProps;
   TextBlock: TextBlockProps;
   TextSection: TextSectionProps;
+  VerticalSpace: VerticalSpaceProps;
 };
 export type PageRootProps = {
   title: string;
@@ -88,7 +93,14 @@ export const pageConfig: PageConfig = sectionThemedConfig({
       components: ["Columns", "CardGrid"],
     },
     Components: {
-      components: ["TextBlock", "MediaBlock", "Card", "ButtonGroup", "IconLink"],
+      components: [
+        "TextBlock",
+        "MediaBlock",
+        "Card",
+        "ButtonGroup",
+        "IconLink",
+        "VerticalSpace",
+      ],
     },
   },
   // @keep-sorted
@@ -112,6 +124,7 @@ export const pageConfig: PageConfig = sectionThemedConfig({
     StepList: stepListConfig,
     TextBlock: textBlockConfig,
     TextSection: textSectionConfig,
+    VerticalSpace: verticalSpaceConfig,
   },
 });
 
