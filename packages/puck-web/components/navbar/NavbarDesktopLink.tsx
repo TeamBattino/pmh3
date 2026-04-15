@@ -8,7 +8,7 @@ type NavbarDesktopLinkProps = {
   href?: string;
   children: ReactNode;
   /**
-   * Style variant. "top" is the main navbar row (rockingsoda 2xl with the
+   * Style variant. "top" is the main navbar row (londrina 2xl with the
    * animated yellow underline). "dropdown" is an item inside the desktop
    * dropdown popover (smaller, rounded hover background).
    */
@@ -48,7 +48,7 @@ export function NavbarDesktopLink({
   return (
     <a
       href={href || undefined}
-      className="group inline-flex flex-col items-stretch font-rockingsoda text-2xl text-black"
+      className="group inline-flex flex-col items-stretch font-londrina text-2xl text-black"
     >
       <span className="px-0.5">{children}</span>
       <span

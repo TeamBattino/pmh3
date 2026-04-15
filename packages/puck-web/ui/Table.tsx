@@ -23,7 +23,7 @@ export function TableHeader({
     <thead
       {...props}
       className={cn(
-        "[&_tr]:border-b font-rockingsoda text-lg",
+        "[&_tr]:border-b font-londrina text-lg",
         props.className
       )}
     >

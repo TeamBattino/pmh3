@@ -1,5 +1,5 @@
 import cn from "@pfadipuck/puck-web/lib/cn";
-import { poppins, rockingsodaPlus } from "@/lib/fonts";
+import { poppins, londrina } from "@/lib/fonts";
 import { Providers } from "@/components/Providers";
 import { getNavbar } from "@/lib/db";
 import { resolveFileUrl } from "@/lib/file-resolver";
@@ -34,7 +34,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          rockingsodaPlus.variable,
+          londrina.variable,
           poppins.variable,
           "font-poppins bg-ground mud-theme"
         )}

@@ -1,6 +1,6 @@
 @theme {
   /* Fonts */
-  --font-rockingsoda: var(--rockingsoda);
+  --font-londrina: var(--londrina);
   --font-poppins: var(--poppins);
 
   /* Base Colors, not for direct use */
@@ -69,7 +69,7 @@
 @layer base {
   /* This is needed because the font variables aren't available in @theme */
   body {
-    --font-rockingsoda: var(--rockingsoda);
+    --font-londrina: var(--londrina);
     --font-poppins: var(--poppins);
   }
 
@@ -85,7 +85,7 @@
     have one of these theme classes, so existing behavior is preserved.
   */
   :is(.mud-theme, .sun-theme) :is(h1, h2, h3, h4) {
-    font-family: var(--rockingsoda);
+    font-family: var(--londrina);
     letter-spacing: 0.025em;
   }
 

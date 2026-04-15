@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 import { auth } from "@/lib/auth/auth-client";
-import { poppins, rockingsodaPlus } from "@/lib/fonts";
+import { poppins, londrina } from "@/lib/fonts";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
 
@@ -15,7 +15,7 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          rockingsodaPlus.variable,
+          londrina.variable,
           poppins.variable,
           "font-poppins antialiased bg-background text-foreground"
         )}

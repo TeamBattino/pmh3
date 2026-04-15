@@ -1,10 +1,4 @@
-@font-face {
-  font-family: "RockingsodaPlus";
-  src: url("/RockingsodaPlus-Regular.otf") format("opentype");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
+@import url("https://fonts.googleapis.com/css2?family=Londrina+Solid&display=swap");
 
 @font-face {
   font-family: "Poppins";
@@ -23,6 +17,6 @@
 }
 
 :root {
-  --rockingsoda: "RockingsodaPlus";
+  --londrina: "Londrina Solid";
   --poppins: "Poppins";
 }

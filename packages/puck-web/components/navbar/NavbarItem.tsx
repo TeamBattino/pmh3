@@ -32,7 +32,7 @@ function NavbarItemMobile({ title, url }: NavbarItemProps) {
   return (
     <a
       href={url || undefined}
-      className="group block w-full rounded-xl border-2 border-brand-yellow/80 bg-primary px-4 py-3 text-center font-rockingsoda text-2xl text-contrast-primary shadow-[4px_4px_0_0_var(--color-brand-yellow)] transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+      className="group block w-full rounded-xl border-2 border-brand-yellow/80 bg-primary px-4 py-3 text-center font-londrina text-2xl text-contrast-primary shadow-[4px_4px_0_0_var(--color-brand-yellow)] transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
     >
       {title}
     </a>

@@ -25,7 +25,7 @@ export default async function LoginPage({
     <main className="flex min-h-svh items-center justify-center bg-background p-6">
       <div className="w-full max-w-sm rounded-xl border border-border bg-card p-8 shadow-sm">
         <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="font-rockingsoda text-3xl tracking-wide text-foreground">
+          <h1 className="font-londrina text-3xl tracking-wide text-foreground">
             Pfadi Meilen Herrliberg
           </h1>
           <p className="text-sm text-muted-foreground">

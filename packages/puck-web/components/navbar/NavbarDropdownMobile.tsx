@@ -16,7 +16,7 @@ export function NavbarDropdownMobile({
     <div className="flex flex-col gap-2">
       <button
         onClick={toggleOpen}
-        className="group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-brand-yellow/80 bg-primary px-4 py-3 font-rockingsoda text-2xl text-contrast-primary shadow-[4px_4px_0_0_var(--color-brand-yellow)] transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        className="group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-brand-yellow/80 bg-primary px-4 py-3 font-londrina text-2xl text-contrast-primary shadow-[4px_4px_0_0_var(--color-brand-yellow)] transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
         aria-expanded={open}
       >
         {label}
@@ -33,7 +33,7 @@ export function NavbarDropdownMobile({
               {items[0].groups_with && (
                 <div className="flex items-center gap-2 px-1">
                   <span className="h-px flex-1 bg-brand-yellow/60" />
-                  <span className="font-rockingsoda text-sm uppercase tracking-widest text-brand-yellow">
+                  <span className="font-londrina text-sm uppercase tracking-widest text-brand-yellow">
                     {items[0].groups_with}
                   </span>
                   <span className="h-px flex-1 bg-brand-yellow/60" />
@@ -43,7 +43,7 @@ export function NavbarDropdownMobile({
                 <a
                   key={idx}
                   href={item.url || undefined}
-                  className="block rounded-md border border-brand-yellow/30 bg-transparent px-3 py-2 text-center font-rockingsoda text-xl text-contrast-ground transition-colors active:bg-primary active:text-contrast-primary"
+                  className="block rounded-md border border-brand-yellow/30 bg-transparent px-3 py-2 text-center font-londrina text-xl text-contrast-ground transition-colors active:bg-primary active:text-contrast-primary"
                 >
                   {item.label}
                 </a>

@@ -1,8 +1,10 @@
 import localFont from "next/font/local";
+import { Londrina_Solid } from "next/font/google";
 
-export const rockingsodaPlus = localFont({
-  src: "./assets/RockingsodaPlus-Regular.otf",
-  variable: "--rockingsoda",
+export const londrina = Londrina_Solid({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--londrina",
   display: "swap",
 });
 

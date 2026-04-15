@@ -3,12 +3,9 @@
 @source "../../../packages/graphics/src";
 @import "@pfadipuck/puck-web/styles/theme.css";
 
-/* Fonts served from public/ so they work inside Puck's iframe */
-@font-face {
-  font-family: "RockingsodaPlus";
-  src: url("/fonts/RockingsodaPlus-Regular.otf") format("opentype");
-  font-display: swap;
-}
+/* Londrina Solid loaded from Google Fonts so it works inside Puck's iframe
+   (next/font's stylesheet doesn't propagate into the iframe) */
+@import url("https://fonts.googleapis.com/css2?family=Londrina+Solid&display=swap");
 
 @font-face {
   font-family: "Poppins";
@@ -34,7 +31,7 @@
 */
 :root {
   --radius: 0.625rem;
-  --rockingsoda: "RockingsodaPlus";
+  --londrina: "Londrina Solid";
   --poppins: "Poppins";
 
   --admin-primary: hsl(240 5.9% 10%);

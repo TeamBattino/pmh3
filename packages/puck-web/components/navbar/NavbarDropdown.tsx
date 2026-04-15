@@ -24,7 +24,7 @@ export function NavbarDropdown({
     if (editMode) {
       return (
         <div className="flex flex-col gap-1">
-          <div className="text-2xl font-rockingsoda">Empty Dropdown</div>
+          <div className="text-2xl font-londrina">Empty Dropdown</div>
           <div className="text-lg">Add items to this dropdown</div>
         </div>
       );

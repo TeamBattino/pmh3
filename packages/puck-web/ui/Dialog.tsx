@@ -21,7 +21,7 @@ export function DialogTrigger({ children }: PropsWithChildren) {
 
 export function DialogTitle({ children }: PropsWithChildren) {
   return (
-    <RDialog.Title className="font-rockingsoda text-3xl mb-2">
+    <RDialog.Title className="font-londrina text-3xl mb-2">
       {children}
     </RDialog.Title>
   );

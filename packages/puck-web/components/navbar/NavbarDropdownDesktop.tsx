@@ -22,7 +22,7 @@ export function NavbarDropdownDesktop({
     <div className="relative">
       <button
         onClick={toggleOpen}
-        className="group inline-flex flex-col items-stretch font-rockingsoda text-2xl text-black"
+        className="group inline-flex flex-col items-stretch font-londrina text-2xl text-black"
         aria-expanded={open}
       >
         <span className="inline-flex items-center gap-1 px-0.5">
@@ -49,7 +49,7 @@ export function NavbarDropdownDesktop({
       </button>
       {open && (
         <ClickAwayListener onClickAway={() => setOpen(false)}>
-          <div className="absolute left-1/2 top-full z-30 mt-2 flex min-w-48 -translate-x-1/2 flex-col rounded-xl border-2 border-brand-yellow bg-white p-3 font-rockingsoda text-xl text-black shadow-[4px_4px_0_0_var(--color-brand-yellow)]">
+          <div className="absolute left-1/2 top-full z-30 mt-2 flex min-w-48 -translate-x-1/2 flex-col rounded-xl border-2 border-brand-yellow bg-white p-3 font-londrina text-xl text-black shadow-[4px_4px_0_0_var(--color-brand-yellow)]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 52.36 24.43"
