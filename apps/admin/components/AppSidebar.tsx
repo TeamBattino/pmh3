@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarDays,
   FileText,
   FolderArchive,
   Home,
@@ -60,6 +61,20 @@ const groups: NavGroup[] = [
         policy: { all: ["web:update"] },
         isActive: (p) =>
           p === "/web/settings" || p === "/web/navbar",
+      },
+    ],
+  },
+  {
+    label: "Activities",
+    items: [
+      {
+        href: "/activities",
+        label: "Activities",
+        icon: CalendarDays,
+        policy: {
+          any: ["activity:edit", "activity-admin:edit-settings"],
+        },
+        isActive: (p) => p.startsWith("/activities"),
       },
     ],
   },

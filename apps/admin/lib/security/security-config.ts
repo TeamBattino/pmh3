@@ -1,5 +1,7 @@
 export const assignablePermissions = [
   // @keep-sorted
+  "activity-admin:edit-settings",
+  "activity:edit",
   "admin-ui:read",
   "asset:create",
   "asset:delete",
@@ -53,7 +55,7 @@ export const defaultSecurityConfig: SecurityConfig = {
     {
       name: "Admin",
       description: "Admin role with all permissions",
-      permissions: ["global-admin"],
+      permissions: ["global-admin", "activity-admin:edit-settings", "activity:edit"],
       midataGroupMappings: [
         {
           groupId: 1172,
@@ -75,6 +77,7 @@ export const defaultSecurityConfig: SecurityConfig = {
         "asset:read",
         "asset:update",
         "asset:delete",
+        "activity:edit",
       ],
       midataGroupMappings: [
         {

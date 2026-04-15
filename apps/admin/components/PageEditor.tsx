@@ -4,6 +4,7 @@ import PuckHeader from "@/components/puck-overrides/PuckHeader";
 import { PageConfig, pageConfig, PageData } from "@pfadipuck/puck-web/config/page.config";
 import { getFile } from "@/lib/db/file-system-actions";
 import { resolveAlbumDataAdmin } from "@/lib/files/resolve-album-admin";
+import { resolveActivityBoardForEditor } from "@/lib/activities/actions";
 import type { FileUrlResolver } from "@pfadipuck/puck-web/fields/file-picker-types";
 import type { FooterDoc } from "@pfadipuck/puck-web/lib/footer-doc";
 import { Footer } from "@pfadipuck/puck-web/ui/Footer";
@@ -71,6 +72,7 @@ export function PageEditor({
         return null;
       }) satisfies FileUrlResolver,
       resolveAlbumData: resolveAlbumDataAdmin,
+      resolveActivityData: resolveActivityBoardForEditor,
     }),
     []
   );
