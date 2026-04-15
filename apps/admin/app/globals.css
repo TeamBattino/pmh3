@@ -1,11 +1,12 @@
+/* Londrina Solid loaded from Google Fonts so it works inside Puck's iframe
+   (next/font's stylesheet doesn't propagate into the iframe).
+   This @import MUST be first — every other import here (tailwindcss,
+   puck-web theme) expands into rules, after which @import is illegal. */
+@import url("https://fonts.googleapis.com/css2?family=Londrina+Solid&display=swap");
 @import "tailwindcss";
 @source "../../../packages/puck-web";
 @source "../../../packages/graphics/src";
 @import "@pfadipuck/puck-web/styles/theme.css";
-
-/* Londrina Solid loaded from Google Fonts so it works inside Puck's iframe
-   (next/font's stylesheet doesn't propagate into the iframe) */
-@import url("https://fonts.googleapis.com/css2?family=Londrina+Solid&display=swap");
 
 @font-face {
   font-family: "Poppins";

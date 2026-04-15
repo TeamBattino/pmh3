@@ -97,8 +97,6 @@ export async function saveCustomDraft(
 function validateInfo(info: InfoBlock): string | null {
   if (!info.date) return "Date is required.";
   if (!info.startTime || !info.endTime) return "Start and end time are required.";
-  if (!info.title) return "Title is required.";
-  if (!info.description) return "Description is required.";
   if (!info.startLocation) return "Start location is required.";
   const start = parseZurichDateTime(info.date, info.startTime);
   const end = parseZurichDateTime(info.date, info.endTime);

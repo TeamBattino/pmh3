@@ -478,15 +478,6 @@ function InfoTab({
       />
 
       <div className="flex flex-col gap-1.5 md:col-span-2">
-        <Label htmlFor="info-title">Title</Label>
-        <Input
-          id="info-title"
-          value={value.title}
-          onChange={(e) => update({ title: e.target.value })}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5 md:col-span-2">
         <Label htmlFor="info-desc">Description</Label>
         <textarea
           id="info-desc"
