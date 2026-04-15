@@ -35,6 +35,7 @@ import {
   type LocationRef,
 } from "@pfadipuck/puck-web/lib/activities";
 import { formatZurichIso, statusLabel } from "./ActivityStatusLabel";
+import { BringListEditor } from "./BringListEditor";
 import { combineStates, useAutosave } from "./use-autosave";
 import {
   DatePicker,
@@ -497,14 +498,10 @@ function InfoTab({
       </div>
 
       <div className="flex flex-col gap-1.5 md:col-span-2">
-        <Label htmlFor="info-bring">Bring list</Label>
-        <textarea
-          id="info-bring"
-          rows={3}
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-          placeholder="One item per line"
-          value={typeof value.bringList === "string" ? value.bringList : ""}
-          onChange={(e) => update({ bringList: e.target.value })}
+        <Label>Bring list</Label>
+        <BringListEditor
+          value={value.bringList}
+          onChange={(bringList) => update({ bringList })}
         />
       </div>
     </div>

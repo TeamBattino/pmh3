@@ -9,6 +9,7 @@ import type {
 import {
   emptyActivityDoc,
   emptyPlanningPlaceholder,
+  normalizeInfoBlock,
 } from "@pfadipuck/puck-web/lib/activities";
 import { MongoClient, type Db } from "mongodb";
 
@@ -113,7 +114,12 @@ export async function getActivity(
   const d = await getDb().collection(ACTIVITIES).findOne({ groupId });
   if (!d) return null;
   const { _id, ...rest } = d as { _id: unknown } & ActivityDoc;
-  return rest as ActivityDoc;
+  const doc = rest as ActivityDoc;
+  doc.info = normalizeInfoBlock(doc.info);
+  if (doc.published?.type === "info") {
+    doc.published = { type: "info", data: normalizeInfoBlock(doc.published.data) };
+  }
+  return doc;
 }
 
 export async function getOrCreateActivity(
@@ -182,7 +188,15 @@ export async function listAllActivities(): Promise<ActivityDoc[]> {
   const docs = await getDb().collection(ACTIVITIES).find({}).toArray();
   return docs.map((d) => {
     const { _id, ...rest } = d as { _id: unknown } & ActivityDoc;
-    return rest as ActivityDoc;
+    const doc = rest as ActivityDoc;
+    doc.info = normalizeInfoBlock(doc.info);
+    if (doc.published?.type === "info") {
+      doc.published = {
+        type: "info",
+        data: normalizeInfoBlock(doc.published.data),
+      };
+    }
+    return doc;
   });
 }
 

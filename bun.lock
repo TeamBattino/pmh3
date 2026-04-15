@@ -138,6 +138,7 @@
         "blurhash": "^2.0.5",
         "clsx": "^2.1.1",
         "csstype": "^3.1.3",
+        "lucide-react": "^0.475.0",
         "radix-ui": "^1.3.0",
         "tailwind-merge": "^3.2.0",
       },

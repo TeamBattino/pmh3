@@ -26,6 +26,14 @@ export type LocationRef =
       mapsEmbedUrl?: string;
     };
 
+export type BringItem = {
+  /** Stable id for keys and reordering. */
+  id: string;
+  /** Lucide icon name (e.g. "Backpack"). Null = no icon, render a bullet. */
+  icon: string | null;
+  label: string;
+};
+
 export type InfoBlock = {
   /** Local Europe/Zurich date, format YYYY-MM-DD. */
   date: string;
@@ -37,7 +45,7 @@ export type InfoBlock = {
   endLocation?: LocationRef;
   title: string;
   description: RichText;
-  bringList: RichText;
+  bringList: BringItem[];
 };
 
 export type CancelledBlock = {
@@ -79,7 +87,7 @@ export const emptyInfoBlock = (): InfoBlock => ({
   endTime: "",
   title: "",
   description: "",
-  bringList: "",
+  bringList: [],
 });
 
 export const emptyCancelledBlock = (): CancelledBlock => ({
@@ -92,6 +100,41 @@ export const emptyCustomBlock = (): CustomBlock => ({
   body: "",
   showUntil: "",
 });
+
+/**
+ * Normalize a possibly-legacy InfoBlock so older docs (where `bringList`
+ * was a single richtext string) load cleanly. Splits on newlines, drops
+ * empty lines, assigns synthetic ids and a null icon.
+ */
+export function normalizeInfoBlock(info: InfoBlock): InfoBlock {
+  const raw = info.bringList as unknown;
+  if (Array.isArray(raw)) {
+    return {
+      ...info,
+      bringList: raw.map((item, i) => ({
+        id: typeof item?.id === "string" ? item.id : `legacy-${i}`,
+        icon: typeof item?.icon === "string" ? item.icon : null,
+        label: typeof item?.label === "string" ? item.label : "",
+      })),
+    };
+  }
+  if (typeof raw === "string") {
+    const lines = raw
+      .replace(/<[^>]+>/g, "\n")
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    return {
+      ...info,
+      bringList: lines.map((label, i) => ({
+        id: `legacy-${i}`,
+        icon: null,
+        label,
+      })),
+    };
+  }
+  return { ...info, bringList: [] };
+}
 
 export const emptyActivityDoc = (groupId: string): ActivityDoc => ({
   groupId,

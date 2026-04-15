@@ -7,6 +7,7 @@ import type {
   LocationDoc,
   PlanningPlaceholder,
 } from "@pfadipuck/puck-web/lib/activities";
+import { normalizeInfoBlock } from "@pfadipuck/puck-web/lib/activities";
 import type { ResolvedActivityBoard } from "@pfadipuck/puck-web/components/GroupActivityBoard";
 import { MongoClient } from "mongodb";
 
@@ -61,6 +62,13 @@ export async function resolveActivityBoard(
   if (activityDoc) {
     const { _id, ...rest } = activityDoc as { _id: unknown } & ActivityDoc;
     doc = rest as ActivityDoc;
+    doc.info = normalizeInfoBlock(doc.info);
+    if (doc.published?.type === "info") {
+      doc.published = {
+        type: "info",
+        data: normalizeInfoBlock(doc.published.data),
+      };
+    }
   }
 
   // Resolve referenced saved locations.
