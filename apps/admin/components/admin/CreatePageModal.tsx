@@ -125,11 +125,12 @@ export function CreatePageModal({
       } else {
         await createPage(fullPath, title.trim());
       }
-
-      queryClient.invalidateQueries({ queryKey: ["pages"] });
+    },
+    onSuccess: () => {
       toast.success(isDuplicate ? "Page duplicated" : "Page created");
-      onCreated?.();
       router.push(`/web/editor${fullPath}`);
+      onCreated?.();
+      queryClient.invalidateQueries({ queryKey: ["pages"] });
     },
   });
 
